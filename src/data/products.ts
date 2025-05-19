@@ -1,4 +1,3 @@
-
 export interface Product {
   id: string;
   name: string;
@@ -13,6 +12,7 @@ export interface Product {
   stock: number;
   slug: string;
   featured?: boolean;
+  sizes?: string[]; // Add sizes property
 }
 
 export const products: Product[] = [
@@ -29,7 +29,8 @@ export const products: Product[] = [
     likes: 120,
     stock: 50,
     slug: "summer-linen-shirt",
-    featured: true
+    featured: true,
+    sizes: ["XS", "S", "M", "L", "XL"]
   },
   {
     id: "2",
@@ -42,7 +43,8 @@ export const products: Product[] = [
     rating: 4.7,
     likes: 98,
     stock: 35,
-    slug: "designer-denim-jacket"
+    slug: "designer-denim-jacket",
+    sizes: ["S", "M", "L", "XL", "XXL"]
   },
   
   // Clothing - Trending
@@ -58,7 +60,8 @@ export const products: Product[] = [
     likes: 210,
     stock: 100,
     slug: "vintage-graphic-tee",
-    featured: true
+    featured: true,
+    sizes: ["XS", "S", "M", "L", "XL", "XXL"]
   },
   
   // Clothing - Kids
@@ -74,7 +77,8 @@ export const products: Product[] = [
     rating: 4.9,
     likes: 87,
     stock: 40,
-    slug: "kids-dinosaur-pajama"
+    slug: "kids-dinosaur-pajama",
+    sizes: ["2T", "3T", "4T", "5T", "XS", "S"]
   },
   
   // Clothing - Adults
@@ -89,10 +93,11 @@ export const products: Product[] = [
     rating: 4.6,
     likes: 65,
     stock: 25,
-    slug: "classic-wool-blazer"
+    slug: "classic-wool-blazer",
+    sizes: ["36", "38", "40", "42", "44", "46"]
   },
   
-  // Food - Fresh Produce
+  // Food - Fresh Produce (no sizes needed)
   {
     id: "6",
     name: "Organic Vegetable Box",
@@ -108,55 +113,9 @@ export const products: Product[] = [
     featured: true
   },
   
-  // Food - Dairy
-  {
-    id: "7",
-    name: "Artisanal Cheese Selection",
-    description: "Handpicked selection of premium artisanal cheeses from around the world.",
-    price: 42.99,
-    images: ["https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
-    categoryId: "food",
-    subcategoryId: "dairy",
-    rating: 4.7,
-    likes: 91,
-    stock: 15,
-    slug: "artisanal-cheese-selection"
-  },
-  
-  // Cleaning - Home Cleaning
-  {
-    id: "8",
-    name: "Deep Home Cleaning Service",
-    description: "Professional deep cleaning service for your entire home. Includes all rooms and bathrooms.",
-    price: 149.99,
-    images: ["https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
-    categoryId: "cleaning",
-    subcategoryId: "home-cleaning",
-    rating: 4.9,
-    likes: 56,
-    stock: 10,
-    slug: "deep-home-cleaning",
-    featured: true
-  },
-  
-  // Cleaning - Supplies
-  {
-    id: "9",
-    name: "Eco-Friendly Cleaning Kit",
-    description: "Complete kit of environmentally friendly cleaning supplies for your home.",
-    price: 39.99,
-    images: ["https://images.unsplash.com/photo-1563453392212-326f5e854473?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
-    categoryId: "cleaning",
-    subcategoryId: "supplies",
-    rating: 4.5,
-    likes: 78,
-    stock: 45,
-    slug: "eco-cleaning-kit"
-  },
-  
   // Clothing - Male
   {
-    id: "10",
+    id: "9",
     name: "Men's Performance Sneakers",
     description: "High-performance athletic sneakers with superior comfort and support.",
     price: 79.99,
@@ -167,12 +126,13 @@ export const products: Product[] = [
     rating: 4.6,
     likes: 142,
     stock: 60,
-    slug: "mens-performance-sneakers"
+    slug: "mens-performance-sneakers",
+    sizes: ["US 7", "US 8", "US 9", "US 10", "US 11", "US 12"]
   },
   
   // Clothing - Female
   {
-    id: "11",
+    id: "10",
     name: "Women's Leather Tote Bag",
     description: "Premium genuine leather tote bag with spacious interior and elegant design.",
     price: 119.99,
@@ -183,51 +143,11 @@ export const products: Product[] = [
     likes: 107,
     stock: 20,
     slug: "womens-leather-tote",
-    featured: true
+    featured: true,
+    sizes: ["One Size"]
   },
-  
-  // Add a few more products
-  {
-    id: "12",
-    name: "Gourmet Coffee Beans",
-    description: "Single-origin fair trade coffee beans, freshly roasted for exceptional flavor.",
-    price: 18.99,
-    images: ["https://images.unsplash.com/photo-1559056199-641a0ac8b55e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
-    categoryId: "food",
-    subcategoryId: "beverages",
-    rating: 4.9,
-    likes: 215,
-    stock: 75,
-    slug: "gourmet-coffee-beans"
-  },
-  {
-    id: "13",
-    name: "Professional Carpet Cleaning",
-    description: "Deep carpet cleaning service using professional-grade equipment and eco-friendly solutions.",
-    price: 89.99,
-    images: ["https://images.unsplash.com/photo-1558317374-067fb5f30001?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
-    categoryId: "cleaning",
-    subcategoryId: "home-cleaning",
-    rating: 4.7,
-    likes: 68,
-    stock: 8,
-    slug: "professional-carpet-cleaning"
-  },
-  {
-    id: "14",
-    name: "Artisan Sourdough Bread",
-    description: "Freshly baked sourdough bread made with organic flour and traditional methods.",
-    price: 7.99,
-    images: ["https://images.unsplash.com/photo-1585478259715-1c721551b772?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
-    categoryId: "food",
-    subcategoryId: "bakery",
-    rating: 4.8,
-    likes: 126,
-    stock: 40,
-    slug: "artisan-sourdough"
-  }
-];
 
+];
 export const getFeaturedProducts = (): Product[] => {
   return products.filter(product => product.featured);
 };

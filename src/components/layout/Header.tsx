@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, ShoppingCart, Menu, X } from 'lucide-react';
+import { Search, ShoppingCart, Menu, X, WashingMachine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useCart } from '@/context/CartContext';
@@ -42,9 +42,6 @@ const Header = () => {
             </Link>
             <Link to="/category/food" className="text-gray-700 hover:text-primary transition-colors">
               Food
-            </Link>
-            <Link to="/category/cleaning" className="text-gray-700 hover:text-primary transition-colors">
-              Cleaning
             </Link>
           </nav>
           
@@ -101,9 +98,8 @@ const Header = () => {
               <Link to="/category/food" className="text-gray-700 hover:text-primary transition-colors" onClick={toggleMenu}>
                 Food
               </Link>
-              <Link to="/category/cleaning" className="text-gray-700 hover:text-primary transition-colors" onClick={toggleMenu}>
-                Cleaning
-              </Link>
+         
+
             </nav>
             <div className="mt-4 flex items-center space-x-4">
               <form onSubmit={handleSearch} className="flex-1 relative">
@@ -132,6 +128,7 @@ const Header = () => {
                   </span>
                 )}
               </Link>
+           
             </div>
           </div>
         )}

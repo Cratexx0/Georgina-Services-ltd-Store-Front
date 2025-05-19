@@ -11,7 +11,7 @@ const CategoryTabs: React.FC = () => {
     <div className="mb-12">
       <div className="mb-6 border-b border-gray-200">
         <div className="container mx-auto px-4 flex overflow-x-auto scrollbar-hide">
-          {categories.map((category) => (
+          {categories?.slice(0, 2)?.map((category) => (
             <button
               key={category.id}
               onClick={() => setActiveTab(category.id)}
