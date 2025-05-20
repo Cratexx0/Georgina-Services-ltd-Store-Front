@@ -16,6 +16,9 @@ import NotFound from "@/pages/NotFound";
 import Auth from "./auth/Auth";
 import ForgotPassword from "./auth/ForgetPassword";
 import ResetPassword from "./auth/ResetPassword";
+import CheckoutPage from "./pages/CheckOutPage";
+import Success from "./payment/Success";
+import Failure from "./payment/Failure";
 
 
 const queryClient = new QueryClient();
@@ -32,10 +35,13 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/forgot-password" element={<ForgotPassword/>} />
             <Route path="/reset-password" element={<ResetPassword/>} />
+            <Route path="/success" element={<Success/>} />
+            <Route path="/fail" element={<Failure/>} />
             <Route path="/category/:categorySlug" element={<CategoryPage />} />
             <Route path="/category/:categorySlug/:subcategorySlug" element={<CategoryPage />} />
             <Route path="/product/:productSlug" element={<ProductPage />} />
             <Route path="/cart" element={<CartPage />} />
+            <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/search" element={<SearchResults />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

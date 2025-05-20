@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { useCart } from '@/context/CartContext';
 import { Button } from '@/components/ui/button';
@@ -9,12 +9,13 @@ import { toast } from '@/components/ui/sonner';
 
 const CartPage = () => {
   const { cart, removeFromCart, updateQuantity, clearCart, getTotalPrice } = useCart();
-  
+  const navigate =useNavigate()
   const handleCheckout = () => {
     toast.success('Redirecting to checkout...', {
       description: 'This would normally connect to Stripe',
     });
     // In a real implementation, we would redirect to a Stripe checkout page
+navigate("/checkout")
   };
   
   if (cart.length === 0) {

@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, ShoppingCart, Menu, X, WashingMachine } from 'lucide-react';
+import { Search, ShoppingCart, Menu, X, WashingMachine, LogIn, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useCart } from '@/context/CartContext';
@@ -73,6 +73,15 @@ const Header = () => {
                 </span>
               )}
             </Link>
+            <div className="flex items-center space-x-4">
+              <Link to="/auth">
+                <Button variant="ghost" size="sm" className="flex bg-blue-500 text-gray-50 hover:bg-blue-400 hover:text-gray-100 items-center gap-2">
+                  <LogIn className="h-4 w-4" />
+                  Sign In
+                </Button>
+              </Link>
+        
+            </div>
           </div>
           
           {/* Mobile menu button */}
@@ -99,7 +108,15 @@ const Header = () => {
                 Food
               </Link>
          
-
+              <div className="flex items-center space-x-4">
+              <Link to="/auth">
+                <Button variant="ghost" size="sm" className="flex bg-blue-500 text-gray-50 hover:bg-blue-400 hover:text-gray-100 items-center gap-2">
+                  <LogIn className="h-4 w-4" />
+                  Sign In
+                </Button>
+              </Link>
+        
+            </div>
             </nav>
             <div className="mt-4 flex items-center space-x-4">
               <form onSubmit={handleSearch} className="flex-1 relative">
