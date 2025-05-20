@@ -13,6 +13,10 @@ import ProductPage from "@/pages/ProductPage";
 import CartPage from "@/pages/CartPage";
 import SearchResults from "@/pages/SearchResults";
 import NotFound from "@/pages/NotFound";
+import Auth from "./auth/Auth";
+import ForgotPassword from "./auth/ForgetPassword";
+import ResetPassword from "./auth/ResetPassword";
+
 
 const queryClient = new QueryClient();
 
@@ -25,6 +29,9 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/forgot-password" element={<ForgotPassword/>} />
+            <Route path="/reset-password" element={<ResetPassword/>} />
             <Route path="/category/:categorySlug" element={<CategoryPage />} />
             <Route path="/category/:categorySlug/:subcategorySlug" element={<CategoryPage />} />
             <Route path="/product/:productSlug" element={<ProductPage />} />
