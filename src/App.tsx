@@ -33,8 +33,8 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/forgot-password" element={<ForgotPassword/>} />
-            <Route path="/reset-password" element={<ResetPassword/>} />
+            <Route path="/forgot/password" element={<ForgotPassword/>} />
+            <Route path="/reset/password" element={<ResetPassword/>} />
             <Route path="/success" element={<Success/>} />
             <Route path="/fail" element={<Failure/>} />
             <Route path="/category/:categorySlug" element={<CategoryPage />} />

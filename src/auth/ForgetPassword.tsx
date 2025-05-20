@@ -24,7 +24,7 @@ const navigate =useNavigate();
                 title: "Password reset email sent",
                 description: "Check your inbox for further instructions.",
             });
-            navigate('/forgot-password');
+            navigate('/forgot/password');
         }, 1500);
     };
 

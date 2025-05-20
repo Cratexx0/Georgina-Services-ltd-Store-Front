@@ -90,7 +90,7 @@ const AuthForm = () => {
             <div className="animate-fade-in delay-200">
               <div className="flex items-center justify-between">
                 <Label htmlFor="login-password">Password</Label>
-                <a href="/forgot-password" className="text-xs text-primary hover:underline">
+                <a href="/forgot/password" className="text-xs text-primary hover:underline">
                   Forgot password?
                 </a>
               </div>
