@@ -1,11 +1,12 @@
 
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Product } from '@/data/products';
-import { Heart } from 'lucide-react';
+import { Heart, Download, Scissors } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/CartContext';
 import { toast } from '@/components/ui/sonner';
+import { removeBackground, loadImageFromUrl } from '@/utils/backgroundRemoval';
 
 interface ProductCardProps {
   product: Product;
@@ -13,6 +14,8 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addToCart } = useCart();
+  const [isRemovingBg, setIsRemovingBg] = useState(false);
+  const [processedImageUrl, setProcessedImageUrl] = useState<string | null>(null);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -21,17 +24,60 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     toast.success(`${product.name} added to cart`);
   };
 
+  const handleRemoveBackground = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    setIsRemovingBg(true);
+    toast.info('Removing background...', {
+      description: 'This may take a few moments'
+    });
+
+    try {
+      const img = await loadImageFromUrl(product.images[0]);
+      const processedBlob = await removeBackground(img);
+      const processedUrl = URL.createObjectURL(processedBlob);
+      setProcessedImageUrl(processedUrl);
+      
+      toast.success('Background removed successfully!');
+    } catch (error) {
+      console.error('Failed to remove background:', error);
+      toast.error('Failed to remove background', {
+        description: 'Please try again later'
+      });
+    } finally {
+      setIsRemovingBg(false);
+    }
+  };
+
+  const handleDownloadProcessed = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (processedImageUrl) {
+      const link = document.createElement('a');
+      link.href = processedImageUrl;
+      link.download = `${product.name}-no-bg.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast.success('Image downloaded!');
+    }
+  };
+
+  const displayImage = processedImageUrl || product.images[0];
+
   return (
     <div className="">
-
-
-      <div className="product-card group  rounded-md overflow-hidden">
+      <div className="product-card group rounded-md overflow-hidden">
         <Link to={`/product/${product.slug}`} className="block h-full">
-          <div className="relative bg-slate-300 rounded-md h-80  overflow-hidden">
+          <div className="relative bg-slate-300 rounded-md h-80 overflow-hidden">
             <img
-              src={product.images[0]}
+              src={displayImage}
               alt={product.name}
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              style={processedImageUrl ? { backgroundColor: 'white' } : {}}
             />
             <div className="absolute top-2 right-2 p-1.5 bg-white rounded-full shadow-sm">
               <Heart className="h-4 w-4 text-red-500" />
@@ -42,6 +88,32 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 SALE
               </div>
             )}
+            
+            {/* Background removal controls */}
+            <div className="absolute bottom-2 left-2 flex gap-1">
+              <Button
+                size="sm"
+                variant="secondary"
+                className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={handleRemoveBackground}
+                disabled={isRemovingBg}
+                title="Remove background"
+              >
+                <Scissors className="h-3 w-3" />
+              </Button>
+              
+              {processedImageUrl && (
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={handleDownloadProcessed}
+                  title="Download processed image"
+                >
+                  <Download className="h-3 w-3" />
+                </Button>
+              )}
+            </div>
           </div>
         </Link>
       </div>
@@ -65,7 +137,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               <span className="text-sm font-base text-neutral-900">${product.price.toFixed(2)}</span>
             )}
           </div>
-       <p className="  text-neutral-900 text-sm">{product?.stock} items left</p>
+          <p className="text-neutral-900 text-sm">{product?.stock} items left</p>
         </div>
       </div>
     </div>
