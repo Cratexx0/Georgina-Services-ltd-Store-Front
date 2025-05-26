@@ -1,21 +1,30 @@
-
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
-import { ShoppingCart, Trash2, AlertCircle } from 'lucide-react';
+import { ShoppingCart, Trash2, AlertCircle, User } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 
 const CartPage = () => {
   const { cart, removeFromCart, updateQuantity, clearCart, getTotalPrice } = useCart();
-  const navigate =useNavigate()
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
   const handleCheckout = () => {
+    if (!isAuthenticated) {
+      toast.error('Please log in to continue', {
+        description: 'You need to be logged in to proceed to checkout',
+      });
+      navigate('/auth');
+      return;
+    }
+
     toast.success('Redirecting to checkout...', {
       description: 'This would normally connect to Stripe',
     });
-    // In a real implementation, we would redirect to a Stripe checkout page
-navigate("/checkout")
+    navigate("/checkout");
   };
   
   if (cart.length === 0) {
@@ -140,8 +149,17 @@ navigate("/checkout")
                 </div>
               </div>
               
+              {!isAuthenticated && (
+                <div className="bg-amber-50 p-3 rounded-md flex items-start space-x-3 mb-4">
+                  <User className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-amber-700">
+                    You need to log in to proceed to checkout
+                  </p>
+                </div>
+              )}
+              
               <Button onClick={handleCheckout} className="w-full mb-4">
-                Proceed to Checkout
+                {isAuthenticated ? 'Proceed to Checkout' : 'Login to Checkout'}
               </Button>
               
               <div className="bg-blue-50 p-3 rounded-md flex items-start space-x-3">

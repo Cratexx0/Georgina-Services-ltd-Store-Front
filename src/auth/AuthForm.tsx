@@ -1,42 +1,69 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Facebook, LogIn, Mail, User, UserPlus } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from "@/context/AuthContext";
 
 const AuthForm = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [loginData, setLoginData] = useState({ email: '', password: '' });
+  const [registerData, setRegisterData] = useState({ 
+    email: '', 
+    password: '', 
+    firstName: '', 
+    lastName: '' 
+  });
   const { toast } = useToast();
+  const { login, register } = useAuth();
+  const navigate = useNavigate();
   
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await login(loginData.email, loginData.password);
       toast({
         title: "Login successful",
         description: "Welcome back to our store!",
       });
-    }, 1500);
+      navigate('/');
+    } catch (error) {
+      toast({
+        title: "Login failed",
+        description: "Please check your credentials and try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
   
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await register(registerData.email, registerData.password, registerData.firstName, registerData.lastName);
       toast({
         title: "Registration successful",
         description: "Your account has been created.",
       });
-    }, 1500);
+      navigate('/');
+    } catch (error) {
+      toast({
+        title: "Registration failed",
+        description: "Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
   
   const handleSocialLogin = (provider: string) => {
@@ -82,6 +109,8 @@ const AuthForm = () => {
                 id="login-email" 
                 type="email" 
                 placeholder="name@example.com"
+                value={loginData.email}
+                onChange={(e) => setLoginData({...loginData, email: e.target.value})}
                 required
                 className="mt-1"
               />
@@ -97,6 +126,8 @@ const AuthForm = () => {
               <Input 
                 id="login-password" 
                 type="password"
+                value={loginData.password}
+                onChange={(e) => setLoginData({...loginData, password: e.target.value})}
                 required
                 className="mt-1"
               />
@@ -187,6 +218,8 @@ const AuthForm = () => {
                 <Input 
                   id="register-first-name" 
                   type="text"
+                  value={registerData.firstName}
+                  onChange={(e) => setRegisterData({...registerData, firstName: e.target.value})}
                   required
                   className="mt-1"
                 />
@@ -196,6 +229,8 @@ const AuthForm = () => {
                 <Input 
                   id="register-last-name" 
                   type="text"
+                  value={registerData.lastName}
+                  onChange={(e) => setRegisterData({...registerData, lastName: e.target.value})}
                   required
                   className="mt-1"
                 />
@@ -208,6 +243,8 @@ const AuthForm = () => {
                 id="register-email" 
                 type="email" 
                 placeholder="name@example.com"
+                value={registerData.email}
+                onChange={(e) => setRegisterData({...registerData, email: e.target.value})}
                 required
                 className="mt-1"
               />
@@ -218,6 +255,8 @@ const AuthForm = () => {
               <Input 
                 id="register-password" 
                 type="password"
+                value={registerData.password}
+                onChange={(e) => setRegisterData({...registerData, password: e.target.value})}
                 required
                 className="mt-1"
               />
