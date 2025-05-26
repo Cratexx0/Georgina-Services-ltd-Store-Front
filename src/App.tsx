@@ -20,6 +20,7 @@ import ForgotPassword from "./auth/ForgetPassword";
 import ResetPassword from "./auth/ResetPassword";
 import CheckoutPage from "./pages/CheckOutPage";
 import CleaningServicesPage from "./pages/CleaningServicesPage";
+import AccountPage from "./pages/AccountPage";
 import Success from "./payment/Success";
 import Failure from "./payment/Failure";
 
@@ -37,6 +38,7 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
+                <Route path="/account" element={<AccountPage />} />
                 <Route path="/forgot/password" element={<ForgotPassword/>} />
                 <Route path="/reset/password" element={<ResetPassword/>} />
                 <Route path="/success" element={<Success/>} />
