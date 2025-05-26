@@ -1,9 +1,9 @@
-
 import React from 'react';
 import Layout from '@/components/layout/Layout';
 import HeroCarousel from '@/components/home/HeroCarousel';
 import CategoryTabs from '@/components/categories/CategoryTabs';
 import ProductGrid from '@/components/products/ProductGrid';
+import NewsletterSignup from '@/components/newsletter/NewsletterSignup';
 import { getFeaturedProducts } from '@/data/products';
 
 const Index = () => {
@@ -24,6 +24,12 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <h2 className="text-2xl font-bold mb-8 text-center">Featured Products</h2>
           <ProductGrid products={featuredProducts} />
+        </div>
+      </section>
+      
+      <section className="py-12 bg-primary/5">
+        <div className="container mx-auto px-4">
+          <NewsletterSignup variant="centered" />
         </div>
       </section>
       

@@ -1,10 +1,10 @@
-
 import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Product } from '@/data/products';
 import { Heart, Download, Scissors } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/CartContext';
+import { useWishlist } from '@/context/WishlistContext';
 import { toast } from '@/components/ui/sonner';
 import { removeBackground, loadImageFromUrl } from '@/utils/backgroundRemoval';
 
@@ -14,6 +14,7 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addToCart } = useCart();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const [isRemovingBg, setIsRemovingBg] = useState(false);
   const [processedImageUrl, setProcessedImageUrl] = useState<string | null>(null);
 
@@ -22,6 +23,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     e.stopPropagation();
     addToCart(product);
     toast.success(`${product.name} added to cart`);
+  };
+
+  const handleWishlistToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (isInWishlist(product.id)) {
+      removeFromWishlist(product.id);
+    } else {
+      addToWishlist(product);
+    }
   };
 
   const handleRemoveBackground = async (e: React.MouseEvent) => {
@@ -79,10 +91,21 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
               style={processedImageUrl ? { backgroundColor: 'white' } : {}}
             />
-            <div className="absolute top-2 right-2 p-1.5 bg-white rounded-full shadow-sm">
-              <Heart className="h-4 w-4 text-red-500" />
-              <span className="sr-only">Likes: {product.likes}</span>
-            </div>
+            <button
+              onClick={handleWishlistToggle}
+              className="absolute top-2 right-2 p-1.5 bg-white rounded-full shadow-sm hover:bg-gray-50 transition-colors"
+            >
+              <Heart 
+                className={`h-4 w-4 ${
+                  isInWishlist(product.id) 
+                    ? 'text-red-500 fill-red-500' 
+                    : 'text-gray-400'
+                }`} 
+              />
+              <span className="sr-only">
+                {isInWishlist(product.id) ? 'Remove from wishlist' : 'Add to wishlist'}
+              </span>
+            </button>
             {product.discountPrice && (
               <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 text-xs font-semibold rounded">
                 SALE

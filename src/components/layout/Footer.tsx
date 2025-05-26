@@ -2,6 +2,7 @@
 import { Facebook, InstagramIcon, Twitter } from 'lucide-react';
 import React from 'react';
 import { Link } from 'react-router-dom';
+import NewsletterSignup from '@/components/newsletter/NewsletterSignup';
 
 const Footer = () => {
   return (
@@ -58,29 +59,7 @@ const Footer = () => {
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold mb-4">Support</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link to="/faq" className="text-gray-100 hover:text-primary transition-colors">
-                  FAQ
-                </Link>
-              </li>
-              <li>
-                <Link to="/shipping" className="text-gray-100 hover:text-primary transition-colors">
-                  Shipping & Returns
-                </Link>
-              </li>
-              <li>
-                <Link to="/privacy" className="text-gray-100 hover:text-primary transition-colors">
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link to="/terms" className="text-gray-100 hover:text-primary transition-colors">
-                  Terms & Conditions
-                </Link>
-              </li>
-            </ul>
+            <NewsletterSignup variant="footer" />
           </div>
         </div>
 
@@ -91,10 +70,8 @@ const Footer = () => {
           <div className="flex space-x-6">
             <a href="#" className="text-gray-100 hover:text-primary transition-colors">
               <Facebook />
-
             </a>
             <a href="#" className="text-gray-100 hover:text-primary transition-colors">
-
               <Twitter />
             </a>
             <a href="#" className="text-gray-100 hover:text-primary transition-colors">
