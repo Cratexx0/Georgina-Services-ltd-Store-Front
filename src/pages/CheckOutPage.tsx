@@ -1,7 +1,11 @@
+
 import React, { useEffect, useState } from 'react';
 import { useCart } from '@/context/CartContext';
 import { Button } from '@/components/ui/button';
-import { Loader2, CheckCircle, ArrowLeft } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Loader2, CheckCircle, ArrowLeft, CreditCard, Smartphone } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { Link, useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -11,35 +15,40 @@ const CheckoutPage = () => {
   const [loading, setLoading] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [clientSecret, setClientSecret] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('card');
+  const [billingInfo, setBillingInfo] = useState({
+    email: '',
+    firstName: '',
+    lastName: '',
+    address: '',
+    city: '',
+    zipCode: '',
+    country: 'US'
+  });
+  const [cardInfo, setCardInfo] = useState({
+    cardNumber: '',
+    expiryDate: '',
+    cvv: '',
+    cardName: ''
+  });
+  const [mobileMoneyInfo, setMobileMoneyInfo] = useState({
+    phoneNumber: '',
+    provider: ''
+  });
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // In a real implementation, you would call your backend to create a Stripe PaymentIntent
+  // Simulate fetching client secret from backend
   useEffect(() => {
     if (cart.length === 0) {
       navigate('/cart');
       return;
     }
 
-    // Simulate fetching client secret from backend
     const fetchClientSecret = async () => {
       try {
         setLoading(true);
-        // In a real app, you would call your backend API here:
-        // const response = await fetch('/api/create-payment-intent', {
-        //   method: 'POST',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify({
-        //     items: cart.map(item => ({
-        //       id: item.product.id,
-        //       quantity: item.quantity
-        //     })),
-        //     currency: 'usd'
-        //   })
-        // });
-        // const data = await response.json();
-
-        // For demo purposes, we'll just simulate this
+        // In a real app, you would call your backend API here
         setTimeout(() => {
           setClientSecret('pi_mock_123456789');
           setLoading(false);
@@ -55,15 +64,43 @@ const CheckoutPage = () => {
     };
 
     fetchClientSecret();
-  }, [cart]);
+  }, [cart, navigate, toast]);
 
   const handlePayment = async () => {
+    // Validate billing information
+    if (!billingInfo.email || !billingInfo.firstName || !billingInfo.lastName || 
+        !billingInfo.address || !billingInfo.city || !billingInfo.zipCode) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all billing information fields",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validate payment method specific info
+    if (paymentMethod === 'card') {
+      if (!cardInfo.cardNumber || !cardInfo.expiryDate || !cardInfo.cvv || !cardInfo.cardName) {
+        toast({
+          title: "Missing Card Information",
+          description: "Please fill in all card details",
+          variant: "destructive"
+        });
+        return;
+      }
+    } else if (paymentMethod === 'mobile_money') {
+      if (!mobileMoneyInfo.phoneNumber || !mobileMoneyInfo.provider) {
+        toast({
+          title: "Missing Mobile Money Information",
+          description: "Please fill in mobile money details",
+          variant: "destructive"
+        });
+        return;
+      }
+    }
+
     try {
       setLoading(true);
-
-      // In a real implementation, you would:
-      // 1. Redirect to Stripe Checkout
-      // 2. Or use Stripe Elements to confirm the payment
 
       // Simulate payment processing
       setTimeout(() => {
@@ -73,9 +110,9 @@ const CheckoutPage = () => {
 
         toast({
           title: "Payment successful!",
-          description: "Your order has been placed.",
+          description: "Your order has been placed and you'll receive a confirmation email shortly.",
         });
-      }, 2000);
+      }, 3000);
 
     } catch (error) {
       toast({
@@ -88,7 +125,6 @@ const CheckoutPage = () => {
   };
 
   if (cart.length === 0 && !paymentSuccess) {
-    
     return (
       <Layout>
         <div className="container mx-auto px-4 py-12 text-center">
@@ -123,9 +159,6 @@ const CheckoutPage = () => {
               </p>
               <div className="flex flex-col space-y-2">
                 <Button asChild>
-                  <Link to="/orders">View Orders</Link>
-                </Button>
-                <Button variant="outline" asChild>
                   <Link to="/">Continue Shopping</Link>
                 </Button>
               </div>
@@ -150,38 +183,173 @@ const CheckoutPage = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-xl font-bold mb-6">Payment Information</h2>
+            <h2 className="text-xl font-bold mb-6">Checkout</h2>
 
-            {/* In a real implementation, you would use Stripe Elements here */}
-            <div className="space-y-4">
-              <div className="mx-auto w-full max-w-lg">
-                <form action="" className="mt-10 flex flex-col space-y-4">
-                  <div><label className="text-xs font-semibold text-gray-500">Email</label><input type="email" id="email" name="email" placeholder="john.capler@fang.com" className="mt-1 block w-full rounded border-gray-300 bg-gray-50 py-3 px-4 text-sm placeholder-gray-300 shadow-sm outline-none transition focus:ring-2 focus:ring-blue-500" /></div>
-                  <div className="relative"><label className="text-xs font-semibold text-gray-500">Card number</label><input type="text" id="card-number" name="card-number" placeholder="1234-5678-XXXX-XXXX" className="block w-full rounded border-gray-300 bg-gray-50 py-3 px-4 pr-10 text-sm placeholder-gray-300 shadow-sm outline-none transition focus:ring-2 focus:ring-blue-500" /><img src="/images/uQUFIfCYVYcLK0qVJF5Yw.png" alt="" className="absolute bottom-3 right-3 max-h-4" /></div>
-                  <div>
-                    <p className="text-xs font-semibold text-gray-500">Expiration date</p>
-                    <div className="mr-6 flex flex-wrap">
-                      <div className="my-1">
-                        <label className="sr-only">Select expiration month</label><select name="month" id="month" className="cursor-pointer rounded border-gray-300 bg-gray-50 py-3 px-2 text-sm shadow-sm outline-none transition focus:ring-2 focus:ring-blue-500">
-                          <option value="">Month</option>
-                        </select>
-                      </div>
-                      <div className="my-1 ml-3 mr-6">
-                        <label className="sr-only">Select expiration year</label><select name="year" id="year" className="cursor-pointer rounded border-gray-300 bg-gray-50 py-3 px-2 text-sm shadow-sm outline-none transition focus:ring-2 focus:ring-blue-500">
-                          <option value="">Year</option>
-                        </select>
-                      </div>
-                      <div className="relative my-1"><label className="sr-only">Security code</label><input type="text" id="security-code" name="security-code" placeholder="Security code" className="block w-36 rounded border-gray-300 bg-gray-50 py-3 px-4 text-sm placeholder-gray-300 shadow-sm outline-none transition focus:ring-2 focus:ring-blue-500" /></div>
-                    </div>
-                  </div>
-                  <div><label className="sr-only">Card name</label><input type="text" id="card-name" name="card-name" placeholder="Name on the card" className="mt-1 block w-full rounded border-gray-300 bg-gray-50 py-3 px-4 text-sm placeholder-gray-300 shadow-sm outline-none transition focus:ring-2 focus:ring-blue-500" /></div>
-                </form>
-                <p className="mt-10 text-center text-sm font-semibold text-gray-500">By placing this order you agree to the <a href="#" className="whitespace-nowrap text-blue-400 underline hover:text-blue-600">Terms and Conditions</a></p>
-                <button type="submit" className="mt-4 inline-flex w-full items-center justify-center rounded bg-blue-600 py-2.5 px-4 text-base font-semibold tracking-wide text-white text-opacity-80 outline-none ring-offset-2 transition hover:text-opacity-100 focus:ring-2 focus:ring-blue-500 sm:text-lg">Place Order</button>
+            {/* Billing Information */}
+            <div className="space-y-4 mb-6">
+              <h3 className="text-lg font-semibold">Billing Information</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="email">Email *</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={billingInfo.email}
+                    onChange={(e) => setBillingInfo({...billingInfo, email: e.target.value})}
+                    placeholder="john@example.com"
+                  />
+                </div>
+                <div></div>
+                <div>
+                  <Label htmlFor="firstName">First Name *</Label>
+                  <Input
+                    id="firstName"
+                    value={billingInfo.firstName}
+                    onChange={(e) => setBillingInfo({...billingInfo, firstName: e.target.value})}
+                    placeholder="John"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="lastName">Last Name *</Label>
+                  <Input
+                    id="lastName"
+                    value={billingInfo.lastName}
+                    onChange={(e) => setBillingInfo({...billingInfo, lastName: e.target.value})}
+                    placeholder="Doe"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <Label htmlFor="address">Address *</Label>
+                  <Input
+                    id="address"
+                    value={billingInfo.address}
+                    onChange={(e) => setBillingInfo({...billingInfo, address: e.target.value})}
+                    placeholder="123 Main Street"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="city">City *</Label>
+                  <Input
+                    id="city"
+                    value={billingInfo.city}
+                    onChange={(e) => setBillingInfo({...billingInfo, city: e.target.value})}
+                    placeholder="New York"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="zipCode">Zip Code *</Label>
+                  <Input
+                    id="zipCode"
+                    value={billingInfo.zipCode}
+                    onChange={(e) => setBillingInfo({...billingInfo, zipCode: e.target.value})}
+                    placeholder="10001"
+                  />
+                </div>
               </div>
             </div>
 
+            {/* Payment Method Selection */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Payment Method</h3>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  onClick={() => setPaymentMethod('card')}
+                  className={`flex items-center justify-center p-4 border-2 rounded-lg transition-colors ${
+                    paymentMethod === 'card' ? 'border-primary bg-primary/5' : 'border-gray-200'
+                  }`}
+                >
+                  <CreditCard className="w-5 h-5 mr-2" />
+                  Credit Card
+                </button>
+                <button
+                  onClick={() => setPaymentMethod('mobile_money')}
+                  className={`flex items-center justify-center p-4 border-2 rounded-lg transition-colors ${
+                    paymentMethod === 'mobile_money' ? 'border-primary bg-primary/5' : 'border-gray-200'
+                  }`}
+                >
+                  <Smartphone className="w-5 h-5 mr-2" />
+                  Mobile Money
+                </button>
+              </div>
 
+              {/* Card Payment Form */}
+              {paymentMethod === 'card' && (
+                <div className="space-y-4 p-4 border border-gray-200 rounded-lg">
+                  <div>
+                    <Label htmlFor="cardNumber">Card Number *</Label>
+                    <Input
+                      id="cardNumber"
+                      value={cardInfo.cardNumber}
+                      onChange={(e) => setCardInfo({...cardInfo, cardNumber: e.target.value})}
+                      placeholder="1234 5678 9012 3456"
+                      maxLength={19}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="expiryDate">Expiry Date *</Label>
+                      <Input
+                        id="expiryDate"
+                        value={cardInfo.expiryDate}
+                        onChange={(e) => setCardInfo({...cardInfo, expiryDate: e.target.value})}
+                        placeholder="MM/YY"
+                        maxLength={5}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="cvv">CVV *</Label>
+                      <Input
+                        id="cvv"
+                        value={cardInfo.cvv}
+                        onChange={(e) => setCardInfo({...cardInfo, cvv: e.target.value})}
+                        placeholder="123"
+                        maxLength={4}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="cardName">Name on Card *</Label>
+                    <Input
+                      id="cardName"
+                      value={cardInfo.cardName}
+                      onChange={(e) => setCardInfo({...cardInfo, cardName: e.target.value})}
+                      placeholder="John Doe"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Mobile Money Form */}
+              {paymentMethod === 'mobile_money' && (
+                <div className="space-y-4 p-4 border border-gray-200 rounded-lg">
+                  <div>
+                    <Label htmlFor="provider">Mobile Money Provider *</Label>
+                    <Select onValueChange={(value) => setMobileMoneyInfo({...mobileMoneyInfo, provider: value})}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select provider" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="mtn">MTN Mobile Money</SelectItem>
+                        <SelectItem value="airtel">Airtel Money</SelectItem>
+                        <SelectItem value="vodafone">Vodafone Cash</SelectItem>
+                        <SelectItem value="tigo">Tigo Cash</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="phoneNumber">Phone Number *</Label>
+                    <Input
+                      id="phoneNumber"
+                      value={mobileMoneyInfo.phoneNumber}
+                      onChange={(e) => setMobileMoneyInfo({...mobileMoneyInfo, phoneNumber: e.target.value})}
+                      placeholder="+233 XX XXX XXXX"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-24">
@@ -243,7 +411,7 @@ const CheckoutPage = () => {
             </Button>
 
             <div className="mt-4 text-xs text-gray-500 text-center">
-              By completing your purchase, you agree to our Terms of Service.
+              Your payment is secured with Stripe. We never store your payment information.
             </div>
           </div>
         </div>
