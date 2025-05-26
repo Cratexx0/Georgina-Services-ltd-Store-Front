@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -44,31 +43,42 @@ const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
 
   if (variant === 'centered') {
     return (
-      <div className={`text-center ${className}`}>
-        <div className="max-w-md mx-auto">
-          <div className="flex items-center justify-center mb-4">
-            <Mail className="h-12 w-12 text-primary" />
+      <div className={`relative rounded-lg overflow-hidden ${className}`}>
+        {/* Background image with overlay */}
+        <div className="absolute inset-0 bg-black/50 z-0" />
+        <img 
+          src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60" // Replace with your image path
+          alt="Newsletter background"
+          className="absolute inset-0 w-full h-full object-cover z-0"
+        />
+        
+        {/* Content */}
+        <div className="relative z-10 text-center p-8 md:p-12">
+          <div className="max-w-md mx-auto">
+            <div className="flex items-center justify-center mb-4">
+              <Mail className="h-12 w-12 text-primary" />
+            </div>
+            <h3 className="text-2xl font-bold mb-2 text-white">Stay Updated</h3>
+            <p className="text-gray-200 mb-6">
+              Subscribe to our newsletter for the latest products and exclusive offers.
+            </p>
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <Input
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-white/90 backdrop-blur-sm"
+              />
+              <Button 
+                type="submit" 
+                className="w-full"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Subscribing...' : 'Subscribe'}
+              </Button>
+            </form>
           </div>
-          <h3 className="text-2xl font-bold mb-2">Stay Updated</h3>
-          <p className="text-gray-600 mb-6">
-            Subscribe to our newsletter for the latest products and exclusive offers.
-          </p>
-          <form onSubmit={handleSubmit} className="space-y-3">
-            <Input
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full"
-            />
-            <Button 
-              type="submit" 
-              className="w-full"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Subscribing...' : 'Subscribe'}
-            </Button>
-          </form>
         </div>
       </div>
     );
