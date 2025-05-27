@@ -71,7 +71,7 @@ const Header = () => {
             </form>
             
             <Link to="/cart" className="relative">
-              <ShoppingCart className="h-6 w-6 text-gray-700" />
+              <ShoppingCart className="h-4 w-4 text-gray-700" />
               {cart.length > 0 && (
                 <span className="absolute -top-2 -right-2 bg-primary text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
                   {cart.length}
