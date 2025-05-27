@@ -84,7 +84,7 @@ const Header = () => {
                 <Link to="/account">
                   <Button variant="ghost" size="sm" className="flex items-center gap-2">
                     <User className="h-4 w-4" />
-                    Account
+                    
                   </Button>
                 </Link>
               ) : (

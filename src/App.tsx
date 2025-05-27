@@ -43,7 +43,7 @@ const App = () => (
                 <Route path="/reset/password" element={<ResetPassword/>} />
                 <Route path="/success" element={<Success/>} />
                 <Route path="/fail" element={<Failure/>} />
-                <Route path="/cleaning-services" element={<CleaningServicesPage />} />
+                <Route path="/ " element={<CleaningServicesPage />} />
                 <Route path="/category/:categorySlug" element={<CategoryPage />} />
                 <Route path="/category/:categorySlug/:subcategorySlug" element={<CategoryPage />} />
                 <Route path="/product/:productSlug" element={<ProductPage />} />
