@@ -1,13 +1,15 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, ShoppingCart, Menu, X, LogIn } from 'lucide-react';
+import { Search, ShoppingCart, Menu, X, LogIn, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 
 const Header = () => {
   const { cart } = useCart();
+  const { isAuthenticated } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -76,13 +78,23 @@ const Header = () => {
                 </span>
               )}
             </Link>
+            
             <div className="flex items-center space-x-4">
-              <Link to="/auth">
-                <Button variant="ghost" size="sm" className="flex bg-blue-500 text-gray-50 hover:bg-blue-400 hover:text-gray-100 items-center gap-2">
-                  <LogIn className="h-4 w-4" />
-                  Sign In
-                </Button>
-              </Link>
+              {isAuthenticated ? (
+                <Link to="/account">
+                  <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    Account
+                  </Button>
+                </Link>
+              ) : (
+                <Link to="/auth">
+                  <Button variant="ghost" size="sm" className="flex bg-blue-500 text-gray-50 hover:bg-blue-400 hover:text-gray-100 items-center gap-2">
+                    <LogIn className="h-4 w-4" />
+                    Sign In
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
           
@@ -114,13 +126,22 @@ const Header = () => {
               </Link>
          
               <div className="flex items-center space-x-4">
-              <Link to="/auth">
-                <Button variant="ghost" size="sm" className="flex bg-blue-500 text-gray-50 hover:bg-blue-400 hover:text-gray-100 items-center gap-2">
-                  <LogIn className="h-4 w-4" />
-                  Sign In
-                </Button>
-              </Link>
-            </div>
+                {isAuthenticated ? (
+                  <Link to="/account" onClick={toggleMenu}>
+                    <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      Account
+                    </Button>
+                  </Link>
+                ) : (
+                  <Link to="/auth" onClick={toggleMenu}>
+                    <Button variant="ghost" size="sm" className="flex bg-blue-500 text-gray-50 hover:bg-blue-400 hover:text-gray-100 items-center gap-2">
+                      <LogIn className="h-4 w-4" />
+                      Sign In
+                    </Button>
+                  </Link>
+                )}
+              </div>
             </nav>
             <div className="mt-4 flex items-center space-x-4">
               <form onSubmit={handleSearch} className="flex-1 relative">
