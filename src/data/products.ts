@@ -12,7 +12,8 @@ export interface Product {
   stock: number;
   slug: string;
   featured?: boolean;
-  sizes?: string[]; // Add sizes property
+  sizes?: string[];
+  colors?: string[];
 }
 
 export const products: Product[] = [
@@ -30,7 +31,8 @@ export const products: Product[] = [
     stock: 50,
     slug: "summer-linen-shirt",
     featured: true,
-    sizes: ["XS", "S", "M", "L", "XL"]
+    sizes: ["XS", "S", "M", "L", "XL"],
+    colors: ["White", "Light Blue", "Beige", "Navy"]
   },
   {
     id: "2",
@@ -44,7 +46,8 @@ export const products: Product[] = [
     likes: 98,
     stock: 35,
     slug: "designer-denim-jacket",
-    sizes: ["S", "M", "L", "XL", "XXL"]
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    colors: ["Dark Blue", "Light Blue", "Black", "Gray"]
   },
   
   // Clothing - Trending
@@ -61,7 +64,8 @@ export const products: Product[] = [
     stock: 100,
     slug: "vintage-graphic-tee",
     featured: true,
-    sizes: ["XS", "S", "M", "L", "XL", "XXL"]
+    sizes: ["XS", "S", "M", "L", "XL", "XXL"],
+    colors: ["Black", "White", "Gray", "Navy", "Red"]
   },
   
   // Clothing - Kids
@@ -78,7 +82,8 @@ export const products: Product[] = [
     likes: 87,
     stock: 40,
     slug: "kids-dinosaur-pajama",
-    sizes: ["2T", "3T", "4T", "5T", "XS", "S"]
+    sizes: ["2T", "3T", "4T", "5T", "XS", "S"],
+    colors: ["Green", "Blue", "Purple", "Orange"]
   },
   
   // Clothing - Adults
@@ -94,10 +99,11 @@ export const products: Product[] = [
     likes: 65,
     stock: 25,
     slug: "classic-wool-blazer",
-    sizes: ["36", "38", "40", "42", "44", "46"]
+    sizes: ["36", "38", "40", "42", "44", "46"],
+    colors: ["Navy", "Charcoal", "Brown", "Black"]
   },
   
-  // Food - Fresh Produce (no sizes needed)
+  // Food - Fresh Produce (no sizes/colors needed)
   {
     id: "6",
     name: "Organic Vegetable Box",
@@ -127,7 +133,8 @@ export const products: Product[] = [
     likes: 142,
     stock: 60,
     slug: "mens-performance-sneakers",
-    sizes: ["US 7", "US 8", "US 9", "US 10", "US 11", "US 12"]
+    sizes: ["US 7", "US 8", "US 9", "US 10", "US 11", "US 12"],
+    colors: ["Black", "White", "Gray", "Navy", "Red"]
   },
   
   // Clothing - Female
@@ -144,10 +151,12 @@ export const products: Product[] = [
     stock: 20,
     slug: "womens-leather-tote",
     featured: true,
-    sizes: ["One Size"]
+    sizes: ["One Size"],
+    colors: ["Black", "Brown", "Tan", "Navy"]
   },
 
 ];
+
 export const getFeaturedProducts = (): Product[] => {
   return products.filter(product => product.featured);
 };

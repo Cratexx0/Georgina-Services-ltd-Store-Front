@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
-import ProductGrid from '@/components/products/ProductGrid';
+import PaginatedProductGrid from '@/components/products/PaginatedProductGrid';
 import { getCategory, getSubcategory } from '@/data/categories';
 import { getProductsByCategory, getProductsBySubcategory } from '@/data/products';
 import { Button } from '@/components/ui/button';
@@ -76,7 +76,7 @@ const CategoryPage = () => {
       )}
       
       <div className="container mx-auto px-4 py-12">
-        <ProductGrid 
+        <PaginatedProductGrid 
           products={products} 
           title={activeSubcategory 
             ? `${category.subcategories?.find(sub => sub.id === activeSubcategory)?.name}` 

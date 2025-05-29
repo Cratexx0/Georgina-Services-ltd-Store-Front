@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -6,13 +7,15 @@ import { Button } from '@/components/ui/button';
 import { Heart, Share2, Star } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
-import ProductGrid from '@/components/products/ProductGrid';
+import PaginatedProductGrid from '@/components/products/PaginatedProductGrid';
 import { toast } from '@/components/ui/sonner';
 
 const ProductPage = () => {
   const { productSlug } = useParams<{ productSlug: string }>();
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const [selectedSize, setSelectedSize] = useState<string>('');
+  const [selectedColor, setSelectedColor] = useState<string>('');
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
 
@@ -33,9 +36,21 @@ const ProductPage = () => {
   }
 
   const handleAddToCart = () => {
+    // Check if size is required and selected
+    if (product.sizes && product.sizes.length > 0 && !selectedSize) {
+      toast.error('Please select a size');
+      return;
+    }
+    
+    // Check if color is required and selected
+    if (product.colors && product.colors.length > 0 && !selectedColor) {
+      toast.error('Please select a color');
+      return;
+    }
+    
     addToCart(product, quantity);
     toast.success(`${product.name} added to cart`, {
-      description: `Quantity: ${quantity}`,
+      description: `Quantity: ${quantity}${selectedSize ? `, Size: ${selectedSize}` : ''}${selectedColor ? `, Color: ${selectedColor}` : ''}`,
     });
   };
 
@@ -56,7 +71,7 @@ const ProductPage = () => {
     <Layout>
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Product Images - Updated section */}
+          {/* Product Images */}
           <div className="space-y-4">
             <div className="aspect-square overflow-hidden rounded-lg bg-gray-50 flex items-center justify-center p-4">
               <img 
@@ -129,6 +144,50 @@ const ProductPage = () => {
             <p className="text-gray-700 text-sm">
               {product.description}
             </p>
+
+            {/* Size Selector */}
+            {product.sizes && product.sizes.length > 0 && (
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium">Size</h3>
+                <div className="flex flex-wrap gap-2">
+                  {product.sizes.map((size) => (
+                    <button
+                      key={size}
+                      onClick={() => setSelectedSize(size)}
+                      className={`px-3 py-1 text-sm border rounded-md ${
+                        selectedSize === size
+                          ? 'border-primary bg-primary text-white'
+                          : 'border-gray-300 hover:border-gray-400'
+                      }`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Color Selector */}
+            {product.colors && product.colors.length > 0 && (
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium">Color</h3>
+                <div className="flex flex-wrap gap-2">
+                  {product.colors.map((color) => (
+                    <button
+                      key={color}
+                      onClick={() => setSelectedColor(color)}
+                      className={`px-3 py-1 text-sm border rounded-md ${
+                        selectedColor === color
+                          ? 'border-primary bg-primary text-white'
+                          : 'border-gray-300 hover:border-gray-400'
+                      }`}
+                    >
+                      {color}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             
             {/* Stock and quantity selector */}
             <div className="border-t border-gray-200 pt-4">
@@ -233,7 +292,7 @@ const ProductPage = () => {
             <h2 className="text-xl font-bold mb-4">
               Related Products
             </h2>
-            <ProductGrid products={relatedProducts} />
+            <PaginatedProductGrid products={relatedProducts} />
           </div>
         )}
       </div>
