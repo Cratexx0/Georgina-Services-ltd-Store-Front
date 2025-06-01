@@ -16,18 +16,24 @@ interface FeaturedProductsCarouselProps {
 
 const FeaturedProductsCarousel: React.FC<FeaturedProductsCarouselProps> = ({ products }) => {
   return (
-    <Carousel className="w-full">
-      <CarouselContent className="-ml-1">
+    <Carousel 
+      className="w-full"
+      opts={{
+        align: "start",
+        loop: true,
+      }}
+    >
+      <CarouselContent className="-ml-2 md:-ml-4">
         {products.map((product) => (
-          <CarouselItem key={product.id} className="pl-1 md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
+          <CarouselItem key={product.id} className="pl-2 md:pl-4 basis-4/5 sm:basis-1/2 md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
             <div className="p-1">
               <ProductCard product={product} />
             </div>
           </CarouselItem>
         ))}
       </CarouselContent>
-      <CarouselPrevious />
-      <CarouselNext />
+      <CarouselPrevious className="hidden sm:flex" />
+      <CarouselNext className="hidden sm:flex" />
     </Carousel>
   );
 };
