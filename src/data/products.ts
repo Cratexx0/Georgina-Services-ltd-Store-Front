@@ -46,6 +46,7 @@ export const products: Product[] = [
     likes: 98,
     stock: 35,
     slug: "designer-denim-jacket",
+    featured: true,
     sizes: ["S", "M", "L", "XL", "XXL"],
     colors: ["Dark Blue", "Light Blue", "Black", "Gray"]
   },
@@ -82,6 +83,7 @@ export const products: Product[] = [
     likes: 87,
     stock: 40,
     slug: "kids-dinosaur-pajama",
+    featured: true,
     sizes: ["2T", "3T", "4T", "5T", "XS", "S"],
     colors: ["Green", "Blue", "Purple", "Orange"]
   },
@@ -99,6 +101,7 @@ export const products: Product[] = [
     likes: 65,
     stock: 25,
     slug: "classic-wool-blazer",
+    featured: true,
     sizes: ["36", "38", "40", "42", "44", "46"],
     colors: ["Navy", "Charcoal", "Brown", "Black"]
   },
@@ -119,6 +122,39 @@ export const products: Product[] = [
     featured: true
   },
   
+  // Add more featured products
+  {
+    id: "7",
+    name: "Premium Leather Wallet",
+    description: "Handcrafted genuine leather wallet with RFID protection and multiple card slots.",
+    price: 59.99,
+    images: ["https://images.unsplash.com/photo-1553062407-98eeb64c6a62?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
+    categoryId: "clothes",
+    subcategoryId: "adults",
+    rating: 4.7,
+    likes: 94,
+    stock: 40,
+    slug: "premium-leather-wallet",
+    featured: true,
+    sizes: ["One Size"],
+    colors: ["Black", "Brown", "Tan"]
+  },
+  
+  {
+    id: "8",
+    name: "Organic Honey Collection",
+    description: "Set of three artisanal honey varieties from local beekeepers.",
+    price: 34.99,
+    images: ["https://images.unsplash.com/photo-1587049352846-4a222e784d38?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
+    categoryId: "food",
+    subcategoryId: "fresh-produce",
+    rating: 4.9,
+    likes: 156,
+    stock: 25,
+    slug: "organic-honey-collection",
+    featured: true
+  },
+  
   // Clothing - Male
   {
     id: "9",
@@ -133,6 +169,7 @@ export const products: Product[] = [
     likes: 142,
     stock: 60,
     slug: "mens-performance-sneakers",
+    featured: true,
     sizes: ["US 7", "US 8", "US 9", "US 10", "US 11", "US 12"],
     colors: ["Black", "White", "Gray", "Navy", "Red"]
   },
@@ -154,7 +191,38 @@ export const products: Product[] = [
     sizes: ["One Size"],
     colors: ["Black", "Brown", "Tan", "Navy"]
   },
-
+  
+  {
+    id: "11",
+    name: "Casual Stretch Jeans",
+    description: "Comfortable stretch denim jeans with a modern slim fit.",
+    price: 69.99,
+    images: ["https://images.unsplash.com/photo-1541099649105-f69ad21f3246?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
+    categoryId: "clothes",
+    subcategoryId: "trending",
+    rating: 4.4,
+    likes: 201,
+    stock: 85,
+    slug: "casual-stretch-jeans",
+    featured: true,
+    sizes: ["28", "30", "32", "34", "36", "38"],
+    colors: ["Dark Blue", "Light Blue", "Black", "Gray"]
+  },
+  
+  {
+    id: "12",
+    name: "Artisan Coffee Beans",
+    description: "Premium single-origin coffee beans roasted to perfection.",
+    price: 18.99,
+    images: ["https://images.unsplash.com/photo-1559056199-641a0ac8b55e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
+    categoryId: "food",
+    subcategoryId: "fresh-produce",
+    rating: 4.6,
+    likes: 178,
+    stock: 60,
+    slug: "artisan-coffee-beans",
+    featured: true
+  }
 ];
 
 export const getFeaturedProducts = (): Product[] => {

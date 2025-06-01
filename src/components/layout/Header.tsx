@@ -6,10 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/context/LanguageContext';
+import LanguageSelector from '@/components/ui/LanguageSelector';
 
 const Header = () => {
   const { cart } = useCart();
   const { isAuthenticated } = useAuth();
+  const { t } = useLanguage();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -37,16 +40,16 @@ const Header = () => {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-6">
             <Link to="/" className="text-gray-700 hover:text-primary transition-colors">
-              Home
+              {t('home')}
             </Link>
             <Link to="/category/clothing" className="text-gray-700 hover:text-primary transition-colors">
-              Clothing
+              {t('clothing')}
             </Link>
             <Link to="/category/food" className="text-gray-700 hover:text-primary transition-colors">
-              Food
+              {t('food')}
             </Link>
             <Link to="/cleaning-services" className="text-gray-700 hover:text-primary transition-colors">
-              Cleaning Services
+              {t('cleaningServices')}
             </Link>
           </nav>
           
@@ -55,7 +58,7 @@ const Header = () => {
             <form onSubmit={handleSearch} className="relative">
               <Input
                 type="text"
-                placeholder="Search products..."
+                placeholder={t('searchPlaceholder')}
                 className="w-[200px] lg:w-[300px]"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -79,19 +82,21 @@ const Header = () => {
               )}
             </Link>
             
+            <LanguageSelector />
+            
             <div className="flex items-center space-x-4">
               {isAuthenticated ? (
                 <Link to="/account">
                   <Button variant="ghost" size="sm" className="flex items-center gap-2">
                     <User className="h-4 w-4" />
-                    
+                    {t('account')}
                   </Button>
                 </Link>
               ) : (
                 <Link to="/auth">
                   <Button variant="ghost" size="sm" className="flex bg-blue-500 text-gray-50 hover:bg-blue-400 hover:text-gray-100 items-center gap-2">
                     <LogIn className="h-4 w-4" />
-                    Sign In
+                    {t('signIn')}
                   </Button>
                 </Link>
               )}
@@ -113,31 +118,32 @@ const Header = () => {
           <div className="md:hidden py-4 animate-slide-down">
             <nav className="flex flex-col space-y-3">
               <Link to="/" className="text-gray-700 hover:text-primary transition-colors" onClick={toggleMenu}>
-                Home
+                {t('home')}
               </Link>
               <Link to="/category/clothing" className="text-gray-700 hover:text-primary transition-colors" onClick={toggleMenu}>
-                Clothing
+                {t('clothing')}
               </Link>
               <Link to="/category/food" className="text-gray-700 hover:text-primary transition-colors" onClick={toggleMenu}>
-                Food
+                {t('food')}
               </Link>
               <Link to="/cleaning-services" className="text-gray-700 hover:text-primary transition-colors" onClick={toggleMenu}>
-                Cleaning Services
+                {t('cleaningServices')}
               </Link>
          
               <div className="flex items-center space-x-4">
+                <LanguageSelector />
                 {isAuthenticated ? (
                   <Link to="/account" onClick={toggleMenu}>
                     <Button variant="ghost" size="sm" className="flex items-center gap-2">
                       <User className="h-4 w-4" />
-                      Account
+                      {t('account')}
                     </Button>
                   </Link>
                 ) : (
                   <Link to="/auth" onClick={toggleMenu}>
                     <Button variant="ghost" size="sm" className="flex bg-blue-500 text-gray-50 hover:bg-blue-400 hover:text-gray-100 items-center gap-2">
                       <LogIn className="h-4 w-4" />
-                      Sign In
+                      {t('signIn')}
                     </Button>
                   </Link>
                 )}
@@ -147,7 +153,7 @@ const Header = () => {
               <form onSubmit={handleSearch} className="flex-1 relative">
                 <Input
                   type="text"
-                  placeholder="Search products..."
+                  placeholder={t('searchPlaceholder')}
                   className="w-full"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
