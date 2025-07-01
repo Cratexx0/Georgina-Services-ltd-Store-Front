@@ -20,7 +20,6 @@ import Auth from "./auth/Auth";
 import ForgotPassword from "./auth/ForgetPassword";
 import ResetPassword from "./auth/ResetPassword";
 import CheckoutPage from "./pages/CheckOutPage";
-import CleaningServicesPage from "./pages/CleaningServicesPage";
 import AccountPage from "./pages/AccountPage";
 import Success from "./payment/Success";
 import Failure from "./payment/Failure";
@@ -45,7 +44,6 @@ const App = () => (
                   <Route path="/reset/password" element={<ResetPassword/>} />
                   <Route path="/success" element={<Success/>} />
                   <Route path="/fail" element={<Failure/>} />
-                  <Route path="/cleaning-services" element={<CleaningServicesPage />} />
                   <Route path="/category/:categorySlug" element={<CategoryPage />} />
                   <Route path="/category/:categorySlug/:subcategorySlug" element={<CategoryPage />} />
                   <Route path="/product/:productSlug" element={<ProductPage />} />
