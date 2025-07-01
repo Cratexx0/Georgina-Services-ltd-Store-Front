@@ -42,14 +42,17 @@ const Header = () => {
             <Link to="/" className="text-gray-700 hover:text-primary transition-colors">
               {t('home')}
             </Link>
-            <Link to="/category/clothing" className="text-gray-700 hover:text-primary transition-colors">
-              {t('clothing')}
+            <Link to="/category/womens-clothing" className="text-gray-700 hover:text-primary transition-colors">
+              Women's
             </Link>
-            <Link to="/category/food" className="text-gray-700 hover:text-primary transition-colors">
-              {t('food')}
+            <Link to="/category/mens-clothing" className="text-gray-700 hover:text-primary transition-colors">
+              Men's
             </Link>
-            <Link to="/cleaning-services" className="text-gray-700 hover:text-primary transition-colors">
-              {t('cleaningServices')}
+            <Link to="/category/kids-clothing" className="text-gray-700 hover:text-primary transition-colors">
+              Kids
+            </Link>
+            <Link to="/category/accessories" className="text-gray-700 hover:text-primary transition-colors">
+              Accessories
             </Link>
           </nav>
           
@@ -120,14 +123,17 @@ const Header = () => {
               <Link to="/" className="text-gray-700 hover:text-primary transition-colors" onClick={toggleMenu}>
                 {t('home')}
               </Link>
-              <Link to="/category/clothing" className="text-gray-700 hover:text-primary transition-colors" onClick={toggleMenu}>
-                {t('clothing')}
+              <Link to="/category/womens-clothing" className="text-gray-700 hover:text-primary transition-colors" onClick={toggleMenu}>
+                Women's
               </Link>
-              <Link to="/category/food" className="text-gray-700 hover:text-primary transition-colors" onClick={toggleMenu}>
-                {t('food')}
+              <Link to="/category/mens-clothing" className="text-gray-700 hover:text-primary transition-colors" onClick={toggleMenu}>
+                Men's
               </Link>
-              <Link to="/cleaning-services" className="text-gray-700 hover:text-primary transition-colors" onClick={toggleMenu}>
-                {t('cleaningServices')}
+              <Link to="/category/kids-clothing" className="text-gray-700 hover:text-primary transition-colors" onClick={toggleMenu}>
+                Kids
+              </Link>
+              <Link to="/category/accessories" className="text-gray-700 hover:text-primary transition-colors" onClick={toggleMenu}>
+                Accessories
               </Link>
          
               <div className="flex items-center space-x-4">

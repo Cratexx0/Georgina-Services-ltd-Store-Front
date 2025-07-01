@@ -41,7 +41,7 @@ const Index = () => {
           <FeaturedProductsCarousel products={featuredProducts} />
           <div className="text-center mt-12">
             <Button asChild size="lg" className="px-8">
-              <Link to="/category/clothing">View All Products</Link>
+              <Link to="/category/womens-clothing">View All Products</Link>
             </Button>
           </div>
         </div>
@@ -115,7 +115,7 @@ const Index = () => {
                 </div>
               </div>
               <Button asChild size="lg" variant="outline" className="text-white border-white hover:bg-white hover:text-gray-900">
-                <Link to="/category/clothing">Explore Collection</Link>
+                <Link to="/category/womens-clothing">Explore Collection</Link>
               </Button>
             </div>
             <div className="relative">
