@@ -5,13 +5,13 @@ import { categories } from '@/data/categories';
 import { cn } from '@/lib/utils';
 
 const CategoryTabs: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<string>('clothes');
+  const [activeTab, setActiveTab] = useState<string>('womens-clothing');
   
   return (
     <div className="mb-12">
       <div className="mb-6 border-b border-gray-200">
         <div className="container mx-auto px-4 flex overflow-x-auto scrollbar-hide">
-          {categories?.slice(0, 2)?.map((category) => (
+          {categories.map((category) => (
             <button
               key={category.id}
               onClick={() => setActiveTab(category.id)}
@@ -33,7 +33,7 @@ const CategoryTabs: React.FC = () => {
           <div 
             key={category.id}
             className={cn(
-              "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4",
+              "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4",
               activeTab === category.id ? "block" : "hidden"
             )}
           >

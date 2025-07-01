@@ -17,18 +17,55 @@ export interface SubCategory {
 
 export const categories: Category[] = [
   {
-    id: "clothes",
-    name: "Clothing",
-    description: "Browse our latest clothing collection",
-    image: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
-    slug: "clothing",
+    id: "womens-clothing",
+    name: "Women's Fashion",
+    description: "Discover elegant and trendy clothing for women",
+    image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80",
+    slug: "womens-clothing",
     subcategories: [
-      { id: "new-arrivals", name: "New Arrivals", slug: "new-arrivals", parentId: "clothes" },
-      { id: "trending", name: "Trending", slug: "trending", parentId: "clothes" },
-      { id: "kids", name: "Kids", slug: "kids", parentId: "clothes" },
-      { id: "adults", name: "Adults", slug: "adults", parentId: "clothes" },
-      { id: "male", name: "Male", slug: "male", parentId: "clothes" },
-      { id: "female", name: "Female", slug: "female", parentId: "clothes" },
+      { id: "women-dresses", name: "Dresses", slug: "dresses", parentId: "womens-clothing" },
+      { id: "women-tops", name: "Tops & Blouses", slug: "tops", parentId: "womens-clothing" },
+      { id: "women-bottoms", name: "Pants & Skirts", slug: "bottoms", parentId: "womens-clothing" },
+      { id: "women-outerwear", name: "Jackets & Coats", slug: "outerwear", parentId: "womens-clothing" },
+    ]
+  },
+  {
+    id: "mens-clothing",
+    name: "Men's Fashion",
+    description: "Sharp and stylish clothing for the modern man",
+    image: "https://images.unsplash.com/photo-1516826957135-700dedea698c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80",
+    slug: "mens-clothing",
+    subcategories: [
+      { id: "men-shirts", name: "Shirts", slug: "shirts", parentId: "mens-clothing" },
+      { id: "men-pants", name: "Pants", slug: "pants", parentId: "mens-clothing" },
+      { id: "men-suits", name: "Suits & Blazers", slug: "suits", parentId: "mens-clothing" },
+      { id: "men-casual", name: "Casual Wear", slug: "casual", parentId: "mens-clothing" },
+    ]
+  },
+  {
+    id: "kids-clothing",
+    name: "Kids Fashion",
+    description: "Fun and comfortable clothing for children",
+    image: "https://images.unsplash.com/photo-1519689680058-324335c77eba?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80",
+    slug: "kids-clothing",
+    subcategories: [
+      { id: "kids-boys", name: "Boys", slug: "boys", parentId: "kids-clothing" },
+      { id: "kids-girls", name: "Girls", slug: "girls", parentId: "kids-clothing" },
+      { id: "kids-baby", name: "Baby", slug: "baby", parentId: "kids-clothing" },
+      { id: "kids-teens", name: "Teens", slug: "teens", parentId: "kids-clothing" },
+    ]
+  },
+  {
+    id: "accessories",
+    name: "Accessories",
+    description: "Complete your look with stylish accessories",
+    image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80",
+    slug: "accessories",
+    subcategories: [
+      { id: "bags", name: "Bags & Purses", slug: "bags", parentId: "accessories" },
+      { id: "jewelry", name: "Jewelry", slug: "jewelry", parentId: "accessories" },
+      { id: "shoes", name: "Shoes", slug: "shoes", parentId: "accessories" },
+      { id: "watches", name: "Watches", slug: "watches", parentId: "accessories" },
     ]
   }
 ];
