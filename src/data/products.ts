@@ -316,6 +316,121 @@ export const products: Product[] = [
     slug: "formal-dress-shoes",
     sizes: ["6", "7", "8", "9", "10", "11", "12"],
     colors: ["Black", "Brown", "Burgundy"]
+  },
+
+  // Food & Spices - Spices
+  {
+    id: "19",
+    name: "Organic Turmeric Powder",
+    description: "Premium organic turmeric powder with anti-inflammatory properties.",
+    price: 12.99,
+    images: ["https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
+    categoryId: "food-stuffs",
+    subcategoryId: "spices",
+    rating: 4.7,
+    likes: 89,
+    stock: 150,
+    slug: "organic-turmeric-powder",
+    featured: true
+  },
+  {
+    id: "20",
+    name: "Cinnamon Sticks",
+    description: "Premium Ceylon cinnamon sticks for cooking and baking.",
+    price: 8.99,
+    images: ["https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
+    categoryId: "food-stuffs",
+    subcategoryId: "spices",
+    rating: 4.6,
+    likes: 67,
+    stock: 200,
+    slug: "cinnamon-sticks"
+  },
+  {
+    id: "21",
+    name: "Black Peppercorns",
+    description: "Whole black peppercorns for fresh ground pepper.",
+    price: 15.99,
+    images: ["https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
+    categoryId: "food-stuffs",
+    subcategoryId: "spices",
+    rating: 4.8,
+    likes: 134,
+    stock: 120,
+    slug: "black-peppercorns",
+    featured: true
+  },
+
+  // Food & Spices - Herbs
+  {
+    id: "22",
+    name: "Dried Basil Leaves",
+    description: "Aromatic dried basil leaves perfect for Mediterranean dishes.",
+    price: 6.99,
+    images: ["https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
+    categoryId: "food-stuffs",
+    subcategoryId: "herbs",
+    rating: 4.5,
+    likes: 45,
+    stock: 180,
+    slug: "dried-basil-leaves"
+  },
+  {
+    id: "23",
+    name: "Organic Rosemary",
+    description: "Fresh dried organic rosemary for seasoning and aromatherapy.",
+    price: 9.99,
+    images: ["https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
+    categoryId: "food-stuffs",
+    subcategoryId: "herbs",
+    rating: 4.7,
+    likes: 78,
+    stock: 95,
+    slug: "organic-rosemary",
+    featured: true
+  },
+
+  // Cleaning Services
+  {
+    id: "24",
+    name: "Home Deep Cleaning",
+    description: "Comprehensive deep cleaning service for your entire home.",
+    price: 149.99,
+    images: ["https://images.unsplash.com/photo-1721322800607-8c38375eef04?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
+    categoryId: "cleaning-services",
+    subcategoryId: "home-cleaning",
+    rating: 4.9,
+    likes: 245,
+    stock: 50,
+    slug: "home-deep-cleaning",
+    featured: true
+  },
+  {
+    id: "25",
+    name: "Office Cleaning Service",
+    description: "Professional office cleaning with flexible scheduling.",
+    price: 99.99,
+    images: ["https://images.unsplash.com/photo-1721322800607-8c38375eef04?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
+    categoryId: "cleaning-services",
+    subcategoryId: "office-cleaning",
+    rating: 4.8,
+    likes: 189,
+    stock: 30,
+    slug: "office-cleaning-service",
+    featured: true
+  },
+  {
+    id: "26",
+    name: "Carpet Steam Cleaning",
+    description: "Professional carpet cleaning using eco-friendly steam methods.",
+    price: 79.99,
+    images: ["https://images.unsplash.com/photo-1582562124811-c09040d0a901?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
+    categoryId: "cleaning-services",
+    subcategoryId: "carpet-cleaning",
+    rating: 4.7,
+    likes: 156,
+    stock: 25,
+    slug: "carpet-steam-cleaning"
   }
 ];
 

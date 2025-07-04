@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Heart, Share2, Star } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
-import PaginatedProductGrid from '@/components/products/PaginatedProductGrid';
+import RelatedProductsCarousel from '@/components/products/RelatedProductsCarousel';
 import { toast } from '@/components/ui/sonner';
 
 const ProductPage = () => {
@@ -289,10 +289,7 @@ const ProductPage = () => {
         {/* Related products */}
         {relatedProducts.length > 0 && (
           <div className="mt-12">
-            <h2 className="text-xl font-bold mb-4">
-              Related Products
-            </h2>
-            <PaginatedProductGrid products={relatedProducts} />
+            <RelatedProductsCarousel products={relatedProducts} title="Related Products" />
           </div>
         )}
       </div>

@@ -54,6 +54,12 @@ const Header = () => {
             <Link to="/category/accessories" className="text-gray-700 hover:text-primary transition-colors">
               Accessories
             </Link>
+            <Link to="/category/food-stuffs" className="text-gray-700 hover:text-primary transition-colors">
+              Food & Spices
+            </Link>
+            <Link to="/cleaning-services" className="text-gray-700 hover:text-primary transition-colors">
+              Cleaning Services
+            </Link>
           </nav>
           
           {/* Search and Cart */}
@@ -134,6 +140,12 @@ const Header = () => {
               </Link>
               <Link to="/category/accessories" className="text-gray-700 hover:text-primary transition-colors" onClick={toggleMenu}>
                 Accessories
+              </Link>
+              <Link to="/category/food-stuffs" className="text-gray-700 hover:text-primary transition-colors" onClick={toggleMenu}>
+                Food & Spices
+              </Link>
+              <Link to="/cleaning-services" className="text-gray-700 hover:text-primary transition-colors" onClick={toggleMenu}>
+                Cleaning Services
               </Link>
          
               <div className="flex items-center space-x-4">

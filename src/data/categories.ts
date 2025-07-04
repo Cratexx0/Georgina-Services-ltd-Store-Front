@@ -67,6 +67,32 @@ export const categories: Category[] = [
       { id: "shoes", name: "Shoes", slug: "shoes", parentId: "accessories" },
       { id: "watches", name: "Watches", slug: "watches", parentId: "accessories" },
     ]
+  },
+  {
+    id: "food-stuffs",
+    name: "Food & Spices",
+    description: "Premium spices and food ingredients for your kitchen",
+    image: "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80",
+    slug: "food-stuffs",
+    subcategories: [
+      { id: "spices", name: "Spices", slug: "spices", parentId: "food-stuffs" },
+      { id: "herbs", name: "Herbs", slug: "herbs", parentId: "food-stuffs" },
+      { id: "grains", name: "Grains & Cereals", slug: "grains", parentId: "food-stuffs" },
+      { id: "oils", name: "Oils & Vinegars", slug: "oils", parentId: "food-stuffs" },
+    ]
+  },
+  {
+    id: "cleaning-services",
+    name: "Cleaning Services",
+    description: "Professional cleaning services for your home and office",
+    image: "https://images.unsplash.com/photo-1721322800607-8c38375eef04?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80",
+    slug: "cleaning-services",
+    subcategories: [
+      { id: "home-cleaning", name: "Home Cleaning", slug: "home-cleaning", parentId: "cleaning-services" },
+      { id: "office-cleaning", name: "Office Cleaning", slug: "office-cleaning", parentId: "cleaning-services" },
+      { id: "deep-cleaning", name: "Deep Cleaning", slug: "deep-cleaning", parentId: "cleaning-services" },
+      { id: "carpet-cleaning", name: "Carpet Cleaning", slug: "carpet-cleaning", parentId: "cleaning-services" },
+    ]
   }
 ];
 

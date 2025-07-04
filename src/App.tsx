@@ -21,6 +21,7 @@ import ForgotPassword from "./auth/ForgetPassword";
 import ResetPassword from "./auth/ResetPassword";
 import CheckoutPage from "./pages/CheckOutPage";
 import AccountPage from "./pages/AccountPage";
+import CleaningServicesPage from "./pages/CleaningServicesPage";
 import Success from "./payment/Success";
 import Failure from "./payment/Failure";
 
@@ -49,6 +50,7 @@ const App = () => (
                   <Route path="/product/:productSlug" element={<ProductPage />} />
                   <Route path="/cart" element={<CartPage />} />
                   <Route path="/checkout" element={<CheckoutPage />} />
+                  <Route path="/cleaning-services" element={<CleaningServicesPage />} />
                   <Route path="/search" element={<SearchResults />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
