@@ -43,16 +43,7 @@ const Header = () => {
               {t('home')}
             </Link>
             <Link to="/category/womens-clothing" className="text-gray-700 hover:text-primary transition-colors">
-              Women's
-            </Link>
-            <Link to="/category/mens-clothing" className="text-gray-700 hover:text-primary transition-colors">
-              Men's
-            </Link>
-            <Link to="/category/kids-clothing" className="text-gray-700 hover:text-primary transition-colors">
-              Kids
-            </Link>
-            <Link to="/category/accessories" className="text-gray-700 hover:text-primary transition-colors">
-              Accessories
+              Clothes
             </Link>
             <Link to="/category/food-stuffs" className="text-gray-700 hover:text-primary transition-colors">
               Food & Spices
@@ -130,16 +121,7 @@ const Header = () => {
                 {t('home')}
               </Link>
               <Link to="/category/womens-clothing" className="text-gray-700 hover:text-primary transition-colors" onClick={toggleMenu}>
-                Women's
-              </Link>
-              <Link to="/category/mens-clothing" className="text-gray-700 hover:text-primary transition-colors" onClick={toggleMenu}>
-                Men's
-              </Link>
-              <Link to="/category/kids-clothing" className="text-gray-700 hover:text-primary transition-colors" onClick={toggleMenu}>
-                Kids
-              </Link>
-              <Link to="/category/accessories" className="text-gray-700 hover:text-primary transition-colors" onClick={toggleMenu}>
-                Accessories
+                Clothes
               </Link>
               <Link to="/category/food-stuffs" className="text-gray-700 hover:text-primary transition-colors" onClick={toggleMenu}>
                 Food & Spices
