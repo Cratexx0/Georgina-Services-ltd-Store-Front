@@ -8,6 +8,7 @@ import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import LanguageSelector from '@/components/ui/LanguageSelector';
+import ThemeToggle from '@/components/ui/ThemeToggle';
 
 const Header = () => {
   const { cart } = useCart();
@@ -29,7 +30,7 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-50">
+    <header className="bg-background border-b border-border sticky top-0 z-50 shadow-sm">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
@@ -39,16 +40,16 @@ const Header = () => {
           
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-6">
-            <Link to="/" className="text-gray-700 hover:text-primary transition-colors">
+            <Link to="/" className="text-muted-foreground hover:text-primary transition-colors">
               {t('home')}
             </Link>
-            <Link to="/category/womens-clothing" className="text-gray-700 hover:text-primary transition-colors">
+            <Link to="/category/womens-clothing" className="text-muted-foreground hover:text-primary transition-colors">
               Clothes
             </Link>
-            <Link to="/category/food-stuffs" className="text-gray-700 hover:text-primary transition-colors">
+            <Link to="/category/food-stuffs" className="text-muted-foreground hover:text-primary transition-colors">
               Food & Spices
             </Link>
-            <Link to="/cleaning-services" className="text-gray-700 hover:text-primary transition-colors">
+            <Link to="/cleaning-services" className="text-muted-foreground hover:text-primary transition-colors">
               Cleaning Services
             </Link>
           </nav>
@@ -74,15 +75,16 @@ const Header = () => {
             </form>
             
             <Link to="/cart" className="relative">
-              <ShoppingCart className="h-4 w-4 text-gray-700" />
+              <ShoppingCart className="h-4 w-4 text-muted-foreground" />
               {cart.length > 0 && (
-                <span className="absolute -top-2 -right-2 bg-primary text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs">
                   {cart.length}
                 </span>
               )}
             </Link>
             
             <LanguageSelector />
+            <ThemeToggle />
             
             <div className="flex items-center space-x-4">
               {isAuthenticated ? (
@@ -94,7 +96,7 @@ const Header = () => {
                 </Link>
               ) : (
                 <Link to="/auth">
-                  <Button variant="ghost" size="sm" className="flex bg-blue-500 text-gray-50 hover:bg-blue-400 hover:text-gray-100 items-center gap-2">
+                  <Button variant="ghost" size="sm" className="flex bg-primary text-primary-foreground hover:bg-primary/90 items-center gap-2">
                     <LogIn className="h-4 w-4" />
                     {t('signIn')}
                   </Button>
@@ -105,7 +107,7 @@ const Header = () => {
           
           {/* Mobile menu button */}
           <button 
-            className="md:hidden text-gray-700" 
+            className="md:hidden text-muted-foreground" 
             onClick={toggleMenu}
             aria-label="Toggle menu"
           >
@@ -117,21 +119,22 @@ const Header = () => {
         {isMenuOpen && (
           <div className="md:hidden py-4 animate-slide-down">
             <nav className="flex flex-col space-y-3">
-              <Link to="/" className="text-gray-700 hover:text-primary transition-colors" onClick={toggleMenu}>
+              <Link to="/" className="text-muted-foreground hover:text-primary transition-colors" onClick={toggleMenu}>
                 {t('home')}
               </Link>
-              <Link to="/category/womens-clothing" className="text-gray-700 hover:text-primary transition-colors" onClick={toggleMenu}>
+              <Link to="/category/womens-clothing" className="text-muted-foreground hover:text-primary transition-colors" onClick={toggleMenu}>
                 Clothes
               </Link>
-              <Link to="/category/food-stuffs" className="text-gray-700 hover:text-primary transition-colors" onClick={toggleMenu}>
+              <Link to="/category/food-stuffs" className="text-muted-foreground hover:text-primary transition-colors" onClick={toggleMenu}>
                 Food & Spices
               </Link>
-              <Link to="/cleaning-services" className="text-gray-700 hover:text-primary transition-colors" onClick={toggleMenu}>
+              <Link to="/cleaning-services" className="text-muted-foreground hover:text-primary transition-colors" onClick={toggleMenu}>
                 Cleaning Services
               </Link>
          
               <div className="flex items-center space-x-4">
                 <LanguageSelector />
+                <ThemeToggle />
                 {isAuthenticated ? (
                   <Link to="/account" onClick={toggleMenu}>
                     <Button variant="ghost" size="sm" className="flex items-center gap-2">
@@ -141,7 +144,7 @@ const Header = () => {
                   </Link>
                 ) : (
                   <Link to="/auth" onClick={toggleMenu}>
-                    <Button variant="ghost" size="sm" className="flex bg-blue-500 text-gray-50 hover:bg-blue-400 hover:text-gray-100 items-center gap-2">
+                    <Button variant="ghost" size="sm" className="flex bg-primary text-primary-foreground hover:bg-primary/90 items-center gap-2">
                       <LogIn className="h-4 w-4" />
                       {t('signIn')}
                     </Button>
@@ -169,9 +172,9 @@ const Header = () => {
               </form>
               
               <Link to="/cart" className="relative" onClick={toggleMenu}>
-                <ShoppingCart className="h-6 w-6 text-gray-700" />
+                <ShoppingCart className="h-6 w-6 text-muted-foreground" />
                 {cart.length > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-primary text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                  <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs">
                     {cart.length}
                   </span>
                 )}

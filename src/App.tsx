@@ -8,6 +8,7 @@ import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { LanguageProvider } from "@/context/LanguageContext";
+import { ThemeProvider } from "@/context/ThemeContext";
 
 // Pages
 import Index from "@/pages/Index";
@@ -29,8 +30,9 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <LanguageProvider>
-      <AuthProvider>
+    <ThemeProvider>
+      <LanguageProvider>
+        <AuthProvider>
         <CartProvider>
           <WishlistProvider>
             <TooltipProvider>
@@ -59,8 +61,9 @@ const App = () => (
             </TooltipProvider>
           </WishlistProvider>
         </CartProvider>
-      </AuthProvider>
-    </LanguageProvider>
+        </AuthProvider>
+      </LanguageProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
