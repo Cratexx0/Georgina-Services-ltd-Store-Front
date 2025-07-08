@@ -6,13 +6,12 @@ import CategoryTabs from '@/components/categories/CategoryTabs';
 import FeaturedProductsCarousel from '@/components/products/FeaturedProductsCarousel';
 import NewsletterSignup from '@/components/newsletter/NewsletterSignup';
 import { getFeaturedProducts } from '@/data/products';
-import { useLanguage } from '@/context/LanguageContext';
+
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 
 const Index = () => {
   const featuredProducts = getFeaturedProducts();
-  const { t } = useLanguage();
 
   return (
     <Layout>
@@ -21,7 +20,7 @@ const Index = () => {
       <section className="py-16">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">{t('shopByCategory')}</h2>
+            <h2 className="text-3xl font-bold mb-4">Shop by Category</h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
               Discover our curated collection of premium clothing for every style and occasion
             </p>
@@ -33,7 +32,7 @@ const Index = () => {
       <section className="py-16 bg-gradient-to-br from-gray-50 to-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">{t('featuredProducts')}</h2>
+            <h2 className="text-3xl font-bold mb-4">Featured Products</h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
               Handpicked favorites from our latest collection
             </p>
@@ -55,7 +54,7 @@ const Index = () => {
       
       <section className="py-16">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-6">{t('qualityProducts')}</h2>
+          <h2 className="text-3xl font-bold mb-6">Quality Products</h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto mb-12">
             Experience premium fashion with our carefully crafted clothing collection. 
             Every piece is selected for quality, comfort, and style.
@@ -67,8 +66,8 @@ const Index = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold mb-3">{t('fastDelivery')}</h3>
-              <p className="text-gray-600 leading-relaxed">{t('fastDeliveryDesc')}</p>
+              <h3 className="text-xl font-semibold mb-3">Fast Delivery</h3>
+              <p className="text-gray-600 leading-relaxed">Get your orders delivered quickly and safely to your doorstep with our premium delivery service.</p>
             </div>
             
             <div className="p-8 bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100">
@@ -77,8 +76,8 @@ const Index = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold mb-3">{t('qualityGuaranteed')}</h3>
-              <p className="text-gray-600 leading-relaxed">{t('qualityGuaranteedDesc')}</p>
+              <h3 className="text-xl font-semibold mb-3">Quality Guaranteed</h3>
+              <p className="text-gray-600 leading-relaxed">Every product in our collection meets the highest quality standards and comes with our satisfaction guarantee.</p>
             </div>
             
             <div className="p-8 bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100">
@@ -87,8 +86,8 @@ const Index = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold mb-3">{t('securePayments')}</h3>
-              <p className="text-gray-600 leading-relaxed">{t('securePaymentsDesc')}</p>
+              <h3 className="text-xl font-semibold mb-3">Secure Payments</h3>
+              <p className="text-gray-600 leading-relaxed">Shop with confidence using our secure payment system that protects your personal and financial information.</p>
             </div>
           </div>
         </div>
