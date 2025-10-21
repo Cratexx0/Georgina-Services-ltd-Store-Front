@@ -5,15 +5,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
 import { Clock, CheckCircle, Star, MapPin } from 'lucide-react';
-import { getProductsByCategory } from '@/data/products';
-import FeaturedProductsCarousel from '@/components/products/FeaturedProductsCarousel';
 
 const CleaningServicesPage = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>('');
   const [selectedService, setSelectedService] = useState<string>('');
-  
-  const cleaningProducts = getProductsByCategory('cleaning-services');
 
   const timeSlots = [
     '09:00 - 11:00',
@@ -168,15 +164,37 @@ const CleaningServicesPage = () => {
           </div>
         </div>
 
-        {/* Related Cleaning Products */}
-        <section className="py-16 bg-gradient-to-br from-gray-50 to-white rounded-xl">
+        {/* Why Choose Us Section */}
+        <section className="py-16 bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Professional Cleaning Services</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Choose from our range of professional cleaning services
+            <h2 className="text-3xl font-bold mb-4">Why Choose Our Services</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Professional cleaning you can trust
             </p>
           </div>
-          <FeaturedProductsCarousel products={cleaningProducts} />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center p-6">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="font-semibold text-lg mb-2">Certified Professionals</h3>
+              <p className="text-muted-foreground">Trained and background-checked cleaners</p>
+            </div>
+            <div className="text-center p-6">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Star className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="font-semibold text-lg mb-2">Quality Guaranteed</h3>
+              <p className="text-muted-foreground">100% satisfaction or your money back</p>
+            </div>
+            <div className="text-center p-6">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Clock className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="font-semibold text-lg mb-2">Flexible Scheduling</h3>
+              <p className="text-muted-foreground">Book at your convenience, 7 days a week</p>
+            </div>
+          </div>
         </section>
       </div>
     </Layout>
