@@ -15,7 +15,7 @@ const ProductPage = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState<string>('');
-  const [selectedColor, setSelectedColor] = useState<string>('');
+  
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
 
@@ -42,15 +42,9 @@ const ProductPage = () => {
       return;
     }
     
-    // Check if color is required and selected
-    if (product.colors && product.colors.length > 0 && !selectedColor) {
-      toast.error('Please select a color');
-      return;
-    }
-    
     addToCart(product, quantity);
     toast.success(`${product.name} added to cart`, {
-      description: `Quantity: ${quantity}${selectedSize ? `, Size: ${selectedSize}` : ''}${selectedColor ? `, Color: ${selectedColor}` : ''}`,
+      description: `Quantity: ${quantity}${selectedSize ? `, Size: ${selectedSize}` : ''}`,
     });
   };
 
@@ -167,27 +161,6 @@ const ProductPage = () => {
               </div>
             )}
 
-            {/* Color Selector */}
-            {product.colors && product.colors.length > 0 && (
-              <div className="space-y-2">
-                <h3 className="text-sm font-medium">Color</h3>
-                <div className="flex flex-wrap gap-2">
-                  {product.colors.map((color) => (
-                    <button
-                      key={color}
-                      onClick={() => setSelectedColor(color)}
-                      className={`px-3 py-1 text-sm border rounded-md ${
-                        selectedColor === color
-                          ? 'border-primary bg-primary text-white'
-                          : 'border-gray-300 hover:border-gray-400'
-                      }`}
-                    >
-                      {color}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
             
             {/* Stock and quantity selector */}
             <div className="border-t border-gray-200 pt-4">

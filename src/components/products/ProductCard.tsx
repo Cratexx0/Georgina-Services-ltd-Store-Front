@@ -166,32 +166,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </div>
         </div>
 
-        {/* Color swatches preview */}
-        {product.colors && product.colors.length > 0 && (
-          <div className="flex items-center space-x-1 mb-3">
-            <span className="text-xs text-gray-600 mr-2">Colors:</span>
-            {product.colors.slice(0, 4).map((color, index) => (
-              <div
-                key={index}
-                className="w-4 h-4 rounded-full border border-gray-200"
-                style={{
-                  backgroundColor: color.toLowerCase() === 'white' ? '#ffffff' :
-                                 color.toLowerCase() === 'black' ? '#000000' :
-                                 color.toLowerCase() === 'gray' ? '#6b7280' :
-                                 color.toLowerCase() === 'navy' ? '#1e3a8a' :
-                                 color.toLowerCase() === 'red' ? '#dc2626' :
-                                 color.toLowerCase() === 'blue' ? '#2563eb' :
-                                 color.toLowerCase() === 'green' ? '#16a34a' :
-                                 '#9ca3af'
-                }}
-                title={color}
-              />
-            ))}
-            {product.colors.length > 4 && (
-              <span className="text-xs text-gray-500">+{product.colors.length - 4}</span>
-            )}
-          </div>
-        )}
 
         <Button 
           onClick={handleAddToCart}
