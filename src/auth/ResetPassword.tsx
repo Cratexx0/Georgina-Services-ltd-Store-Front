@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Lock, CheckCircle, ArrowLeft } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Link, useSearchParams } from "react-router-dom"; // or use next/navigation for Next.js
 
 const ResetPassword = () => {
@@ -55,13 +55,13 @@ const ResetPassword = () => {
         <div
             className="min-h-screen flex flex-col relative overflow-hidden"
             style={{
-                backgroundImage: "url('https://images.unsplash.com/photo-1607082350899-7e105aa886ae?auto=format&fit=crop&q=80&w=2070')",
+                backgroundImage: "url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=2070')",
                 backgroundSize: "cover",
                 backgroundPosition: "center"
             }}
         >
             {/* Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-black/30 backdrop-blur-sm"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-background/95 via-background/90 to-background/95 backdrop-blur-sm"></div>
             <div className="flex-grow flex items-center justify-center px-4 relative z-10">
                 <div className="w-full max-w-md">
                     <div className="w-full max-w-md mx-auto bg-background/90 rounded-lg p-8 md:p-10 shadow-lg">

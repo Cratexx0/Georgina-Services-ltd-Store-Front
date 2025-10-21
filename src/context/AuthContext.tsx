@@ -14,6 +14,8 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   register: (email: string, password: string, firstName: string, lastName: string) => Promise<void>;
+  forgotPassword: (email: string) => Promise<void>;
+  resetPassword: (token: string, newPassword: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -66,6 +68,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.removeItem('user');
   };
 
+  const forgotPassword = async (email: string) => {
+    // Simulate API call to send password reset email
+    await new Promise(resolve => setTimeout(resolve, 1500));
+  };
+
+  const resetPassword = async (token: string, newPassword: string) => {
+    // Simulate API call to reset password with token
+    await new Promise(resolve => setTimeout(resolve, 1500));
+  };
+
   const isAuthenticated = !!user;
 
   return (
@@ -74,7 +86,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       isAuthenticated,
       login,
       logout,
-      register
+      register,
+      forgotPassword,
+      resetPassword
     }}>
       {children}
     </AuthContext.Provider>
