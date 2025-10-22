@@ -38,7 +38,7 @@ const navigate =useNavigate();
             }}
         >
             {/* Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-br from-background/95 via-background/90 to-background/95 backdrop-blur-sm"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-background/70 via-background/60 to-background/70 backdrop-blur-sm"></div>
             <div className="flex-grow flex items-center justify-center px-4 relative z-10">
                 <div className="w-full max-w-md">
                     <div className="w-full max-w-md mx-auto bg-background/90 rounded-lg p-8 md:p-10 shadow-lg">

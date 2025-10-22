@@ -19,7 +19,7 @@ const Auth = () => {
       }}
     >
       {/* Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-background/95 via-background/90 to-background/95 backdrop-blur-sm"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-background/70 via-background/60 to-background/70 backdrop-blur-sm"></div>
       
       {/* Top Navigation */}
       <div className="relative z-10 flex justify-between items-center p-6">

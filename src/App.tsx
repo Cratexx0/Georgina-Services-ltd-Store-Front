@@ -18,6 +18,7 @@ import NotFound from "@/pages/NotFound";
 import Auth from "./auth/Auth";
 import ForgotPassword from "./auth/ForgetPassword";
 import ResetPassword from "./auth/ResetPassword";
+import ChangePassword from "./auth/ChangePassword";
 import CheckoutPage from "./pages/CheckOutPage";
 import AccountPage from "./pages/AccountPage";
 import CleaningServicesPage from "./pages/CleaningServicesPage";
@@ -43,6 +44,7 @@ const App = () => (
                 <Route path="/account" element={<AccountPage />} />
                 <Route path="/forgot/password" element={<ForgotPassword/>} />
                 <Route path="/reset/password" element={<ResetPassword/>} />
+                <Route path="/change/password" element={<ChangePassword/>} />
                 <Route path="/success" element={<Success/>} />
                 <Route path="/fail" element={<Failure/>} />
                 <Route path="/category/:categorySlug" element={<CategoryPage />} />

@@ -58,12 +58,6 @@ const Index = () => {
         </div>
       </section>
       
-      <section className="py-16 bg-primary/5">
-        <div className="container mx-auto px-4">
-          <NewsletterSignup variant="centered" />
-        </div>
-      </section>
-      
       <section className="py-20" ref={qualitySection.ref}>
         <div className={`container mx-auto px-4 text-center transition-all duration-1000 delay-300 ${
           qualitySection.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'

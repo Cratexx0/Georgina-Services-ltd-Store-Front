@@ -435,6 +435,15 @@ const AccountPage = () => {
                   <CardContent className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
+                        <Label>Change Password</Label>
+                        <p className="text-sm text-gray-600">Update your account password</p>
+                      </div>
+                      <Button variant="outline" size="sm" asChild>
+                        <Link to="/change/password">Change</Link>
+                      </Button>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
                         <Label>Email Notifications</Label>
                         <p className="text-sm text-gray-600">Receive order updates and promotions</p>
                       </div>
