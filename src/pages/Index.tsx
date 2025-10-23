@@ -4,16 +4,14 @@ import Layout from '@/components/layout/Layout';
 import HeroCarousel from '@/components/home/HeroCarousel';
 import CategoryTabs from '@/components/categories/CategoryTabs';
 import FeaturedProductsCarousel from '@/components/products/FeaturedProductsCarousel';
+import TrendingProducts from '@/components/products/TrendingProducts';
+import NewArrivalProducts from '@/components/products/NewArrivalProducts';
 import NewsletterSignup from '@/components/newsletter/NewsletterSignup';
-import { getFeaturedProducts, getTrendingProducts, getNewArrivalProducts } from '@/data/products';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 
 const Index = () => {
-  const featuredProducts = getFeaturedProducts();
-  const trendingProducts = getTrendingProducts();
-  const newArrivalProducts = getNewArrivalProducts();
   const categorySection = useScrollAnimation();
   const featuredSection = useScrollAnimation();
   const trendingSection = useScrollAnimation();
@@ -53,46 +51,18 @@ const Index = () => {
               Handpicked favorites from our latest collection
             </p>
           </div>
-          <FeaturedProductsCarousel products={featuredProducts} />
+          <FeaturedProductsCarousel />
           <div className="text-center mt-12">
             <Button asChild size="lg" className="px-10 py-6 text-lg shadow-lg hover:shadow-xl transition-all">
-              <Link to="/category/womens-clothing">View All Products</Link>
+              <Link to="/products">View All Products</Link>
             </Button>
           </div>
         </div>
       </section>
 
-      <section className="py-20" ref={trendingSection.ref}>
-        <div className={`container mx-auto px-4 transition-all duration-1000 delay-300 ${
-          trendingSection.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-        }`}>
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
-              Trending Now
-            </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto text-lg">
-              Most popular items loved by our customers
-            </p>
-          </div>
-          <FeaturedProductsCarousel products={trendingProducts} />
-        </div>
-      </section>
+      <TrendingProducts />
 
-      <section className="py-20 bg-gradient-to-br from-green-50 via-teal-50 to-cyan-50" ref={newArrivalSection.ref}>
-        <div className={`container mx-auto px-4 transition-all duration-1000 delay-400 ${
-          newArrivalSection.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-        }`}>
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent">
-              New Arrivals
-            </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto text-lg">
-              Fresh styles just added to our collection
-            </p>
-          </div>
-          <FeaturedProductsCarousel products={newArrivalProducts} />
-        </div>
-      </section>
+      <NewArrivalProducts />
       
       <section className="py-20" ref={qualitySection.ref}>
         <div className={`container mx-auto px-4 text-center transition-all duration-1000 delay-300 ${

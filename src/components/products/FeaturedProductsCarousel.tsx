@@ -1,7 +1,7 @@
 
 import React from 'react';
 import ProductCard from './ProductCard';
-import { Product } from '@/data/products';
+import { useFeaturedProducts } from '@/hooks/useProducts';
 import {
   Carousel,
   CarouselContent,
@@ -9,12 +9,35 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel';
+import { Loader2 } from 'lucide-react';
 
-interface FeaturedProductsCarouselProps {
-  products: Product[];
-}
+const FeaturedProductsCarousel: React.FC = () => {
+  const { products, loading, error } = useFeaturedProducts(1, 8);
 
-const FeaturedProductsCarousel: React.FC<FeaturedProductsCarouselProps> = ({ products }) => {
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <span className="ml-2">Loading featured products...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center text-red-600 py-12">
+        <p>{error}</p>
+      </div>
+    );
+  }
+
+  if (products.length === 0) {
+    return (
+      <div className="text-center text-gray-500 py-12">
+        <p>No featured products available at the moment.</p>
+      </div>
+    );
+  }
   return (
     <Carousel 
       className="w-full"

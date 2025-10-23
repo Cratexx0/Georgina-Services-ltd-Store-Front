@@ -1,7 +1,7 @@
 
 import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Product } from '@/data/products';
+import { Product } from '@/hooks/useProducts';
 import { Heart, Download, Scissors, Star, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/CartContext';
@@ -47,7 +47,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     });
 
     try {
-      const img = await loadImageFromUrl(product.images[0]);
+      const img = await loadImageFromUrl(Array.isArray(product.images) ? product.images[0] : product.images);
       const processedBlob = await removeBackground(img);
       const processedUrl = URL.createObjectURL(processedBlob);
       setProcessedImageUrl(processedUrl);
@@ -79,7 +79,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     }
   };
 
-  const displayImage = processedImageUrl || product.images[0];
+  const displayImage = processedImageUrl || (Array.isArray(product.images) ? product.images[0] : product.images);
 
   return (
     <div className="bg-card rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden border border-border group">

@@ -144,9 +144,9 @@ class ApiService {
     }
   }
 
-  // Auth
+  // Auth - Customer endpoints
   async login(email: string, password: string): Promise<AuthResponse> {
-    const data = await this.request<AuthResponse>('/api/auth/user/login', {
+    const data = await this.request<AuthResponse>('/api/auth/customer/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
@@ -157,7 +157,7 @@ class ApiService {
   }
 
   async register(name: string, email: string, password: string): Promise<AuthResponse> {
-    return this.request<AuthResponse>('/api/auth/user/register', {
+    return this.request<AuthResponse>('/api/auth/customer/register', {
       method: 'POST',
       body: JSON.stringify({ name, email, password }),
     });
@@ -213,6 +213,18 @@ class ApiService {
 
   async getProductById(id: string): Promise<Product> {
     return this.request<Product>(`/api/products/${id}`);
+  }
+
+  async getTrendingProducts(page = 1, limit = 10): Promise<{ products: Product[], total: number, page: number, limit: number }> {
+    return this.request<{ products: Product[], total: number, page: number, limit: number }>(`/api/products/trending?page=${page}&limit=${limit}`);
+  }
+
+  async getNewArrivalProducts(page = 1, limit = 10): Promise<{ products: Product[], total: number, page: number, limit: number }> {
+    return this.request<{ products: Product[], total: number, page: number, limit: number }>(`/api/products/new-arrivals?page=${page}&limit=${limit}`);
+  }
+
+  async getFeaturedProducts(page = 1, limit = 10): Promise<{ products: Product[], total: number, page: number, limit: number }> {
+    return this.request<{ products: Product[], total: number, page: number, limit: number }>(`/api/products/featured?page=${page}&limit=${limit}`);
   }
 
   async rateProduct(productId: string, rating: number, comment: string): Promise<Product> {
