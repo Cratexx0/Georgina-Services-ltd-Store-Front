@@ -13,6 +13,8 @@ export interface Product {
   stock: number;
   slug: string;
   featured?: boolean;
+  trending?: boolean;
+  newArrival?: boolean;
   sizes?: string[];
   colors?: string[];
 }
@@ -49,6 +51,7 @@ export const products: Product[] = [
     stock: 40,
     slug: "summer-floral-dress",
     featured: true,
+    newArrival: true,
     sizes: ["XS", "S", "M", "L", "XL"],
     colors: ["Pink", "Blue", "Yellow", "White"]
   },
@@ -67,6 +70,7 @@ export const products: Product[] = [
     stock: 35,
     slug: "womens-silk-blouse",
     featured: true,
+    trending: true,
     sizes: ["XS", "S", "M", "L", "XL"],
     colors: ["White", "Blush", "Navy", "Black", "Cream"]
   },
@@ -82,6 +86,7 @@ export const products: Product[] = [
     likes: 92,
     stock: 60,
     slug: "casual-cotton-top",
+    newArrival: true,
     sizes: ["XS", "S", "M", "L", "XL"],
     colors: ["White", "Black", "Gray", "Pink"]
   },
@@ -183,6 +188,7 @@ export const products: Product[] = [
     stock: 85,
     slug: "casual-stretch-jeans",
     featured: true,
+    trending: true,
     sizes: ["28", "30", "32", "34", "36", "38"],
     colors: ["Dark Blue", "Light Blue", "Black", "Gray"]
   },
@@ -216,6 +222,7 @@ export const products: Product[] = [
     likes: 54,
     stock: 65,
     slug: "boys-cargo-shorts",
+    newArrival: true,
     sizes: ["2T", "3T", "4T", "5T", "XS", "S"],
     colors: ["Khaki", "Navy", "Gray", "Olive"]
   },
@@ -249,6 +256,7 @@ export const products: Product[] = [
     likes: 87,
     stock: 50,
     slug: "girls-denim-jacket",
+    trending: true,
     sizes: ["2T", "3T", "4T", "5T", "XS", "S"],
     colors: ["Light Blue", "Dark Blue", "Pink", "White"]
   },
@@ -282,6 +290,7 @@ export const products: Product[] = [
     likes: 98,
     stock: 75,
     slug: "canvas-backpack",
+    newArrival: true,
     colors: ["Black", "Gray", "Navy", "Olive"]
   },
 
@@ -299,6 +308,7 @@ export const products: Product[] = [
     stock: 90,
     slug: "classic-sneakers",
     featured: true,
+    trending: true,
     sizes: ["6", "7", "8", "9", "10", "11", "12"],
     colors: ["White", "Black", "Gray", "Navy"]
   },
@@ -314,6 +324,7 @@ export const products: Product[] = [
     likes: 167,
     stock: 45,
     slug: "formal-dress-shoes",
+    newArrival: true,
     sizes: ["6", "7", "8", "9", "10", "11", "12"],
     colors: ["Black", "Brown", "Burgundy"]
   },
@@ -436,6 +447,14 @@ export const products: Product[] = [
 
 export const getFeaturedProducts = (): Product[] => {
   return products.filter(product => product.featured);
+};
+
+export const getTrendingProducts = (): Product[] => {
+  return products.filter(product => product.trending);
+};
+
+export const getNewArrivalProducts = (): Product[] => {
+  return products.filter(product => product.newArrival);
 };
 
 export const getProductsByCategory = (categoryId: string): Product[] => {
