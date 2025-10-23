@@ -20,9 +20,15 @@ const AccountPage = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const { wishlist, removeFromWishlist } = useWishlist();
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  
+  // Parse name into firstName and lastName
+  const nameParts = user?.name?.split(' ') || [];
+  const firstName = nameParts[0] || '';
+  const lastName = nameParts.slice(1).join(' ') || '';
+  
   const [profileData, setProfileData] = useState({
-    firstName: user?.firstName || '',
-    lastName: user?.lastName || '',
+    firstName: firstName,
+    lastName: lastName,
     email: user?.email || '',
     phone: '+1 (555) 123-4567',
     address: '123 Main St, City, State 12345',
@@ -81,9 +87,14 @@ const AccountPage = () => {
   };
 
   const getUserInitials = () => {
-    const firstName = user?.firstName || '';
-    const lastName = user?.lastName || '';
-    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U';
+    if (user?.name) {
+      const nameParts = user.name.split(' ');
+      if (nameParts.length >= 2) {
+        return `${nameParts[0].charAt(0)}${nameParts[1].charAt(0)}`.toUpperCase();
+      }
+      return nameParts[0].charAt(0).toUpperCase();
+    }
+    return user?.email?.charAt(0).toUpperCase() || 'U';
   };
 
   return (
@@ -95,17 +106,14 @@ const AccountPage = () => {
             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
               <div className="flex items-center gap-6">
                 <Avatar className="h-20 w-20 ring-4 ring-white shadow-lg">
-                  <AvatarImage src="" alt={user?.firstName} />
+                  <AvatarImage src="" alt={user?.name} />
                   <AvatarFallback className="text-2xl font-bold bg-primary text-white">
                     {getUserInitials()}
                   </AvatarFallback>
                 </Avatar>
                 <div>
                   <h1 className="text-3xl font-bold text-gray-900">
-                    {user?.firstName && user?.lastName 
-                      ? `${user.firstName} ${user.lastName}` 
-                      : 'Welcome!'
-                    }
+                    {user?.name || 'Welcome!'}
                   </h1>
                   <p className="text-gray-600 mt-2 flex items-center gap-2">
                     <Mail className="h-4 w-4" />

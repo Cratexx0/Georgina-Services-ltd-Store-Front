@@ -49,7 +49,8 @@ const AuthForm = () => {
     setIsLoading(true);
     
     try {
-      await register(registerData.email, registerData.password, registerData.firstName, registerData.lastName);
+      const fullName = `${registerData.firstName} ${registerData.lastName}`.trim();
+      await register(fullName, registerData.email, registerData.password);
       toast({
         title: "Registration successful",
         description: "Your account has been created.",
