@@ -82,13 +82,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const displayImage = processedImageUrl || product.images[0];
 
   return (
-    <div className="bg-card rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-border group">
+    <div className="bg-card rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden border border-border group">
       <Link to={`/product/${product.slug}`} className="block">
         <div className="relative bg-muted overflow-hidden aspect-square">
           <img
             src={displayImage}
             alt={product.name}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className="w-full h-full object-cover"
             style={processedImageUrl ? { backgroundColor: 'white' } : {}}
           />
           
@@ -96,11 +96,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <div className="absolute top-3 right-3 flex flex-col gap-2">
             <button
               onClick={handleWishlistToggle}
-              className="p-2.5 bg-background/95 backdrop-blur-md rounded-full shadow-lg hover:scale-110 transition-all duration-200 border border-border/50"
+              className="p-2 bg-background/90 rounded-md shadow-sm hover:bg-background transition-colors border border-border/50"
               title={isInWishlist(product.id) ? 'Remove from wishlist' : 'Add to wishlist'}
             >
               <Heart 
-                className={`h-4 w-4 transition-colors ${
+                className={`h-4 w-4 ${
                   isInWishlist(product.id) 
                     ? 'text-red-500 fill-red-500' 
                     : 'text-muted-foreground hover:text-foreground'
@@ -113,7 +113,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             
             <button
               onClick={handleAddToCart}
-              className="p-2.5 bg-primary hover:bg-primary/90 backdrop-blur-md rounded-full shadow-lg hover:scale-110 transition-all duration-200"
+              className="p-2 bg-primary hover:bg-primary/90 rounded-md shadow-sm transition-colors"
               title="Add to cart"
             >
               <ShoppingCart className="h-4 w-4 text-primary-foreground" />
@@ -123,17 +123,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           
           {/* Discount badge */}
           {product.discountPrice && (
-            <div className="absolute top-3 left-3 bg-destructive text-destructive-foreground px-3 py-1.5 text-xs font-bold rounded-full shadow-lg backdrop-blur-sm">
+            <div className="absolute top-3 left-3 bg-destructive text-destructive-foreground px-2.5 py-1 text-xs font-semibold rounded">
               -{Math.round((1 - product.discountPrice / product.price) * 100)}%
             </div>
           )}
           
           {/* Background removal controls */}
-          <div className="absolute bottom-3 left-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <div className="absolute bottom-3 left-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
             <Button
               size="sm"
               variant="secondary"
-              className="h-8 w-8 p-0 bg-background/95 backdrop-blur-md hover:bg-background shadow-lg border border-border/50"
+              className="h-8 w-8 p-0 bg-background/90 hover:bg-background shadow-sm border border-border/50"
               onClick={handleRemoveBackground}
               disabled={isRemovingBg}
               title="Remove background"
@@ -145,7 +145,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               <Button
                 size="sm"
                 variant="secondary"
-                className="h-8 w-8 p-0 bg-background/95 backdrop-blur-md hover:bg-background shadow-lg border border-border/50"
+                className="h-8 w-8 p-0 bg-background/90 hover:bg-background shadow-sm border border-border/50"
                 onClick={handleDownloadProcessed}
                 title="Download processed image"
               >
@@ -156,7 +156,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           
           {/* Stock indicator */}
           {product.stock < 10 && (
-            <div className="absolute bottom-3 right-3 bg-background/95 backdrop-blur-md text-foreground px-2.5 py-1 text-xs font-semibold rounded-full shadow-lg border border-border/50">
+            <div className="absolute bottom-3 right-3 bg-background/90 text-foreground px-2 py-0.5 text-xs font-medium rounded border border-border/50">
               Only {product.stock} left
             </div>
           )}
@@ -169,9 +169,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             <h3 className="font-semibold text-foreground line-clamp-2 flex-1 text-sm leading-snug hover:text-primary transition-colors">
               {product.name}
             </h3>
-            <div className="flex items-center bg-amber-50 dark:bg-amber-950 px-2 py-1 rounded-lg shrink-0 border border-amber-200 dark:border-amber-800">
+            <div className="flex items-center bg-amber-50 dark:bg-amber-950 px-2 py-0.5 rounded shrink-0 border border-amber-200 dark:border-amber-800">
               <Star className="w-3 h-3 text-amber-500 fill-amber-500 mr-1" />
-              <span className="text-xs font-bold text-amber-700 dark:text-amber-400">{product.rating}</span>
+              <span className="text-xs font-semibold text-amber-700 dark:text-amber-400">{product.rating}</span>
             </div>
           </div>
         </Link>
