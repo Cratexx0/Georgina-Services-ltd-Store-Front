@@ -1,11 +1,48 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { categories } from '@/data/categories';
+import { useCategories } from '@/hooks/useCategories';
 import { cn } from '@/lib/utils';
 
 const CategoryTabs: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<string>('womens-clothing');
+  const { categories, loading, error } = useCategories();
+  const [activeTab, setActiveTab] = useState<string>('');
+  
+  // Set the first category as active when categories are loaded
+  React.useEffect(() => {
+    if (categories.length > 0 && !activeTab) {
+      setActiveTab(categories[0].id);
+    }
+  }, [categories, activeTab]);
+  
+  if (loading) {
+    return (
+      <div className="mb-12">
+        <div className="container mx-auto px-4">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded mb-6"></div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="h-16 bg-gray-200 rounded"></div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  if (error) {
+    return (
+      <div className="mb-12">
+        <div className="container mx-auto px-4">
+          <div className="text-center text-red-600">
+            <p>Failed to load categories. Using fallback data.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="mb-12">

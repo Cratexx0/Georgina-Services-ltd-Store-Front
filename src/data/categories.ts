@@ -15,7 +15,8 @@ export interface SubCategory {
   parentId: string;
 }
 
-export const categories: Category[] = [
+// Fallback categories for when API is not available
+export const fallbackCategories: Category[] = [
   {
     id: "womens-clothing",
     name: "Women's Fashion",
@@ -95,6 +96,9 @@ export const categories: Category[] = [
     ]
   }
 ];
+
+// Export fallback as default for backward compatibility
+export const categories = fallbackCategories;
 
 export const getCategory = (slug: string): Category | undefined => {
   return categories.find(category => category.slug === slug);

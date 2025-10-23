@@ -1,11 +1,12 @@
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { apiService, User as ApiUser } from '../lib/api';
 
 interface User {
   id: string;
   email: string;
-  firstName?: string;
-  lastName?: string;
+  name: string;
+  role: string;
 }
 
 interface AuthContextType {
@@ -13,9 +14,11 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
-  register: (email: string, password: string, firstName: string, lastName: string) => Promise<void>;
+  register: (name: string, email: string, password: string) => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
   resetPassword: (token: string, newPassword: string) => Promise<void>;
+  loading: boolean;
+  error: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,63 +36,105 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(() => {
-    // Check localStorage for existing user session
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Check localStorage for existing user
     const savedUser = localStorage.getItem('user');
-    return savedUser ? JSON.parse(savedUser) : null;
-  });
+    const token = localStorage.getItem('auth_token');
+    
+    if (savedUser && token) {
+      setUser(JSON.parse(savedUser));
+    }
+    setLoading(false);
+  }, []);
 
   const login = async (email: string, password: string) => {
-    // Simulate API call
-    const mockUser = {
-      id: '1',
-      email,
-      firstName: 'John',
-      lastName: 'Doe'
-    };
-    setUser(mockUser);
-    localStorage.setItem('user', JSON.stringify(mockUser));
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await apiService.login(email, password);
+      
+      const userData: User = {
+        id: response.user.id,
+        email: response.user.email,
+        name: response.user.name,
+        role: response.user.role
+      };
+      
+      setUser(userData);
+      localStorage.setItem('user', JSON.stringify(userData));
+      return;
+    } catch (err) {
+      setError('Login failed. Please check your credentials.');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
   };
-
-  const register = async (email: string, password: string, firstName: string, lastName: string) => {
-    // Simulate API call
-    const mockUser = {
-      id: '1',
-      email,
-      firstName,
-      lastName
-    };
-    setUser(mockUser);
-    localStorage.setItem('user', JSON.stringify(mockUser));
-  };
-
   const logout = () => {
     setUser(null);
     localStorage.removeItem('user');
+    apiService.clearToken();
+  };
+
+  const register = async (name: string, email: string, password: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      await apiService.register(name, email, password);
+      // After registration, log the user in
+      await login(email, password);
+    } catch (err) {
+      setError('Registration failed. Please try again.');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
   };
 
   const forgotPassword = async (email: string) => {
-    // Simulate API call to send password reset email
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    try {
+      setLoading(true);
+      setError(null);
+      await apiService.forgotPassword(email);
+    } catch (err) {
+      setError('Failed to process password reset request.');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
   };
 
   const resetPassword = async (token: string, newPassword: string) => {
-    // Simulate API call to reset password with token
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    try {
+      setLoading(true);
+      setError(null);
+      await apiService.resetPassword(token, newPassword);
+    } catch (err) {
+      setError('Failed to reset password.');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const isAuthenticated = !!user;
-
   return (
-    <AuthContext.Provider value={{
-      user,
-      isAuthenticated,
-      login,
-      logout,
-      register,
-      forgotPassword,
-      resetPassword
-    }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated: !!user,
+        login,
+        logout,
+        register,
+        forgotPassword,
+        resetPassword,
+        loading,
+        error
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
