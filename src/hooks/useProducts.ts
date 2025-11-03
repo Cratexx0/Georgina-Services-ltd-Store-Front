@@ -7,20 +7,22 @@ export interface Product {
   description: string;
   price: number;
   discountPrice?: number;
-  images: string[];
+  image?: string;
+  images?: string[];
   categoryId: string;
-  subcategoryId: string;
-  rating: number;
-  likes: number;
+  subcategoryId?: string;
+  subCategoryId?: string;
+  rating?: number;
+  likes?: number;
   stock: number;
-  slug: string;
-  featured: boolean;
-  trending: boolean;
-  newArrival: boolean;
+  slug?: string;
+  featured?: boolean;
+  trending?: boolean;
+  newArrival?: boolean;
   sizes?: string[];
   colors?: string[];
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface UseProductsResult {

@@ -47,7 +47,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     });
 
     try {
-      const img = await loadImageFromUrl(Array.isArray(product.images) ? product.images[0] : product.images);
+      let imageUrl = '';
+      if (product.images && Array.isArray(product.images)) {
+        imageUrl = product.images[0];
+      } else if (typeof product.images === 'string') {
+        imageUrl = product.images;
+      } else if (product.image) {
+        imageUrl = product.image;
+      }
+      
+      const img = await loadImageFromUrl(imageUrl);
       const processedBlob = await removeBackground(img);
       const processedUrl = URL.createObjectURL(processedBlob);
       setProcessedImageUrl(processedUrl);
@@ -79,7 +88,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     }
   };
 
-  const displayImage = processedImageUrl || (Array.isArray(product.images) ? product.images[0] : product.images);
+  const displayImage: string = processedImageUrl || (() => {
+    if (product.images && Array.isArray(product.images)) return product.images[0];
+    if (typeof product.images === 'string') return product.images;
+    if (product.image) return product.image;
+    return '';
+  })();
 
   return (
     <div className="bg-card rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden border border-border group">

@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { Product } from '@/data/products';
+import { Product } from '@/hooks/useProducts';
 import { toast } from '@/components/ui/sonner';
 
 interface WishlistContextType {
