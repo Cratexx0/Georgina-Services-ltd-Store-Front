@@ -141,11 +141,11 @@ const Index = () => {
               styleSection.isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'
             }`}>
               <div className="absolute -inset-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl blur-2xl opacity-30"></div>
-              <img 
-                src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
-                alt="Fashion collection" 
-                className="relative rounded-2xl shadow-2xl transform hover:scale-105 transition-transform duration-500"
-              />
+              <div className="relative rounded-2xl shadow-2xl bg-muted flex items-center justify-center aspect-[4/3] overflow-hidden">
+                <svg className="w-24 h-24 text-muted-foreground/30" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                </svg>
+              </div>
             </div>
           </div>
         </div>
