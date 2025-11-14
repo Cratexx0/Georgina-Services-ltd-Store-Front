@@ -21,6 +21,8 @@ import ResetPassword from "./auth/ResetPassword";
 import ChangePassword from "./auth/ChangePassword";
 import CheckoutPage from "./pages/CheckOutPage";
 import AccountPage from "./pages/AccountPage";
+import DashboardPage from "./pages/DashboardPage";
+import SettingsPage from "./pages/SettingsPage";
 import CleaningServicesPage from "./pages/CleaningServicesPage";
 import Success from "./payment/Success";
 import Failure from "./payment/Failure";
@@ -42,6 +44,8 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/account" element={<AccountPage />} />
+                <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/forgot/password" element={<ForgotPassword/>} />
                 <Route path="/reset/password" element={<ResetPassword/>} />
                 <Route path="/change/password" element={<ChangePassword/>} />

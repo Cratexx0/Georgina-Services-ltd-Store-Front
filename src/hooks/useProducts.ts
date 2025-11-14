@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { apiService } from '@/lib/api';
 
 export interface Product {
   id: string;
@@ -45,12 +44,27 @@ export const useProducts = (page = 1, limit = 10, category?: string, subcategory
       try {
         setLoading(true);
         setError(null);
-        const data = await apiService.getProducts(page, limit, category, subcategory);
-        setProducts(data.products);
-        setTotal(data.total);
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        // Import dummy products
+        const { products: dummyProducts, getProductsByCategory, getProductsBySubcategory } = await import('@/data/products');
+        
+        let filteredProducts = dummyProducts;
+        
+        if (category) {
+          filteredProducts = getProductsByCategory(category);
+        }
+        
+        if (subcategory) {
+          filteredProducts = getProductsBySubcategory(subcategory);
+        }
+        
+        setTotal(filteredProducts.length);
+        setProducts(filteredProducts);
       } catch (err) {
-        console.error("Failed to fetch products from API:", err);
-        setError("Failed to load products from server.");
+        console.error("Failed to load products:", err);
+        setError("Failed to load products.");
         setProducts([]);
       } finally {
         setLoading(false);
@@ -74,12 +88,17 @@ export const useTrendingProducts = (page = 1, limit = 10): UseProductsResult => 
       try {
         setLoading(true);
         setError(null);
-        const data = await apiService.getTrendingProducts(page, limit);
-        setProducts(data.products);
-        setTotal(data.total);
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        const { getTrendingProducts } = await import('@/data/products');
+        const trendingProducts = getTrendingProducts();
+        
+        setTotal(trendingProducts.length);
+        setProducts(trendingProducts);
       } catch (err) {
-        console.error("Failed to fetch trending products from API:", err);
-        setError("Failed to load trending products from server.");
+        console.error("Failed to load trending products:", err);
+        setError("Failed to load trending products.");
         setProducts([]);
       } finally {
         setLoading(false);
@@ -103,12 +122,17 @@ export const useNewArrivalProducts = (page = 1, limit = 10): UseProductsResult =
       try {
         setLoading(true);
         setError(null);
-        const data = await apiService.getNewArrivalProducts(page, limit);
-        setProducts(data.products);
-        setTotal(data.total);
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        const { getNewArrivalProducts } = await import('@/data/products');
+        const newArrivals = getNewArrivalProducts();
+        
+        setTotal(newArrivals.length);
+        setProducts(newArrivals);
       } catch (err) {
-        console.error("Failed to fetch new arrival products from API:", err);
-        setError("Failed to load new arrival products from server.");
+        console.error("Failed to load new arrival products:", err);
+        setError("Failed to load new arrival products.");
         setProducts([]);
       } finally {
         setLoading(false);
@@ -132,12 +156,17 @@ export const useFeaturedProducts = (page = 1, limit = 10): UseProductsResult => 
       try {
         setLoading(true);
         setError(null);
-        const data = await apiService.getFeaturedProducts(page, limit);
-        setProducts(data.products);
-        setTotal(data.total);
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        const { getFeaturedProducts } = await import('@/data/products');
+        const featured = getFeaturedProducts();
+        
+        setTotal(featured.length);
+        setProducts(featured);
       } catch (err) {
-        console.error("Failed to fetch featured products from API:", err);
-        setError("Failed to load featured products from server.");
+        console.error("Failed to load featured products:", err);
+        setError("Failed to load featured products.");
         setProducts([]);
       } finally {
         setLoading(false);
