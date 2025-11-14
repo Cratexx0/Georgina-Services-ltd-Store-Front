@@ -17,6 +17,7 @@ const SettingsPage = () => {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState<string>('');
 
   // Parse name into firstName and lastName
   const nameParts = user?.name?.split(' ') || [];
@@ -29,7 +30,12 @@ const SettingsPage = () => {
     email: user?.email || '',
     phone: '+1 (555) 123-4567',
     address: '123 Main St, City, State 12345',
-    birthDate: '1990-01-01'
+    birthDate: '1990-01-01',
+    city: '',
+    state: '',
+    zipCode: '',
+    country: '',
+    bio: ''
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -91,6 +97,17 @@ const SettingsPage = () => {
     return user?.email?.charAt(0).toUpperCase() || 'U';
   };
 
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
     <Layout>
       <div className="container mx-auto px-4 py-12">
@@ -125,12 +142,28 @@ const SettingsPage = () => {
                   {/* Avatar Section */}
                   <div className="flex items-center gap-6">
                     <Avatar className="h-24 w-24">
-                      <AvatarImage src="" alt={user?.name} />
+                      <AvatarImage src={avatarPreview} alt={user?.name} />
                       <AvatarFallback className="text-2xl">{getUserInitials()}</AvatarFallback>
                     </Avatar>
-                    <div>
+                    <div className="flex-1">
                       <h3 className="font-semibold text-lg">{user?.name}</h3>
-                      <p className="text-sm text-muted-foreground">{user?.email}</p>
+                      <p className="text-sm text-muted-foreground mb-2">{user?.email}</p>
+                      {isEditingProfile && (
+                        <div>
+                          <input
+                            type="file"
+                            id="avatar-upload"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handleAvatarUpload}
+                          />
+                          <Label htmlFor="avatar-upload" className="cursor-pointer">
+                            <Button type="button" variant="outline" size="sm" asChild>
+                              <span>Upload Photo</span>
+                            </Button>
+                          </Label>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -206,13 +239,64 @@ const SettingsPage = () => {
                     <div className="space-y-2 md:col-span-2">
                       <Label htmlFor="address">
                         <MapPin className="inline h-4 w-4 mr-2" />
-                        Address
+                        Street Address
                       </Label>
                       <Input
                         id="address"
                         value={profileData.address}
                         onChange={(e) => setProfileData({ ...profileData, address: e.target.value })}
                         disabled={!isEditingProfile}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="city">City</Label>
+                      <Input
+                        id="city"
+                        value={profileData.city}
+                        onChange={(e) => setProfileData({ ...profileData, city: e.target.value })}
+                        disabled={!isEditingProfile}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="state">State/Province</Label>
+                      <Input
+                        id="state"
+                        value={profileData.state}
+                        onChange={(e) => setProfileData({ ...profileData, state: e.target.value })}
+                        disabled={!isEditingProfile}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="zipCode">Zip/Postal Code</Label>
+                      <Input
+                        id="zipCode"
+                        value={profileData.zipCode}
+                        onChange={(e) => setProfileData({ ...profileData, zipCode: e.target.value })}
+                        disabled={!isEditingProfile}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="country">Country</Label>
+                      <Input
+                        id="country"
+                        value={profileData.country}
+                        onChange={(e) => setProfileData({ ...profileData, country: e.target.value })}
+                        disabled={!isEditingProfile}
+                      />
+                    </div>
+
+                    <div className="space-y-2 md:col-span-2">
+                      <Label htmlFor="bio">Bio</Label>
+                      <Input
+                        id="bio"
+                        value={profileData.bio}
+                        onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
+                        disabled={!isEditingProfile}
+                        placeholder="Tell us about yourself"
                       />
                     </div>
                   </div>
