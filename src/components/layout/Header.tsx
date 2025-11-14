@@ -83,10 +83,10 @@ const Header = () => {
             
             <div className="flex items-center space-x-4">
               {isAuthenticated ? (
-                  <Link to="/account">
+                  <Link to="/dashboard">
                     <Button variant="ghost" size="sm" className="flex items-center gap-2">
                       <User className="h-4 w-4" />
-                      Account
+                      Dashboard
                     </Button>
                   </Link>
               ) : (
@@ -129,10 +129,10 @@ const Header = () => {
          
               <div className="flex items-center space-x-4">
                 {isAuthenticated ? (
-                  <Link to="/account" onClick={toggleMenu}>
+                  <Link to="/dashboard" onClick={toggleMenu}>
                     <Button variant="ghost" size="sm" className="flex items-center gap-2">
                       <User className="h-4 w-4" />
-                      Account
+                      Dashboard
                     </Button>
                   </Link>
                 ) : (
