@@ -32,17 +32,7 @@ const CategoryTabs: React.FC = () => {
     );
   }
   
-  if (error) {
-    return (
-      <div className="mb-12">
-        <div className="container mx-auto px-4">
-          <div className="text-center text-red-600">
-            <p>Failed to load categories. Using fallback data.</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Remove error display - fallback categories are used automatically
   
   return (
     <div className="mb-12">
