@@ -7,6 +7,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import { AuthProvider } from "@/context/AuthContext";
+import { BookingProvider } from "@/context/BookingContext";
+import { OrderProvider } from "@/context/OrderContext";
 
 // Pages
 import Index from "@/pages/Index";
@@ -24,6 +26,7 @@ import AccountPage from "./pages/AccountPage";
 import DashboardPage from "./pages/DashboardPage";
 import SettingsPage from "./pages/SettingsPage";
 import CleaningServicesPage from "./pages/CleaningServicesPage";
+import WishlistPage from "./pages/WishlistPage";
 import Success from "./payment/Success";
 import Failure from "./payment/Failure";
 import ScrollToTop from "./components/ScrollToTop";
@@ -33,38 +36,43 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <CartProvider>
-        <WishlistProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <ScrollToTop />
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/account" element={<AccountPage />} />
-                <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/settings" element={<SettingsPage />} />
-                <Route path="/forgot/password" element={<ForgotPassword/>} />
-                <Route path="/reset/password" element={<ResetPassword/>} />
-                <Route path="/change/password" element={<ChangePassword/>} />
-                <Route path="/success" element={<Success/>} />
-                <Route path="/fail" element={<Failure/>} />
-                <Route path="/category/:categorySlug" element={<CategoryPage />} />
-                <Route path="/category/:categorySlug/:subcategorySlug" element={<CategoryPage />} />
-                <Route path="/product/:productSlug" element={<ProductPage />} />
-                <Route path="/cart" element={<CartPage />} />
-                <Route path="/checkout" element={<CheckoutPage />} />
-                <Route path="/cleaning-services" element={<CleaningServicesPage />} />
-                <Route path="/search" element={<SearchResults />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </WishlistProvider>
-      </CartProvider>
+      <BookingProvider>
+        <OrderProvider>
+          <CartProvider>
+            <WishlistProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                  <ScrollToTop />
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/auth" element={<Auth />} />
+                    <Route path="/account" element={<AccountPage />} />
+                    <Route path="/dashboard" element={<DashboardPage />} />
+                    <Route path="/settings" element={<SettingsPage />} />
+                    <Route path="/wishlist" element={<WishlistPage />} />
+                    <Route path="/forgot/password" element={<ForgotPassword/>} />
+                    <Route path="/reset/password" element={<ResetPassword/>} />
+                    <Route path="/change/password" element={<ChangePassword/>} />
+                    <Route path="/success" element={<Success/>} />
+                    <Route path="/fail" element={<Failure/>} />
+                    <Route path="/category/:categorySlug" element={<CategoryPage />} />
+                    <Route path="/category/:categorySlug/:subcategorySlug" element={<CategoryPage />} />
+                    <Route path="/product/:productSlug" element={<ProductPage />} />
+                    <Route path="/cart" element={<CartPage />} />
+                    <Route path="/checkout" element={<CheckoutPage />} />
+                    <Route path="/cleaning-services" element={<CleaningServicesPage />} />
+                    <Route path="/search" element={<SearchResults />} />
+                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </BrowserRouter>
+              </TooltipProvider>
+            </WishlistProvider>
+          </CartProvider>
+        </OrderProvider>
+      </BookingProvider>
     </AuthProvider>
   </QueryClientProvider>
 );

@@ -52,23 +52,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   const login = async (email: string, password: string) => {
+    setLoading(true);
+    setError(null);
+    
     try {
-      setLoading(true);
-      setError(null);
-      const response = await apiService.login(email, password);
+      // Temporary auto-login - no validation needed
+      await new Promise(resolve => setTimeout(resolve, 500));
       
-      const userData: User = {
-        id: response.user.id,
-        email: response.user.email,
-        name: response.user.name,
-        role: response.user.role
+      // Mock user data based on email
+      const mockUser: User = {
+        id: Date.now().toString(),
+        email,
+        name: email.split('@')[0] || 'Guest User',
+        role: 'user',
       };
       
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
-      return;
+      setUser(mockUser);
+      localStorage.setItem('user', JSON.stringify(mockUser));
     } catch (err) {
-      setError('Login failed. Please check your credentials.');
+      setError('Login failed. Please try again.');
       throw err;
     } finally {
       setLoading(false);
@@ -81,12 +83,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const register = async (name: string, email: string, password: string) => {
+    setLoading(true);
+    setError(null);
+    
     try {
-      setLoading(true);
-      setError(null);
-      await apiService.register(name, email, password);
-      // After registration, log the user in
-      await login(email, password);
+      // Temporary auto-register - no validation needed
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Auto-login after registration
+      const mockUser: User = {
+        id: Date.now().toString(),
+        email,
+        name,
+        role: 'user',
+      };
+      
+      setUser(mockUser);
+      localStorage.setItem('user', JSON.stringify(mockUser));
     } catch (err) {
       setError('Registration failed. Please try again.');
       throw err;
