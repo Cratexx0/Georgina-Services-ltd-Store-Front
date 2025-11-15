@@ -1,29 +1,21 @@
-
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { useCategories } from '@/hooks/useCategories';
-import { cn } from '@/lib/utils';
+import { Card, CardContent } from '@/components/ui/card';
+import { ArrowRight } from 'lucide-react';
 
 const CategoryTabs: React.FC = () => {
-  const { categories, loading, error } = useCategories();
-  const [activeTab, setActiveTab] = useState<string>('');
-  
-  // Set the first category as active when categories are loaded
-  React.useEffect(() => {
-    if (categories.length > 0 && !activeTab) {
-      setActiveTab(categories[0].id);
-    }
-  }, [categories, activeTab]);
+  const { categories, loading } = useCategories();
   
   if (loading) {
     return (
       <div className="mb-12">
         <div className="container mx-auto px-4">
           <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded mb-6"></div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {[...Array(8)].map((_, i) => (
-                <div key={i} className="h-16 bg-gray-200 rounded"></div>
+            <div className="h-8 bg-muted rounded mb-6 max-w-md"></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="h-64 bg-muted rounded-lg"></div>
               ))}
             </div>
           </div>
@@ -32,49 +24,50 @@ const CategoryTabs: React.FC = () => {
     );
   }
   
-  // Remove error display - fallback categories are used automatically
-  
   return (
     <div className="mb-12">
-      <div className="mb-6 border-b border-gray-200">
-        <div className="container mx-auto px-4 flex overflow-x-auto scrollbar-hide">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold mb-2">Shop by Category</h2>
+          <p className="text-muted-foreground">
+            Discover our curated collection of premium products and services
+          </p>
+        </div>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {categories.map((category) => (
-            <button
+            <Link
               key={category.id}
-              onClick={() => setActiveTab(category.id)}
-              className={cn(
-                "px-6 py-3 font-medium text-sm whitespace-nowrap transition-colors relative",
-                activeTab === category.id
-                  ? "text-primary border-b-2 border-primary"
-                  : "text-gray-600 hover:text-primary"
-              )}
+              to={`/category/${category.slug}`}
+              className="group"
             >
-              {category.name}
-            </button>
+              <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 h-full">
+                <div className="relative aspect-video overflow-hidden">
+                  <img
+                    src={category.image}
+                    alt={category.name}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <h3 className="text-2xl font-bold text-white mb-1">
+                      {category.name}
+                    </h3>
+                    <p className="text-sm text-white/90">
+                      {category.subcategories?.length || 0} subcategories
+                    </p>
+                  </div>
+                </div>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between text-primary group-hover:translate-x-2 transition-transform">
+                    <span className="font-medium">Explore {category.name}</span>
+                    <ArrowRight className="h-5 w-5" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
           ))}
         </div>
-      </div>
-      
-      <div className="container mx-auto px-4 animate-fade-in">
-        {categories.map((category) => (
-          <div 
-            key={category.id}
-            className={cn(
-              "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4",
-              activeTab === category.id ? "block" : "hidden"
-            )}
-          >
-            {category.subcategories?.map((subcategory) => (
-              <Link
-                key={subcategory.id}
-                to={`/category/${category.slug}/${subcategory.slug}`}
-                className="category-link text-center p-4 rounded-md hover:bg-gray-50 transition-colors"
-              >
-                <span className="font-medium text-gray-700">{subcategory.name}</span>
-              </Link>
-            ))}
-          </div>
-        ))}
       </div>
     </div>
   );

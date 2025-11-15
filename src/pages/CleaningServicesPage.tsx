@@ -1,201 +1,195 @@
 import React, { useState } from 'react';
 import Layout from '@/components/layout/Layout';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import { Badge } from '@/components/ui/badge';
-import { Clock, CheckCircle, Star, MapPin } from 'lucide-react';
+import { toast } from '@/components/ui/sonner';
+import { Sparkles, Clock, CheckCircle } from 'lucide-react';
+import { useBooking } from '@/context/BookingContext';
+import { useNavigate } from 'react-router-dom';
 
-const CleaningServicesPage = () => {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+const CleaningServicesPage: React.FC = () => {
+  const { addBooking } = useBooking();
+  const navigate = useNavigate();
+  const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>('');
   const [selectedService, setSelectedService] = useState<string>('');
 
   const timeSlots = [
-    '09:00 - 11:00',
-    '11:00 - 13:00',
-    '13:00 - 15:00',
-    '15:00 - 17:00',
-    '17:00 - 19:00'
+    '9:00 AM - 11:00 AM',
+    '11:00 AM - 1:00 PM',
+    '1:00 PM - 3:00 PM',
+    '3:00 PM - 5:00 PM',
+    '5:00 PM - 7:00 PM',
   ];
 
   const services = [
     {
-      id: 'home-deep-cleaning',
-      name: 'Home Deep Cleaning',
-      price: 149.99,
-      duration: '3-4 hours',
-      description: 'Comprehensive deep cleaning of your entire home including all rooms, kitchen, and bathrooms.',
-      features: ['All rooms cleaned', 'Kitchen deep clean', 'Bathroom sanitization', 'Vacuum & mop', 'Dusting']
-    },
-    {
-      id: 'office-cleaning',
+      id: '1',
       name: 'Office Cleaning',
-      price: 99.99,
+      description: 'Professional office cleaning services',
+      price: 120,
       duration: '2-3 hours',
-      description: 'Professional office cleaning with flexible scheduling to suit your business needs.',
-      features: ['Desk cleaning', 'Floor cleaning', 'Trash removal', 'Restroom cleaning', 'Window cleaning']
     },
     {
-      id: 'carpet-cleaning',
-      name: 'Carpet Steam Cleaning',
-      price: 79.99,
+      id: '2',
+      name: 'Kitchen Deep Cleaning',
+      description: 'Thorough kitchen sanitization',
+      price: 85,
       duration: '1-2 hours',
-      description: 'Professional carpet cleaning using eco-friendly steam methods for deep sanitization.',
-      features: ['Steam cleaning', 'Stain removal', 'Eco-friendly', 'Fast drying', 'Sanitization']
-    }
+    },
+    {
+      id: '3',
+      name: 'Bathroom Cleaning',
+      description: 'Complete bathroom cleaning',
+      price: 60,
+      duration: '1 hour',
+    },
   ];
 
   const handleBooking = () => {
-    if (selectedDate && selectedTimeSlot && selectedService) {
-      alert(`Booking confirmed for ${selectedService} on ${selectedDate.toDateString()} at ${selectedTimeSlot}`);
-    } else {
-      alert('Please select a service, date, and time slot.');
+    if (!selectedService || !selectedDate || !selectedTimeSlot) {
+      toast.error('Please select a service, date, and time slot');
+      return;
     }
+    
+    const service = services.find(s => s.id === selectedService);
+    if (!service) return;
+
+    addBooking({
+      service: service.name,
+      date: selectedDate,
+      timeSlot: selectedTimeSlot,
+      price: service.price,
+      address: 'Your Address (To be confirmed)',
+    });
+
+    // Reset form
+    setSelectedService('');
+    setSelectedDate(undefined);
+    setSelectedTimeSlot('');
+    
+    // Navigate to dashboard
+    setTimeout(() => {
+      navigate('/dashboard');
+    }, 1500);
   };
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">Professional Cleaning Services</h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Book professional cleaning services with flexible scheduling. Our experienced team ensures your space is spotless and sanitized.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
-          {/* Service Selection */}
-          <div>
-            <h2 className="text-2xl font-semibold mb-6">Choose Your Service</h2>
-            <div className="space-y-4">
-              {services.map((service) => (
-                <Card 
-                  key={service.id} 
-                  className={`cursor-pointer transition-all hover:shadow-md ${
-                    selectedService === service.id ? 'ring-2 ring-primary' : ''
-                  }`}
-                  onClick={() => setSelectedService(service.id)}
-                >
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle className="text-xl">{service.name}</CardTitle>
-                        <CardDescription className="flex items-center gap-2 mt-2">
-                          <Clock className="h-4 w-4" />
-                          {service.duration}
-                        </CardDescription>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-2xl font-bold text-primary">${service.price}</div>
-                        <div className="flex items-center gap-1">
-                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                          <span className="text-sm">4.8</span>
-                        </div>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600 mb-4">{service.description}</p>
-                    <div className="flex flex-wrap gap-2">
-                      {service.features.map((feature, index) => (
-                        <Badge key={index} variant="secondary" className="text-xs">
-                          <CheckCircle className="h-3 w-3 mr-1" />
-                          {feature}
-                        </Badge>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+      <div className="container mx-auto px-4 py-12">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold mb-4">Professional Cleaning Services</h1>
+            <p className="text-muted-foreground text-lg">
+              Book our professional cleaning services for your home or office
+            </p>
           </div>
 
-          {/* Date and Time Selection */}
-          <div>
-            <h2 className="text-2xl font-semibold mb-6">Select Date & Time</h2>
-            
-            <div className="mb-6">
-              <h3 className="text-lg font-medium mb-3">Choose Date</h3>
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={setSelectedDate}
-                disabled={(date) => date < new Date()}
-                className="rounded-md border w-fit"
-              />
+          <div className="grid md:grid-cols-2 gap-8 mb-8">
+            {/* Service Selection */}
+            <div>
+              <h2 className="text-2xl font-semibold mb-6">Select Service</h2>
+              <div className="space-y-4">
+                {services.map((service) => (
+                  <Card
+                    key={service.id}
+                    className={`cursor-pointer transition-all hover:shadow-md ${
+                      selectedService === service.id ? 'ring-2 ring-primary' : ''
+                    }`}
+                    onClick={() => setSelectedService(service.id)}
+                  >
+                    <CardHeader>
+                      <CardTitle className="flex items-center justify-between">
+                        {service.name}
+                        {selectedService === service.id && (
+                          <CheckCircle className="h-5 w-5 text-primary" />
+                        )}
+                      </CardTitle>
+                      <CardDescription>{service.description}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Clock className="h-4 w-4" />
+                          {service.duration}
+                        </div>
+                        <p className="text-xl font-bold text-primary">${service.price}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
 
+            {/* Date & Time Selection */}
             <div>
-              <h3 className="text-lg font-medium mb-3">Available Time Slots</h3>
-              <div className="grid grid-cols-1 gap-2">
+              <h2 className="text-2xl font-semibold mb-6">Select Date & Time</h2>
+              <Card className="mb-4">
+                <CardContent className="pt-6">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={setSelectedDate}
+                    className="rounded-md border"
+                    disabled={(date) => date < new Date()}
+                  />
+                </CardContent>
+              </Card>
+
+              <h3 className="font-semibold mb-3">Available Time Slots</h3>
+              <div className="grid grid-cols-2 gap-2">
                 {timeSlots.map((slot) => (
                   <Button
                     key={slot}
-                    variant={selectedTimeSlot === slot ? "default" : "outline"}
-                    className="justify-start"
+                    variant={selectedTimeSlot === slot ? 'default' : 'outline'}
                     onClick={() => setSelectedTimeSlot(slot)}
+                    className="w-full"
                   >
-                    <Clock className="h-4 w-4 mr-2" />
                     {slot}
                   </Button>
                 ))}
               </div>
             </div>
-
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <MapPin className="h-4 w-4 text-gray-600" />
-                <span className="font-medium">Service Area</span>
-              </div>
-              <p className="text-sm text-gray-600">
-                We serve the entire metropolitan area. Additional charges may apply for locations outside the city center.
-              </p>
-            </div>
-
-            <Button 
-              onClick={handleBooking}
-              className="w-full mt-6"
-              size="lg"
-              disabled={!selectedDate || !selectedTimeSlot || !selectedService}
-            >
-              Book Service
-            </Button>
           </div>
+
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-primary" />
+                Why Choose Us?
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid sm:grid-cols-3 gap-4">
+                <div className="text-center">
+                  <CheckCircle className="h-8 w-8 text-primary mx-auto mb-2" />
+                  <h4 className="font-semibold mb-1">Professional Team</h4>
+                  <p className="text-sm text-muted-foreground">Experienced cleaners</p>
+                </div>
+                <div className="text-center">
+                  <CheckCircle className="h-8 w-8 text-primary mx-auto mb-2" />
+                  <h4 className="font-semibold mb-1">Eco-Friendly</h4>
+                  <p className="text-sm text-muted-foreground">Safe products</p>
+                </div>
+                <div className="text-center">
+                  <CheckCircle className="h-8 w-8 text-primary mx-auto mb-2" />
+                  <h4 className="font-semibold mb-1">Satisfaction Guaranteed</h4>
+                  <p className="text-sm text-muted-foreground">100% guarantee</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Button
+            size="lg"
+            className="w-full"
+            onClick={handleBooking}
+            disabled={!selectedService || !selectedDate || !selectedTimeSlot}
+          >
+            Book Service
+          </Button>
         </div>
-
-        {/* Why Choose Us Section */}
-        <section className="py-16 bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Why Choose Our Services</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Professional cleaning you can trust
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center p-6">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="font-semibold text-lg mb-2">Certified Professionals</h3>
-              <p className="text-muted-foreground">Trained and background-checked cleaners</p>
-            </div>
-            <div className="text-center p-6">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Star className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="font-semibold text-lg mb-2">Quality Guaranteed</h3>
-              <p className="text-muted-foreground">100% satisfaction or your money back</p>
-            </div>
-            <div className="text-center p-6">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Clock className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="font-semibold text-lg mb-2">Flexible Scheduling</h3>
-              <p className="text-muted-foreground">Book at your convenience, 7 days a week</p>
-            </div>
-          </div>
-        </section>
       </div>
     </Layout>
   );
