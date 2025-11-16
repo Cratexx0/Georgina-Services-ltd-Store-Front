@@ -43,11 +43,11 @@ const Header = () => {
             <Link to="/" className="text-muted-foreground hover:text-primary transition-colors">
               Home
             </Link>
-            <Link to="/category/womens-clothing" className="text-muted-foreground hover:text-primary transition-colors">
+            <Link to="/category/clothes" className="text-muted-foreground hover:text-primary transition-colors">
               Clothes
             </Link>
-            <Link to="/category/food-stuffs" className="text-muted-foreground hover:text-primary transition-colors">
-              Food & Spices
+            <Link to="/category/foodstuffs" className="text-muted-foreground hover:text-primary transition-colors">
+              Foodstuffs
             </Link>
             <Link to="/cleaning-services" className="text-muted-foreground hover:text-primary transition-colors">
               Cleaning Services

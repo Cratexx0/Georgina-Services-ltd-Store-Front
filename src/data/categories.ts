@@ -24,12 +24,15 @@ export const fallbackCategories: Category[] = [
     image: "https://images.unsplash.com/photo-1445205170230-053b83016050?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80",
     slug: "clothes",
     subcategories: [
-      { id: "men-african-wear", name: "Men - African Wear", slug: "men-african-wear", parentId: "clothes" },
-      { id: "men-trousers", name: "Men - Trousers", slug: "men-trousers", parentId: "clothes" },
+      // Women
       { id: "women-african-print", name: "Women - African Print", slug: "women-african-print", parentId: "clothes" },
       { id: "women-african-wear", name: "Women - African Wear", slug: "women-african-wear", parentId: "clothes" },
       { id: "women-ankara", name: "Women - Ankara", slug: "women-ankara", parentId: "clothes" },
       { id: "women-bonnet", name: "Women - Bonnet", slug: "women-bonnet", parentId: "clothes" },
+      // Men
+      { id: "men-african-wear", name: "Men - African Wear", slug: "men-african-wear", parentId: "clothes" },
+      { id: "men-trousers", name: "Men - Trousers", slug: "men-trousers", parentId: "clothes" },
+      // Kids
       { id: "kids-african-wear", name: "Kids - African Wear", slug: "kids-african-wear", parentId: "clothes" },
     ]
   },
@@ -40,16 +43,21 @@ export const fallbackCategories: Category[] = [
     image: "https://images.unsplash.com/photo-1488459716781-31db52582fe9?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80",
     slug: "foodstuffs",
     subcategories: [
+      // Pantry
       { id: "pantry-vegetable-oils", name: "Pantry - Vegetable Oils", slug: "pantry-vegetable-oils", parentId: "foodstuffs" },
       { id: "pantry-zomi", name: "Pantry - Zomi", slug: "pantry-zomi", parentId: "foodstuffs" },
       { id: "pantry-gari", name: "Pantry - Gari", slug: "pantry-gari", parentId: "foodstuffs" },
       { id: "pantry-spaghetti", name: "Pantry - Spaghetti", slug: "pantry-spaghetti", parentId: "foodstuffs" },
       { id: "pantry-tomatoes-paste", name: "Pantry - Tomatoes Paste", slug: "pantry-tomatoes-paste", parentId: "foodstuffs" },
+      // Prepared Mixes
       { id: "prepared-fufu", name: "Prepared Mixes - Fufu", slug: "prepared-fufu", parentId: "foodstuffs" },
       { id: "prepared-banku", name: "Prepared Mixes - Banku", slug: "prepared-banku", parentId: "foodstuffs" },
       { id: "prepared-tom-brown", name: "Prepared Mixes - Tom Brown", slug: "prepared-tom-brown", parentId: "foodstuffs" },
       { id: "prepared-konkonte", name: "Prepared Mixes - Konkonte", slug: "prepared-konkonte", parentId: "foodstuffs" },
+      // Soup Base
       { id: "soup-palm-nut", name: "Soup Base - Palm Nut Soup", slug: "soup-palm-nut", parentId: "foodstuffs" },
+      { id: "soup-okro-stew", name: "Soup Base - Okro Stew", slug: "soup-okro-stew", parentId: "foodstuffs" },
+      { id: "soup-groundnut", name: "Soup Base - Groundnut Soup", slug: "soup-groundnut", parentId: "foodstuffs" },
     ]
   },
   {
