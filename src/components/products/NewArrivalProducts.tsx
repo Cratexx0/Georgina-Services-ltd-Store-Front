@@ -2,6 +2,7 @@ import React from 'react';
 import { useNewArrivalProducts } from '@/hooks/useProducts';
 import ProductCard from './ProductCard';
 import { Loader2 } from 'lucide-react';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '../ui/carousel';
 
 const NewArrivalProducts: React.FC = () => {
   const { products, loading, error } = useNewArrivalProducts(1, 8);
@@ -53,11 +54,25 @@ const NewArrivalProducts: React.FC = () => {
           </p>
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+           <Carousel
+      className="w-full"
+      opts={{
+        align: "start",
+        loop: true,
+      }}
+    >
+      <CarouselContent className="-ml-2 md:-ml-4">
+        {products.map((product) => (
+          <CarouselItem key={product.id} className="pl-2 md:pl-4 basis-4/5 sm:basis-1/2 md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
+            <div className="p-1">
+              <ProductCard product={product} />
+            </div>
+          </CarouselItem>
+        ))}
+      </CarouselContent>
+      <CarouselPrevious className="hidden sm:flex" />
+      <CarouselNext className="hidden sm:flex" />
+    </Carousel>
       </div>
     </div>
   );

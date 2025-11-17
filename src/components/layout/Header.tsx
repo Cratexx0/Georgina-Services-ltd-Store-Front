@@ -43,13 +43,13 @@ const Header = () => {
             <Link to="/" className="text-muted-foreground hover:text-primary transition-colors">
               Home
             </Link>
-            <Link to="/category/womens-clothing" className="text-muted-foreground hover:text-primary transition-colors">
+            <Link to="/category/clothes" className="text-muted-foreground hover:text-primary transition-colors">
               Clothes
             </Link>
-            <Link to="/category/food-stuffs" className="text-muted-foreground hover:text-primary transition-colors">
+            <Link to="/category/foodstuffs" className="text-muted-foreground hover:text-primary transition-colors">
               Food & Spices
             </Link>
-            <Link to="/cleaning-services" className="text-muted-foreground hover:text-primary transition-colors">
+            <Link to="/category/services" className="text-muted-foreground hover:text-primary transition-colors">
               Cleaning Services
             </Link>
           </nav>
@@ -143,7 +143,7 @@ const Header = () => {
                   <Link to="/dashboard" onClick={toggleMenu}>
                     <Button variant="ghost" size="sm" className="flex items-center gap-2">
                       <User className="h-4 w-4" />
-                      Dashboard
+                  
                     </Button>
                   </Link>
                 ) : (

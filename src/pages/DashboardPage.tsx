@@ -9,6 +9,7 @@ import { useBooking } from '@/context/BookingContext';
 import { useOrder } from '@/context/OrderContext';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Package, ShoppingBag, MapPin, Clock, Truck } from 'lucide-react';
+import UserDropdownMenu from '@/components/layout/UserDropDFownMenu';
 
 const DashboardPage: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
@@ -84,9 +85,10 @@ const DashboardPage: React.FC = () => {
           </div>
 
           <Tabs defaultValue="orders" className="mt-8">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="orders">My Orders</TabsTrigger>
               <TabsTrigger value="bookings">My Bookings</TabsTrigger>
+               <TabsTrigger value="user">Update Profile</TabsTrigger>
             </TabsList>
 
             <TabsContent value="orders" className="space-y-4">
@@ -209,6 +211,11 @@ const DashboardPage: React.FC = () => {
                 </Card>
               ))}
             </TabsContent>
+
+              <TabsContent value="user" className="space-y-4">
+      <UserDropdownMenu/>
+            </TabsContent>
+
           </Tabs>
         </div>
       </div>

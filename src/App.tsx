@@ -61,8 +61,8 @@ const App = () => (
                     <Route path="/category/:categorySlug/:subcategorySlug" element={<CategoryPage />} />
                     <Route path="/product/:productSlug" element={<ProductPage />} />
                     <Route path="/cart" element={<CartPage />} />
-                    <Route path="/checkout" element={<CheckoutPage />} />
-                    <Route path="/cleaning-services" element={<CleaningServicesPage />} />
+                    {/* <Route path="/checkout" element={<CheckoutPage />} /> */}
+                    <Route path="/category/services" element={<CleaningServicesPage />} />
                     <Route path="/search" element={<SearchResults />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />

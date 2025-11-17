@@ -10,6 +10,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { Link, useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 
+
 const CheckoutPage = () => {
   const { cart, clearCart, getTotalPrice } = useCart();
   const [loading, setLoading] = useState(false);
@@ -37,6 +38,8 @@ const CheckoutPage = () => {
   });
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  
 
   // Simulate fetching client secret from backend
   useEffect(() => {
