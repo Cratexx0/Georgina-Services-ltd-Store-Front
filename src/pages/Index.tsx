@@ -43,7 +43,7 @@ const Index = () => {
             </p>
           </div>
           <FeaturedProductsCarousel />
-
+          
         </div>
       </section>
 
