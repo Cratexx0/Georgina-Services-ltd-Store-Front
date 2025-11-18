@@ -15,8 +15,8 @@ const AuthForm = () => {
   const [registerData, setRegisterData] = useState({ 
     email: '', 
     password: '', 
-    firstName: '', 
-    lastName: '' 
+    fullName: '', 
+    confirmpassword: '' 
   });
   const { toast } = useToast();
   const { login, register } = useAuth();
@@ -49,7 +49,7 @@ const AuthForm = () => {
     setIsLoading(true);
     
     try {
-      const fullName = `${registerData.firstName} ${registerData.lastName}`.trim();
+      const fullName = `${registerData.fullName}`.trim();
       await register(fullName, registerData.email, registerData.password);
       toast({
         title: "Registration successful",
@@ -162,7 +162,7 @@ const AuthForm = () => {
             </div>
           </div>
           
-          <div className="grid grid-cols-2 gap-3 animate-fade-in delay-500">
+          {/* <div className="grid grid-cols-2 gap-3 animate-fade-in delay-500">
             <Button 
               variant="outline" 
               className="social-button"
@@ -198,7 +198,7 @@ const AuthForm = () => {
               <Facebook className="mr-2 h-4 w-4 text-[#1877F2]" />
               Facebook
             </Button>
-          </div>
+          </div> */}
         </TabsContent>
         
         {/* Register Form */}
@@ -213,30 +213,18 @@ const AuthForm = () => {
           </div>
           
           <form onSubmit={handleRegister} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+           
               <div className="animate-fade-in delay-100">
                 <Label htmlFor="register-first-name">First name</Label>
                 <Input 
                   id="register-first-name" 
                   type="text"
-                  value={registerData.firstName}
-                  onChange={(e) => setRegisterData({...registerData, firstName: e.target.value})}
+                  value={registerData.fullName}
+                  onChange={(e) => setRegisterData({...registerData, fullName: e.target.value})}
                   required
                   className="mt-1"
                 />
               </div>
-              <div className="animate-fade-in delay-100">
-                <Label htmlFor="register-last-name">Last name</Label>
-                <Input 
-                  id="register-last-name" 
-                  type="text"
-                  value={registerData.lastName}
-                  onChange={(e) => setRegisterData({...registerData, lastName: e.target.value})}
-                  required
-                  className="mt-1"
-                />
-              </div>
-            </div>
             
             <div className="animate-fade-in delay-200">
               <Label htmlFor="register-email">Email</Label>
@@ -258,6 +246,18 @@ const AuthForm = () => {
                 type="password"
                 value={registerData.password}
                 onChange={(e) => setRegisterData({...registerData, password: e.target.value})}
+                required
+                className="mt-1"
+              />
+            </div>
+
+              <div className="animate-fade-in delay-300">
+              <Label htmlFor="register-password">Confirm Password</Label>
+              <Input 
+                id="confirm-password" 
+                type="password"
+                value={registerData.confirmpassword}
+                onChange={(e) => setRegisterData({...registerData, confirmpassword: e.target.value})}
                 required
                 className="mt-1"
               />
@@ -291,7 +291,7 @@ const AuthForm = () => {
             </div>
           </div>
           
-          <div className="grid grid-cols-2 gap-3 animate-fade-in delay-500">
+          {/* <div className="grid grid-cols-2 gap-3 animate-fade-in delay-500">
             <Button 
               variant="outline" 
               className="social-button"
@@ -327,7 +327,7 @@ const AuthForm = () => {
               <Facebook className="mr-2 h-4 w-4 text-[#1877F2]" />
               Facebook
             </Button>
-          </div>
+          </div> */}
         </TabsContent>
       </Tabs>
     </div>

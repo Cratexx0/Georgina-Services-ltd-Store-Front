@@ -1,422 +1,201 @@
-
-import React, { useEffect, useState } from 'react';
-import { useCart } from '@/context/CartContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, CheckCircle, ArrowLeft, CreditCard, Smartphone } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
+import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
+import { useOrder, Order } from '@/context/OrderContext';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ShoppingCart, CreditCard, Loader2, ArrowLeft } from 'lucide-react';
+import { toast } from '@/components/ui/sonner';
 
-
-const CheckoutPage = () => {
-  const { cart, clearCart, getTotalPrice } = useCart();
-  const [loading, setLoading] = useState(false);
-  const [paymentSuccess, setPaymentSuccess] = useState(false);
-  const [clientSecret, setClientSecret] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('card');
-  const [billingInfo, setBillingInfo] = useState({
-    email: '',
-    firstName: '',
-    lastName: '',
-    address: '',
-    city: '',
-    zipCode: '',
-    country: 'US'
-  });
-  const [cardInfo, setCardInfo] = useState({
-    cardNumber: '',
-    expiryDate: '',
-    cvv: '',
-    cardName: ''
-  });
-  const [mobileMoneyInfo, setMobileMoneyInfo] = useState({
-    phoneNumber: '',
-    provider: ''
-  });
-  const { toast } = useToast();
+const CheckoutPage: React.FC = () => {
+  const { cart, getTotalPrice, clearCart } = useCart();
+  const { user } = useAuth();
+  const { addOrder } = useOrder();
   const navigate = useNavigate();
-
   
+  const STRIPE_PAYMENT_LINK = 'https://buy.stripe.com/test_4gM5kF1NAd2vfF83KU4Rq00';
 
-  // Simulate fetching client secret from backend
+  const shippingCost = 10.00;
+  const taxRate = 0.15; // 15% tax
+  const subtotal = getTotalPrice();
+  const tax = subtotal * taxRate;
+  const total = subtotal + shippingCost + tax;
+
   useEffect(() => {
     if (cart.length === 0) {
       navigate('/cart');
-      return;
     }
+  }, [cart, navigate]);
 
-    const fetchClientSecret = async () => {
-      try {
-        setLoading(true);
-        // In a real app, you would call your backend API here
-        setTimeout(() => {
-          setClientSecret('pi_mock_123456789');
-          setLoading(false);
-        }, 1000);
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to initialize payment",
-          variant: "destructive"
-        });
-        setLoading(false);
-      }
-    };
-
-    fetchClientSecret();
-  }, [cart, navigate, toast]);
-
-  const handlePayment = async () => {
-    // Validate billing information
-    if (!billingInfo.email || !billingInfo.firstName || !billingInfo.lastName || 
-        !billingInfo.address || !billingInfo.city || !billingInfo.zipCode) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in all billing information fields",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Validate payment method specific info
-    if (paymentMethod === 'card') {
-      if (!cardInfo.cardNumber || !cardInfo.expiryDate || !cardInfo.cvv || !cardInfo.cardName) {
-        toast({
-          title: "Missing Card Information",
-          description: "Please fill in all card details",
-          variant: "destructive"
-        });
-        return;
-      }
-    } else if (paymentMethod === 'mobile_money') {
-      if (!mobileMoneyInfo.phoneNumber || !mobileMoneyInfo.provider) {
-        toast({
-          title: "Missing Mobile Money Information",
-          description: "Please fill in mobile money details",
-          variant: "destructive"
-        });
-        return;
-      }
-    }
-
+  const handleProceedToStripe = () => {
     try {
-      setLoading(true);
+      // Create order before redirecting to Stripe
+      const orderData: Omit<Order, 'id' | 'orderNumber' | 'orderedAt' | 'updatedAt'> = {
+        items: cart.map(item => ({
+          id: item.product.id,
+          name: item.product.name,
+          price: item.product.discountPrice || item.product.price,
+          quantity: item.quantity,
+          image: item.product.images[0],
+        })),
+        totalAmount: total,
+        shippingAddress: user?.email || 'To be confirmed',
+        status: 'pending' as 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled',
+        paymentStatus: 'pending' as 'pending' | 'paid' | 'failed',
+      };
 
-      // Simulate payment processing
+      addOrder(orderData);
+      
+      toast.success('Redirecting to Stripe for secure payment...');
+      
+      // Redirect to Stripe payment page (clean URL without parameters)
       setTimeout(() => {
-        setPaymentSuccess(true);
-        clearCart();
-        setLoading(false);
-
-        toast({
-          title: "Payment successful!",
-          description: "Your order has been placed and you'll receive a confirmation email shortly.",
-        });
-      }, 3000);
-
+        window.location.href = STRIPE_PAYMENT_LINK;
+      }, 1000);
+      
     } catch (error) {
-      toast({
-        title: "Payment failed",
-        description: "Please try again or use a different payment method.",
-        variant: "destructive"
-      });
-      setLoading(false);
+      toast.error('Failed to process order. Please try again.');
+      console.error(error);
     }
   };
 
-  if (cart.length === 0 && !paymentSuccess) {
-    return (
-      <Layout>
-        <div className="container mx-auto px-4 py-12 text-center">
-          <div className="max-w-md mx-auto">
-            <div className="p-6 border border-gray-200 rounded-lg bg-white shadow-sm">
-              <h1 className="text-2xl font-bold mb-4">No items in cart</h1>
-              <p className="text-gray-600 mb-6">
-                Your cart is empty. Please add items before checking out.
-              </p>
-              <Button asChild>
-                <Link to="/">Continue Shopping</Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </Layout>
-    );
-  }
-
-  if (paymentSuccess) {
-    return (
-      <Layout>
-        <div className="container mx-auto px-4 py-12 text-center">
-          <div className="max-w-md mx-auto">
-            <div className="p-6 border border-gray-200 rounded-lg bg-white shadow-sm">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 mb-4">
-                <CheckCircle className="h-6 w-6 text-green-600" />
-              </div>
-              <h1 className="text-2xl font-bold mb-4">Order Confirmed!</h1>
-              <p className="text-gray-600 mb-6">
-                Thank you for your purchase. A confirmation email has been sent to your email address.
-              </p>
-              <div className="flex flex-col space-y-2">
-                <Button asChild>
-                  <Link to="/">Continue Shopping</Link>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Layout>
-    );
+  if (cart.length === 0) {
+    return null;
   }
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8">
-        <Button
-          variant="ghost"
-          onClick={() => navigate(-1)}
-          className="mb-4 flex items-center"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Cart
-        </Button>
+      <div className="container mx-auto px-4 py-12">
+        <div className="max-w-8xl mx-auto">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate('/cart')}
+            className="mb-6"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Cart
+          </Button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-xl font-bold mb-6">Checkout</h2>
-
-            {/* Billing Information */}
-            <div className="space-y-4 mb-6">
-              <h3 className="text-lg font-semibold">Billing Information</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="email">Email *</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={billingInfo.email}
-                    onChange={(e) => setBillingInfo({...billingInfo, email: e.target.value})}
-                    placeholder="john@example.com"
-                  />
-                </div>
-                <div></div>
-                <div>
-                  <Label htmlFor="firstName">First Name *</Label>
-                  <Input
-                    id="firstName"
-                    value={billingInfo.firstName}
-                    onChange={(e) => setBillingInfo({...billingInfo, firstName: e.target.value})}
-                    placeholder="John"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="lastName">Last Name *</Label>
-                  <Input
-                    id="lastName"
-                    value={billingInfo.lastName}
-                    onChange={(e) => setBillingInfo({...billingInfo, lastName: e.target.value})}
-                    placeholder="Doe"
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <Label htmlFor="address">Address *</Label>
-                  <Input
-                    id="address"
-                    value={billingInfo.address}
-                    onChange={(e) => setBillingInfo({...billingInfo, address: e.target.value})}
-                    placeholder="123 Main Street"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="city">City *</Label>
-                  <Input
-                    id="city"
-                    value={billingInfo.city}
-                    onChange={(e) => setBillingInfo({...billingInfo, city: e.target.value})}
-                    placeholder="New York"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="zipCode">Zip Code *</Label>
-                  <Input
-                    id="zipCode"
-                    value={billingInfo.zipCode}
-                    onChange={(e) => setBillingInfo({...billingInfo, zipCode: e.target.value})}
-                    placeholder="10001"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Payment Method Selection */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Payment Method</h3>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <button
-                  onClick={() => setPaymentMethod('card')}
-                  className={`flex items-center justify-center p-4 border-2 rounded-lg transition-colors ${
-                    paymentMethod === 'card' ? 'border-primary bg-primary/5' : 'border-gray-200'
-                  }`}
-                >
-                  <CreditCard className="w-5 h-5 mr-2" />
-                  Credit Card
-                </button>
-                <button
-                  onClick={() => setPaymentMethod('mobile_money')}
-                  className={`flex items-center justify-center p-4 border-2 rounded-lg transition-colors ${
-                    paymentMethod === 'mobile_money' ? 'border-primary bg-primary/5' : 'border-gray-200'
-                  }`}
-                >
-                  <Smartphone className="w-5 h-5 mr-2" />
-                  Mobile Money
-                </button>
-              </div>
-
-              {/* Card Payment Form */}
-              {paymentMethod === 'card' && (
-                <div className="space-y-4 p-4 border border-gray-200 rounded-lg">
-                  <div>
-                    <Label htmlFor="cardNumber">Card Number *</Label>
-                    <Input
-                      id="cardNumber"
-                      value={cardInfo.cardNumber}
-                      onChange={(e) => setCardInfo({...cardInfo, cardNumber: e.target.value})}
-                      placeholder="1234 5678 9012 3456"
-                      maxLength={19}
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="expiryDate">Expiry Date *</Label>
-                      <Input
-                        id="expiryDate"
-                        value={cardInfo.expiryDate}
-                        onChange={(e) => setCardInfo({...cardInfo, expiryDate: e.target.value})}
-                        placeholder="MM/YY"
-                        maxLength={5}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="cvv">CVV *</Label>
-                      <Input
-                        id="cvv"
-                        value={cardInfo.cvv}
-                        onChange={(e) => setCardInfo({...cardInfo, cvv: e.target.value})}
-                        placeholder="123"
-                        maxLength={4}
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="cardName">Name on Card *</Label>
-                    <Input
-                      id="cardName"
-                      value={cardInfo.cardName}
-                      onChange={(e) => setCardInfo({...cardInfo, cardName: e.target.value})}
-                      placeholder="John Doe"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Mobile Money Form */}
-              {paymentMethod === 'mobile_money' && (
-                <div className="space-y-4 p-4 border border-gray-200 rounded-lg">
-                  <div>
-                    <Label htmlFor="provider">Mobile Money Provider *</Label>
-                    <Select onValueChange={(value) => setMobileMoneyInfo({...mobileMoneyInfo, provider: value})}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select provider" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="mtn">MTN Mobile Money</SelectItem>
-                        <SelectItem value="airtel">Airtel Money</SelectItem>
-                        <SelectItem value="vodafone">Vodafone Cash</SelectItem>
-                        <SelectItem value="tigo">Tigo Cash</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="phoneNumber">Phone Number *</Label>
-                    <Input
-                      id="phoneNumber"
-                      value={mobileMoneyInfo.phoneNumber}
-                      onChange={(e) => setMobileMoneyInfo({...mobileMoneyInfo, phoneNumber: e.target.value})}
-                      placeholder="+233 XX XXX XXXX"
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-24">
-            <h2 className="text-xl font-bold mb-6">Order Summary</h2>
-
-            <div className="space-y-4 mb-6">
-              {cart.map(item => (
-                <div key={item.product.id} className="flex justify-between">
-                  <div className="flex items-center space-x-4">
-                    <img
-                      src={item.product.images[0]}
+          <h1 className="text-3xl font-bold mb-2">Checkout</h1>
+          <p className="text-muted-foreground mb-8">
+            Review your order and proceed to secure payment
+          </p>
+          <div className=" flex  lg:flex-row gap-8">
+        <div className=" max-w-4xl lg:flex-1">
+          {/* Order Summary Card */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ShoppingCart className="h-5 w-5" />
+                Order Summary
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Products List */}
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {cart.map((item) => (
+                  <div key={item.product.id} className="flex gap-4 pb-3 border-b last:border-0">
+                    <img 
+                      src={item.product.images[0]} 
                       alt={item.product.name}
-                      className="w-12 h-12 object-cover rounded-md"
+                      className="w-20 h-20 object-cover rounded"
                     />
-                    <div>
-                      <div className="font-medium">{item.product.name}</div>
-                      <div className="text-sm text-gray-500">Qty: {item.quantity}</div>
+                    <div className="flex-1">
+                      <p className="font-medium">{item.product.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        Qty: {item.quantity} × ${(item.product.discountPrice || item.product.price).toFixed(2)}
+                      </p>
+                      <p className="text-sm font-semibold mt-1">
+                        ${((item.product.discountPrice || item.product.price) * item.quantity).toFixed(2)}
+                      </p>
                     </div>
                   </div>
-                  <div className="font-medium">
-                    ${((item.product.discountPrice || item.product.price) * item.quantity).toFixed(2)}
+                ))}
+              </div>
+
+            </CardContent>
+          </Card>
+
+       
+</div>
+
+                <div className=" max-w-xl lg:flex-1">
+
+              {/* Price Breakdown */}
+              <div className="space-y-2 pt-4 border-t">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Subtotal</span>
+                  <span>${subtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Shipping</span>
+                  <span>${shippingCost.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Tax (15%)</span>
+                  <span>${tax.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-xl font-bold pt-2 border-t">
+                  <span>Total</span>
+                  <span>${total.toFixed(2)}</span>
+                </div>
+              </div>
+                     {/* Payment Information */}
+          <Card className="mb-6">
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-blue-100 rounded-full">
+                  <CreditCard className="h-6 w-6 text-blue-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold mb-2">Secure Payment with Stripe</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    You will be redirected to Stripe's secure payment page to complete your purchase. 
+                    Stripe accepts all major credit and debit cards.
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <img 
+                      src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg" 
+                      alt="Stripe" 
+                      className="h-6"
+                    />
+                    <span className="text-xs text-muted-foreground">Powered by Stripe</span>
                   </div>
                 </div>
-              ))}
+              </div>
+            </CardContent>
+          </Card>
+
+                
+          {/* Action Button */}
+          <Button 
+            onClick={handleProceedToStripe} 
+            className="w-full h-12 text-lg"
+            size="lg"
+          >
+            <CreditCard className="h-5 w-5 mr-2" />
+            Proceed to Secure Payment - ${total.toFixed(2)}
+          </Button>
+
+          {/* Trust Badges */}
+          <div className="mt-6 flex items-center justify-center gap-6 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <svg className="h-5 w-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              <span>Secure Checkout</span>
             </div>
-
-            <div className="space-y-3 border-t border-gray-200 pt-4 mb-6">
-              <div className="flex justify-between text-gray-600">
-                <span>Subtotal</span>
-                <span>${getTotalPrice().toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-gray-600">
-                <span>Shipping</span>
-                <span>Free</span>
-              </div>
-              <div className="flex justify-between text-gray-600">
-                <span>Tax</span>
-                <span>$0.00</span>
-              </div>
-              <div className="flex justify-between font-semibold text-lg pt-2">
-                <span>Total</span>
-                <span>${getTotalPrice().toFixed(2)}</span>
-              </div>
-            </div>
-
-            <Button
-              onClick={handlePayment}
-              disabled={loading || !clientSecret}
-              className="w-full"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Processing Payment...
-                </>
-              ) : (
-                `Pay $${getTotalPrice().toFixed(2)}`
-              )}
-            </Button>
-
-            <div className="mt-4 text-xs text-gray-500 text-center">
-              Your payment is secured with Stripe. We never store your payment information.
+            <div className="flex items-center gap-2">
+              <svg className="h-5 w-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+              </svg>
+              <span>SSL Encrypted</span>
             </div>
           </div>
+</div>
+</div>
         </div>
       </div>
     </Layout>
