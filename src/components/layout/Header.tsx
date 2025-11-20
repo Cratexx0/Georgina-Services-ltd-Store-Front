@@ -1,7 +1,6 @@
-
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Search, ShoppingCart, Menu, X, LogIn, User, Heart } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Search, ShoppingCart, Menu, X, LogIn, User, Heart, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useCart } from '@/context/CartContext';
@@ -11,11 +10,21 @@ import { useAuth } from '@/context/AuthContext';
 const Header = () => {
   const { cart } = useCart();
   const { wishlist } = useWishlist();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   
+  // Debug auth state
+  useEffect(() => {
+    console.log('🔐 Header Auth State:', {
+      isAuthenticated,
+      user: user?.email,
+      path: location.pathname
+    });
+  }, [isAuthenticated, user, location.pathname]);
+
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
@@ -27,6 +36,12 @@ const Header = () => {
       setSearchQuery('');
       setIsMenuOpen(false);
     }
+  };
+
+  const handleLogout = () => {
+    logout();
+    setIsMenuOpen(false);
+    navigate('/');
   };
 
   return (
@@ -94,19 +109,29 @@ const Header = () => {
             
             <div className="flex items-center space-x-4">
               {isAuthenticated ? (
+                <div className="flex items-center space-x-2">
                   <Link to="/dashboard">
                     <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                      <User className="h-4 w-4" />
-                      Dashboard
+                      <User className="h-4 text-sm w-4" />
+                      {/* {user?.name ||  'Account'} */}
                     </Button>
                   </Link>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleLogout}
+                    className="text-xs"
+                  >
+                    <LogOut className=' text-red-800 hover:bg-red-600'/>
+                  </Button>
+                </div>
               ) : (
-                  <Link to="/auth">
-                    <Button variant="ghost" size="sm" className="flex bg-primary text-primary-foreground hover:bg-primary/90 items-center gap-2">
-                      <LogIn className="h-4 w-4" />
-                      Sign In
-                    </Button>
-                  </Link>
+                <Link to="/auth">
+                  <Button variant="default" size="sm" className="flex items-center gap-2">
+                    <LogIn className="h-4 w-4" />
+                    Sign In
+                  </Button>
+                </Link>
               )}
             </div>
           </div>
@@ -140,15 +165,25 @@ const Header = () => {
          
               <div className="flex items-center space-x-4">
                 {isAuthenticated ? (
-                  <Link to="/dashboard" onClick={toggleMenu}>
-                    <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                      <User className="h-4 w-4" />
-                  
+                  <div className="flex flex-col space-y-2 w-full">
+                    <Link to="/dashboard" onClick={toggleMenu} className="w-full">
+                      <Button variant="ghost" size="sm" className="flex items-center gap-2 w-full justify-start">
+                        <User className="h-4 w-4" />
+                        {user?.name || user?.fullname || 'Account'}
+                      </Button>
+                    </Link>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={handleLogout}
+                      className="w-full justify-start text-xs"
+                    >
+                   <LogOut/>
                     </Button>
-                  </Link>
+                  </div>
                 ) : (
-                  <Link to="/auth" onClick={toggleMenu}>
-                    <Button variant="ghost" size="sm" className="flex bg-primary text-primary-foreground hover:bg-primary/90 items-center gap-2">
+                  <Link to="/auth" onClick={toggleMenu} className="w-full">
+                    <Button variant="default" size="sm" className="flex items-center gap-2 w-full">
                       <LogIn className="h-4 w-4" />
                       Sign In
                     </Button>

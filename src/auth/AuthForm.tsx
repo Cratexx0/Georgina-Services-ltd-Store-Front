@@ -1,11 +1,10 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Facebook, LogIn, Mail, User, UserPlus } from "lucide-react";
+import { LogIn, UserPlus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
 
@@ -27,16 +26,28 @@ const AuthForm = () => {
     setIsLoading(true);
     
     try {
+      console.log('🔐 [FORM] Starting login process for:', loginData.email);
+      
+      // Call the AuthContext login - this handles ALL the logic
       await login(loginData.email, loginData.password);
+      
+      console.log('🔐 [FORM] Login successful, showing toast and navigating');
+      
+      // Show success toast
       toast({
         title: "Login successful",
         description: "Welcome back to our store!",
       });
-      navigate('/');
-    } catch (error) {
+      
+      // Navigate to home page
+      navigate('/', { replace: true });
+      
+    } catch (error: any) {
+      console.error('🔐 [FORM] Login error:', error);
+      
       toast({
         title: "Login failed",
-        description: "Please check your credentials and try again.",
+        description: error.message || "Please check your credentials and try again.",
         variant: "destructive"
       });
     } finally {
@@ -46,38 +57,89 @@ const AuthForm = () => {
   
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate passwords match
+    if (registerData.password !== registerData.confirmpassword) {
+      toast({
+        title: "Registration failed",
+        description: "Passwords do not match.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validate password strength
+    if (registerData.password.length < 6) {
+      toast({
+        title: "Registration failed",
+        description: "Password must be at least 6 characters long.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
-      const fullName = `${registerData.fullName}`.trim();
+      console.log('👤 [FORM] Starting registration for:', registerData.email);
+      
+      const fullName = registerData.fullName.trim();
+      
+      // Call the AuthContext register - this handles login automatically
       await register(fullName, registerData.email, registerData.password);
+      
+      console.log('👤 [FORM] Registration successful, showing toast and navigating');
+      
+      // Show success toast
       toast({
         title: "Registration successful",
-        description: "Your account has been created.",
+        description: "Your account has been created. Welcome!",
       });
-      navigate('/');
-    } catch (error) {
+      
+      // Navigate to home page
+      navigate('/', { replace: true });
+      
+    } catch (error: any) {
+      console.error('👤 [FORM] Registration error:', error);
+      
       toast({
         title: "Registration failed",
-        description: "Please try again.",
+        description: error.message || "Please try again.",
         variant: "destructive"
       });
     } finally {
       setIsLoading(false);
     }
   };
-  
-  const handleSocialLogin = (provider: string) => {
-    setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+
+  const handleForgotPassword = async () => {
+    if (!loginData.email) {
       toast({
-        title: `${provider} login initiated`,
-        description: `Logging in with ${provider}...`,
+        title: "Email required",
+        description: "Please enter your email address to reset password.",
+        variant: "destructive"
       });
-    }, 1000);
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // You'll need to implement this in your AuthContext
+      // await forgotPassword(loginData.email);
+      
+      toast({
+        title: "Reset email sent",
+        description: "Check your email for password reset instructions.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Reset failed",
+        description: error.message || "Failed to send reset instructions.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
   
   return (
@@ -113,6 +175,7 @@ const AuthForm = () => {
                 value={loginData.email}
                 onChange={(e) => setLoginData({...loginData, email: e.target.value})}
                 required
+                disabled={isLoading}
                 className="mt-1"
               />
             </div>
@@ -120,9 +183,14 @@ const AuthForm = () => {
             <div className="animate-fade-in delay-200">
               <div className="flex items-center justify-between">
                 <Label htmlFor="login-password">Password</Label>
-                <a href="/forgot/password" className="text-xs text-primary hover:underline">
+                <button 
+                  type="button"
+                  onClick={handleForgotPassword}
+                  className="text-xs text-primary hover:underline"
+                  disabled={isLoading}
+                >
                   Forgot password?
-                </a>
+                </button>
               </div>
               <Input 
                 id="login-password" 
@@ -130,6 +198,7 @@ const AuthForm = () => {
                 value={loginData.password}
                 onChange={(e) => setLoginData({...loginData, password: e.target.value})}
                 required
+                disabled={isLoading}
                 className="mt-1"
               />
             </div>
@@ -149,56 +218,6 @@ const AuthForm = () => {
               )}
             </Button>
           </form>
-          
-          {/* Social Login Buttons */}
-          <div className="relative animate-fade-in delay-400">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                Or continue with
-              </span>
-            </div>
-          </div>
-          
-          {/* <div className="grid grid-cols-2 gap-3 animate-fade-in delay-500">
-            <Button 
-              variant="outline" 
-              className="social-button"
-              onClick={() => handleSocialLogin("Google")}
-              disabled={isLoading}
-            >
-              <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
-                <path
-                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                  fill="#4285F4"
-                />
-                <path
-                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  fill="#34A853"
-                />
-                <path
-                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                  fill="#FBBC05"
-                />
-                <path
-                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                  fill="#EA4335"
-                />
-              </svg>
-              Google
-            </Button>
-            <Button 
-              variant="outline" 
-              className="social-button"
-              onClick={() => handleSocialLogin("Facebook")}
-              disabled={isLoading}
-            >
-              <Facebook className="mr-2 h-4 w-4 text-[#1877F2]" />
-              Facebook
-            </Button>
-          </div> */}
         </TabsContent>
         
         {/* Register Form */}
@@ -213,18 +232,19 @@ const AuthForm = () => {
           </div>
           
           <form onSubmit={handleRegister} className="space-y-4">
-           
-              <div className="animate-fade-in delay-100">
-                <Label htmlFor="register-first-name">First name</Label>
-                <Input 
-                  id="register-first-name" 
-                  type="text"
-                  value={registerData.fullName}
-                  onChange={(e) => setRegisterData({...registerData, fullName: e.target.value})}
-                  required
-                  className="mt-1"
-                />
-              </div>
+            <div className="animate-fade-in delay-100">
+              <Label htmlFor="register-full-name">Full name</Label>
+              <Input 
+                id="register-full-name" 
+                type="text"
+                placeholder="John Doe"
+                value={registerData.fullName}
+                onChange={(e) => setRegisterData({...registerData, fullName: e.target.value})}
+                required
+                disabled={isLoading}
+                className="mt-1"
+              />
+            </div>
             
             <div className="animate-fade-in delay-200">
               <Label htmlFor="register-email">Email</Label>
@@ -235,6 +255,7 @@ const AuthForm = () => {
                 value={registerData.email}
                 onChange={(e) => setRegisterData({...registerData, email: e.target.value})}
                 required
+                disabled={isLoading}
                 className="mt-1"
               />
             </div>
@@ -244,28 +265,33 @@ const AuthForm = () => {
               <Input 
                 id="register-password" 
                 type="password"
+                placeholder="At least 6 characters"
                 value={registerData.password}
                 onChange={(e) => setRegisterData({...registerData, password: e.target.value})}
                 required
+                minLength={6}
+                disabled={isLoading}
                 className="mt-1"
               />
             </div>
 
-              <div className="animate-fade-in delay-300">
-              <Label htmlFor="register-password">Confirm Password</Label>
+            <div className="animate-fade-in delay-400">
+              <Label htmlFor="confirm-password">Confirm Password</Label>
               <Input 
                 id="confirm-password" 
                 type="password"
+                placeholder="Confirm your password"
                 value={registerData.confirmpassword}
                 onChange={(e) => setRegisterData({...registerData, confirmpassword: e.target.value})}
                 required
+                disabled={isLoading}
                 className="mt-1"
               />
             </div>
             
             <Button 
               type="submit" 
-              className="w-full animate-fade-in delay-400"
+              className="w-full animate-fade-in delay-500"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -278,56 +304,6 @@ const AuthForm = () => {
               )}
             </Button>
           </form>
-          
-          {/* Social Register Buttons */}
-          <div className="relative animate-fade-in delay-500">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                Or register with
-              </span>
-            </div>
-          </div>
-          
-          {/* <div className="grid grid-cols-2 gap-3 animate-fade-in delay-500">
-            <Button 
-              variant="outline" 
-              className="social-button"
-              onClick={() => handleSocialLogin("Google")}
-              disabled={isLoading}
-            >
-              <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
-                <path
-                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                  fill="#4285F4"
-                />
-                <path
-                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  fill="#34A853"
-                />
-                <path
-                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                  fill="#FBBC05"
-                />
-                <path
-                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                  fill="#EA4335"
-                />
-              </svg>
-              Google
-            </Button>
-            <Button 
-              variant="outline" 
-              className="social-button"
-              onClick={() => handleSocialLogin("Facebook")}
-              disabled={isLoading}
-            >
-              <Facebook className="mr-2 h-4 w-4 text-[#1877F2]" />
-              Facebook
-            </Button>
-          </div> */}
         </TabsContent>
       </Tabs>
     </div>

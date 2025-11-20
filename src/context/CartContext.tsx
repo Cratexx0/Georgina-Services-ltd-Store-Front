@@ -1,7 +1,11 @@
 
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Product } from '@/hooks/useProducts';
+
 import { toast } from '@/components/ui/sonner';
+import { Product } from '@/lib/type';
+
+
 
 export interface CartItem {
   product: Product;
@@ -49,12 +53,14 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
       const existingItem = currentCart.find(item => item.product.id === product.id);
       
       if (existingItem) {
+        toast.success(`Updated ${product.name} quantity in cart`);
         return currentCart.map(item => 
           item.product.id === product.id 
             ? { ...item, quantity: item.quantity + quantity } 
             : item
         );
       } else {
+        toast.success(`${product.name} added to cart`);
         return [...currentCart, { product, quantity }];
       }
     });
@@ -82,7 +88,12 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
 
   const getTotalPrice = () => {
     return cart.reduce((total, item) => {
-      const price = item.product.discountPrice || item.product.price;
+      const priceStr = item.product.discountPrice || item.product.price;
+      const price = parseFloat(priceStr);
+      if (isNaN(price)) {
+        console.error(`Invalid price value: ${priceStr} for product ${item.product.name}`);
+        return total;
+      }
       return total + price * item.quantity;
     }, 0);
   };
