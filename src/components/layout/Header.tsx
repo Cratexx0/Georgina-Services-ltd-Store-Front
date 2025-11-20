@@ -128,13 +128,13 @@ const Header = () => {
               <Link to="/" className="text-muted-foreground hover:text-primary transition-colors" onClick={toggleMenu}>
                 Home
               </Link>
-              <Link to="/category/womens-clothing" className="text-muted-foreground hover:text-primary transition-colors" onClick={toggleMenu}>
+              <Link to="/category/clothes" className="text-muted-foreground hover:text-primary transition-colors" onClick={toggleMenu}>
                 Clothes
               </Link>
-              <Link to="/category/food-stuffs" className="text-muted-foreground hover:text-primary transition-colors" onClick={toggleMenu}>
+              <Link to="/category/foodstuffs" className="text-muted-foreground hover:text-primary transition-colors" onClick={toggleMenu}>
                 Food & Spices
               </Link>
-              <Link to="/cleaning-services" className="text-muted-foreground hover:text-primary transition-colors" onClick={toggleMenu}>
+              <Link to="/category/services" className="text-muted-foreground hover:text-primary transition-colors" onClick={toggleMenu}>
                 Cleaning Services
               </Link>
          
