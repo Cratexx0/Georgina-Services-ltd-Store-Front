@@ -1338,18 +1338,36 @@ async createOrder(
 /**
  * Get user's orders
  */
+/**
+ * Get user's orders with proper typing
+ */
 async getMyOrders(): Promise<{
   success: boolean;
   data?: any[];
   orders?: any[];
   message?: string;
 }> {
-  return this.request('/api/orders/my-orders', {
-    method: 'GET',
-    requiresAuth: true,
-  });
-}
+  try {
+    const response = await this.request('/api/orders/my-orders', {
+      method: 'GET',
+      requiresAuth: true,
+    });
 
+    // Ensure the response has the expected structure
+    return {
+      success: response.success !== false,
+      data: response.data || response.orders || response,
+      orders: response.orders || response.data || response,
+      message: response.message
+    };
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to fetch orders'
+    };
+  }
+}
 /**
  * Get specific order by ID
  */
