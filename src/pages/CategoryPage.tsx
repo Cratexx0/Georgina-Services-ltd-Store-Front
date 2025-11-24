@@ -1,88 +1,844 @@
+// // import React, { useState, useEffect } from 'react';
+// // import { useParams, Link } from 'react-router-dom';
+// // import Layout from '@/components/layout/Layout';
+// // import PaginatedProductGrid from '@/components/products/PaginatedProductGrid';
+// // import { apiService, Category } from '@/lib/api';
+// // import { Product } from '@/lib/type';
+// // import { Button } from '@/components/ui/button';
+// // import { Loader2 } from 'lucide-react';
 
+// // const CategoryPage = () => {
+// //   const { categorySlug, subcategorySlug } = useParams<{ 
+// //     categorySlug: string; 
+// //     subcategorySlug?: string 
+// //   }>();
+// //   const [currentCategory, setCurrentCategory] = useState<Category | null>(null);
+// //   const [subcategories, setSubcategories] = useState<Category[]>([]);
+// //   const [products, setProducts] = useState<Product[]>([]);
+// //   const [loading, setLoading] = useState(true);
+// //   const [error, setError] = useState<string | null>(null);
+  
+// //   useEffect(() => {
+// //     const fetchCategoryData = async () => {
+// //       try {
+// //         setLoading(true);
+// //         setError(null);
+        
+// //         // Fetch categories from API
+// //         const categories = await apiService.getCategories();
+        
+// //         // Find current category by slug
+// //         let currentCat: Category | null = null;
+        
+// //         if (categorySlug) {
+// //           currentCat = categories.find(cat => 
+// //             cat.slug === categorySlug && cat.level === 1 && cat.parentId === null
+// //           ) || null;
+// //         }
+        
+// //         if (!currentCat) {
+// //           setError('Category not found');
+// //           setLoading(false);
+// //           return;
+// //         }
+        
+// //         setCurrentCategory(currentCat);
+        
+// //         // Get subcategories for the current category (Level 2 categories)
+// //         const currentSubcategories = categories.filter(
+// //           cat => cat.level === 2 && cat.parentId === currentCat!.id
+// //         );
+// //         setSubcategories(currentSubcategories);
+        
+// //         // Fetch products based on current selection
+// //         try {
+// //           let response;
+          
+// //           if (subcategorySlug) {
+// //             // Find the selected subcategory
+// //             const selectedSubcategory = currentSubcategories.find(
+// //               sub => sub.slug === subcategorySlug
+// //             );
+            
+// //             if (selectedSubcategory) {
+// //               // Filter by Level 1 category AND Level 2 subcategory
+// //               response = await apiService.getProducts(1, 100, currentCat.name, selectedSubcategory.name);
+// //             } else {
+// //               // Invalid subcategory, show all products for main category
+// //               response = await apiService.getProducts(1, 100, currentCat.name);
+// //             }
+// //           } else {
+// //             // No subcategory selected, show all products for main category
+// //             response = await apiService.getProducts(1, 100, currentCat.name);
+// //           }
+          
+// //           setProducts(response.products);
+// //         } catch (productError) {
+// //           console.error('Error fetching products:', productError);
+// //           setProducts([]);
+// //         }
+// //       } catch (err) {
+// //         console.error('Error fetching category data:', err);
+// //         setError('Failed to load categories');
+// //       } finally {
+// //         setLoading(false);
+// //       }
+// //     };
+
+// //     fetchCategoryData();
+// //   }, [categorySlug, subcategorySlug]);
+
+// //   if (loading) {
+// //     return (
+// //       <Layout>
+// //         <div className="container mx-auto px-4 py-12 text-center">
+// //           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+// //           <h2 className="text-xl font-semibold">Loading category...</h2>
+// //         </div>
+// //       </Layout>
+// //     );
+// //   }
+
+// //   if (error || !currentCategory) {
+// //     return (
+// //       <Layout>
+// //         <div className="container mx-auto px-4 py-12 text-center">
+// //           <h1 className="text-3xl font-bold mb-4">Category not found</h1>
+// //           <p className="text-gray-600 mb-8">
+// //             {error || "The category you're looking for doesn't exist."}
+// //           </p>
+// //           <Button asChild>
+// //             <Link to="/">Back to Home</Link>
+// //           </Button>
+// //         </div>
+// //       </Layout>
+// //     );
+// //   }
+
+// //   return (
+// //     <Layout>
+// //       {/* Subcategory Tabs (Level 2) - Only show if current category has subcategories */}
+// //       {subcategories.length > 0 && (
+// //         <div className="border-b border-gray-200 sticky top-16 bg-white z-30">
+// //           <div className="container mx-auto px-4 py-4">
+// //             <div className="flex space-x-2 overflow-x-auto">
+// //               <Button
+// //                 variant={!subcategorySlug ? "default" : "outline"}
+// //                 asChild
+// //                 className="whitespace-nowrap flex-shrink-0"
+// //               >
+// //                 <Link to={`/category/${currentCategory.slug}`}>
+// //                   All {currentCategory.name}
+// //                 </Link>
+// //               </Button>
+// //               {subcategories.map((subcategory) => (
+// //                 <Button
+// //                   key={subcategory.id}
+// //                   variant={subcategorySlug === subcategory.slug ? "default" : "outline"}
+// //                   asChild
+// //                   className="whitespace-nowrap flex-shrink-0"
+// //                 >
+// //                   <Link to={`/category/${currentCategory.slug}/${subcategory.slug}`}>
+// //                     {subcategory.name}
+// //                   </Link>
+// //                 </Button>
+// //               ))}
+// //             </div>
+// //           </div>
+// //         </div>
+// //       )}
+
+// //       {/* Category Content */}
+// //       <div className="bg-gray-50 py-8">
+// //         <div className="container mx-auto px-4">
+// //           <h1 className="text-3xl font-bold mb-4">
+// //             {subcategorySlug 
+// //               ? `${subcategories.find(sub => sub.slug === subcategorySlug)?.name || subcategorySlug}`
+// //               : `All ${currentCategory.name}`
+// //             }
+// //           </h1>
+// //           <p className="text-gray-600 max-w-3xl">
+// //             {subcategorySlug 
+// //               ? subcategories.find(sub => sub.slug === subcategorySlug)?.description || currentCategory.description
+// //               : currentCategory.description
+// //             }
+// //           </p>
+// //         </div>
+// //       </div>
+      
+// //       {/* Products */}
+// //       <div className="container mx-auto px-4 py-12">
+// //         {products.length > 0 ? (
+// //           <PaginatedProductGrid 
+// //             products={products} 
+// //             title={
+// //               subcategorySlug 
+// //                 ? `${subcategories.find(sub => sub.slug === subcategorySlug)?.name || subcategorySlug}`
+// //                 : `All ${currentCategory.name}`
+// //             }
+// //           />
+// //         ) : (
+// //           <div className="text-center py-12">
+// //             <h3 className="text-lg font-semibold mb-2">No products found</h3>
+// //             <p className="text-gray-600">
+// //               {subcategorySlug 
+// //                 ? `There are no products in the ${subcategories.find(sub => sub.slug === subcategorySlug)?.name || subcategorySlug} category yet.`
+// //                 : `There are no products in the ${currentCategory.name} category yet.`
+// //               }
+// //             </p>
+// //           </div>
+// //         )}
+// //       </div>
+// //     </Layout>
+// //   );
+// // };
+
+// // export default CategoryPage;
+
+// import React, { useState, useEffect } from 'react';
+// import { useParams, Link } from 'react-router-dom';
+// import Layout from '@/components/layout/Layout';
+// import PaginatedProductGrid from '@/components/products/PaginatedProductGrid';
+// import { apiService, Category } from '@/lib/api';
+// import { Product } from '@/lib/type';
+// import { Button } from '@/components/ui/button';
+// import { Loader2, ChevronRight } from 'lucide-react';
+
+// const CategoryPage = () => {
+//   const { categorySlug, subcategorySlug } = useParams<{ 
+//     categorySlug: string; 
+//     subcategorySlug?: string 
+//   }>();
+//   const [currentCategory, setCurrentCategory] = useState<Category | null>(null);
+//   const [subcategories, setSubcategories] = useState<Category[]>([]);
+//   const [level3Categories, setLevel3Categories] = useState<string[]>([]);
+//   const [products, setProducts] = useState<Product[]>([]);
+//   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+//   const [selectedLevel3, setSelectedLevel3] = useState<string | null>(null);
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState<string | null>(null);
+  
+//   useEffect(() => {
+//     const fetchCategoryData = async () => {
+//       try {
+//         setLoading(true);
+//         setError(null);
+        
+//         // Fetch categories from API
+//         const categories = await apiService.getCategories();
+        
+//         // Find current category by slug
+//         let currentCat: Category | null = null;
+        
+//         if (categorySlug) {
+//           currentCat = categories.find(cat => 
+//             cat.slug === categorySlug && cat.level === 1 && cat.parentId === null
+//           ) || null;
+//         }
+        
+//         if (!currentCat) {
+//           setError('Category not found');
+//           setLoading(false);
+//           return;
+//         }
+        
+//         setCurrentCategory(currentCat);
+        
+//         // Get subcategories for the current category (Level 2 categories)
+//         const currentSubcategories = categories.filter(
+//           cat => cat.level === 2 && cat.parentId === currentCat!.id
+//         );
+//         setSubcategories(currentSubcategories);
+        
+//         // Fetch all products for the main category
+//         try {
+//           const response = await apiService.getProducts(1, 100, currentCat.name);
+//           setProducts(response.products);
+          
+//           // Extract unique Level 3 categories from products
+//           const level3Cats = [...new Set(response.products.map(product => product.categoryLevel3))].filter(Boolean) as string[];
+//           setLevel3Categories(level3Cats);
+          
+//         } catch (productError) {
+//           console.error('Error fetching products:', productError);
+//           setProducts([]);
+//           setLevel3Categories([]);
+//         }
+//       } catch (err) {
+//         console.error('Error fetching category data:', err);
+//         setError('Failed to load categories');
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+
+//     fetchCategoryData();
+//   }, [categorySlug]);
+
+//   // Filter products based on Level 2 and Level 3 selections
+//   useEffect(() => {
+//     if (products.length === 0) {
+//       setFilteredProducts([]);
+//       return;
+//     }
+
+//     let filtered = [...products];
+
+//     // Filter by Level 2 category if selected
+//     if (subcategorySlug) {
+//       const selectedSubcategory = subcategories.find(sub => sub.slug === subcategorySlug);
+//       if (selectedSubcategory) {
+//         filtered = filtered.filter(product => 
+//           product.categoryLevel2 === selectedSubcategory.name
+//         );
+//       }
+//     }
+
+//     // Filter by Level 3 category if selected
+//     if (selectedLevel3) {
+//       filtered = filtered.filter(product => 
+//         product.categoryLevel3 === selectedLevel3
+//       );
+//     }
+
+//     setFilteredProducts(filtered);
+//   }, [products, subcategories, subcategorySlug, selectedLevel3]);
+
+//   // Reset Level 3 filter when subcategory changes
+//   useEffect(() => {
+//     setSelectedLevel3(null);
+//   }, [subcategorySlug]);
+
+//   // Get available Level 3 categories for current selection
+//   const getAvailableLevel3Categories = () => {
+//     if (products.length === 0) return [];
+    
+//     let availableProducts = [...products];
+    
+//     // Filter by Level 2 category if selected
+//     if (subcategorySlug) {
+//       const selectedSubcategory = subcategories.find(sub => sub.slug === subcategorySlug);
+//       if (selectedSubcategory) {
+//         availableProducts = availableProducts.filter(product => 
+//           product.categoryLevel2 === selectedSubcategory.name
+//         );
+//       }
+//     }
+    
+//     return [...new Set(availableProducts.map(product => product.categoryLevel3))].filter(Boolean) as string[];
+//   };
+
+//   const availableLevel3Categories = getAvailableLevel3Categories();
+
+//   // Build breadcrumb navigation
+//   const breadcrumbs = [];
+//   if (currentCategory) {
+//     breadcrumbs.push({ name: currentCategory.name, path: `/category/${currentCategory.slug}` });
+    
+//     if (subcategorySlug) {
+//       const subcategory = subcategories.find(sub => sub.slug === subcategorySlug);
+//       if (subcategory) {
+//         breadcrumbs.push({ 
+//           name: subcategory.name, 
+//           path: `/category/${currentCategory.slug}/${subcategory.slug}` 
+//         });
+//       }
+//     }
+//   }
+
+//   if (loading) {
+//     return (
+//       <Layout>
+//         <div className="container mx-auto px-4 py-12 text-center">
+//           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+//           <h2 className="text-xl font-semibold">Loading category...</h2>
+//         </div>
+//       </Layout>
+//     );
+//   }
+
+//   if (error || !currentCategory) {
+//     return (
+//       <Layout>
+//         <div className="container mx-auto px-4 py-12 text-center">
+//           <h1 className="text-3xl font-bold mb-4">Category not found</h1>
+//           <p className="text-gray-600 mb-8">
+//             {error || "The category you're looking for doesn't exist."}
+//           </p>
+//           <Button asChild>
+//             <Link to="/">Back to Home</Link>
+//           </Button>
+//         </div>
+//       </Layout>
+//     );
+//   }
+
+//   return (
+//     <Layout>
+//       {/* Breadcrumb Navigation */}
+//       <div className="border-b border-gray-200 bg-white">
+//         <div className="container mx-auto px-4 py-4">
+//           <nav className="flex items-center space-x-2 text-sm text-gray-600">
+//             <Link to="/" className="hover:text-gray-900">Home</Link>
+//             {breadcrumbs.map((crumb, index) => (
+//               <React.Fragment key={crumb.path}>
+//                 <ChevronRight className="h-4 w-4" />
+//                 {index === breadcrumbs.length - 1 ? (
+//                   <span className="text-gray-900 font-medium">{crumb.name}</span>
+//                 ) : (
+//                   <Link to={crumb.path} className="hover:text-gray-900">
+//                     {crumb.name}
+//                   </Link>
+//                 )}
+//               </React.Fragment>
+//             ))}
+//           </nav>
+//         </div>
+//       </div>
+
+//       {/* Level 2 Subcategory Tabs */}
+//       {subcategories.length > 0 && (
+//         <div className="border-b border-gray-200 sticky top-16 bg-white z-30">
+//           <div className="container mx-auto px-4 py-4">
+//             <div className="flex space-x-2 overflow-x-auto">
+//               <Button
+//                 variant={!subcategorySlug ? "default" : "outline"}
+//                 asChild
+//                 className="whitespace-nowrap flex-shrink-0"
+//               >
+//                 <Link to={`/category/${currentCategory.slug}`}>
+//                   All {currentCategory.name}
+//                 </Link>
+//               </Button>
+//               {subcategories.map((subcategory) => (
+//                 <Button
+//                   key={subcategory.id}
+//                   variant={subcategorySlug === subcategory.slug ? "default" : "outline"}
+//                   asChild
+//                   className="whitespace-nowrap flex-shrink-0"
+//                 >
+//                   <Link to={`/category/${currentCategory.slug}/${subcategory.slug}`}>
+//                     {subcategory.name}
+//                   </Link>
+//                 </Button>
+//               ))}
+//             </div>
+//           </div>
+//         </div>
+//       )}
+
+//       {/* Level 3 Category Filters */}
+//       {availableLevel3Categories.length > 0 && (
+//         <div className="border-b border-gray-200 bg-gray-50">
+//           <div className="container mx-auto px-4 py-3">
+//             <div className="flex items-center justify-between">
+//               <div className="flex space-x-2 overflow-x-auto">
+//                 <Button
+//                   variant={!selectedLevel3 ? "default" : "outline"}
+//                   size="sm"
+//                   onClick={() => setSelectedLevel3(null)}
+//                   className="whitespace-nowrap flex-shrink-0"
+//                 >
+//                   All Types
+//                 </Button>
+//                 {availableLevel3Categories.map((level3Cat) => (
+//                   <Button
+//                     key={level3Cat}
+//                     variant={selectedLevel3 === level3Cat ? "default" : "outline"}
+//                     size="sm"
+//                     onClick={() => setSelectedLevel3(level3Cat)}
+//                     className="whitespace-nowrap flex-shrink-0"
+//                   >
+//                     {level3Cat}
+//                   </Button>
+//                 ))}
+//               </div>
+              
+//               {/* Product Count */}
+//               <div className="text-sm text-gray-600 whitespace-nowrap ml-4">
+//                 {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''}
+//                 {selectedLevel3 && ` in ${selectedLevel3}`}
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+//       )}
+
+//       {/* Category Header */}
+//       <div className="bg-gray-50 py-8">
+//         <div className="container mx-auto px-4">
+//           <h1 className="text-3xl font-bold mb-4">
+//             {selectedLevel3 
+//               ? `${selectedLevel3} ${subcategorySlug ? `- ${subcategories.find(sub => sub.slug === subcategorySlug)?.name}` : ''}`
+//               : subcategorySlug 
+//                 ? `${subcategories.find(sub => sub.slug === subcategorySlug)?.name || subcategorySlug}`
+//                 : `All ${currentCategory.name}`
+//             }
+//           </h1>
+//           <p className="text-gray-600 max-w-3xl">
+//             {subcategorySlug 
+//               ? subcategories.find(sub => sub.slug === subcategorySlug)?.description || currentCategory.description
+//               : currentCategory.description
+//             }
+//           </p>
+//         </div>
+//       </div>
+      
+//       {/* Products */}
+//       <div className="container mx-auto px-4 py-12">
+//         {filteredProducts.length > 0 ? (
+//           <PaginatedProductGrid 
+//             products={filteredProducts} 
+//             title={
+//               selectedLevel3 
+//                 ? `${selectedLevel3} ${subcategorySlug ? `- ${subcategories.find(sub => sub.slug === subcategorySlug)?.name}` : ''}`
+//                 : subcategorySlug 
+//                   ? `${subcategories.find(sub => sub.slug === subcategorySlug)?.name || subcategorySlug}`
+//                   : `All ${currentCategory.name}`
+//             }
+//           />
+//         ) : (
+//           <div className="text-center py-12">
+//             <h3 className="text-lg font-semibold mb-2">No products found</h3>
+//             <p className="text-gray-600">
+//               {selectedLevel3 
+//                 ? `There are no ${selectedLevel3} products${subcategorySlug ? ` in ${subcategories.find(sub => sub.slug === subcategorySlug)?.name}` : ''} yet.`
+//                 : subcategorySlug 
+//                   ? `There are no products in the ${subcategories.find(sub => sub.slug === subcategorySlug)?.name || subcategorySlug} category yet.`
+//                   : `There are no products in the ${currentCategory.name} category yet.`
+//               }
+//             </p>
+//             {selectedLevel3 && (
+//               <Button 
+//                 variant="outline" 
+//                 onClick={() => setSelectedLevel3(null)}
+//                 className="mt-4"
+//               >
+//                 Show All Products
+//               </Button>
+//             )}
+//           </div>
+//         )}
+//       </div>
+//     </Layout>
+//   );
+// };
+
+// export default CategoryPage;
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import PaginatedProductGrid from '@/components/products/PaginatedProductGrid';
-import { getCategory, getSubcategory } from '@/data/categories';
-import { getProductsByCategory, getProductsBySubcategory } from '@/data/products';
+import { apiService, Category } from '@/lib/api';
+import { Product } from '@/lib/type';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { Loader2, ChevronRight } from 'lucide-react';
 
 const CategoryPage = () => {
-  const { categorySlug, subcategorySlug } = useParams<{ categorySlug: string, subcategorySlug?: string }>();
-  const [activeSubcategory, setActiveSubcategory] = useState<string | undefined>(subcategorySlug);
-  
-  const category = categorySlug ? getCategory(categorySlug) : undefined;
+  const { categorySlug, subcategorySlug } = useParams<{ 
+    categorySlug: string; 
+    subcategorySlug?: string 
+  }>();
+  const [currentCategory, setCurrentCategory] = useState<Category | null>(null);
+  const [subcategories, setSubcategories] = useState<Category[]>([]);
+  const [level3Categories, setLevel3Categories] = useState<string[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [selectedLevel3, setSelectedLevel3] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
   useEffect(() => {
-    setActiveSubcategory(subcategorySlug);
+    const fetchCategoryData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Fetch categories from API
+        const categories = await apiService.getCategories();
+        
+        // Find current category by slug
+        let currentCat: Category | null = null;
+        
+        if (categorySlug) {
+          currentCat = categories.find(cat => 
+            cat.slug === categorySlug && cat.level === 1 && cat.parentId === null
+          ) || null;
+        }
+        
+        if (!currentCat) {
+          setError('Category not found');
+          setLoading(false);
+          return;
+        }
+        
+        setCurrentCategory(currentCat);
+        
+        // Get subcategories for the current category (Level 2 categories)
+        const currentSubcategories = categories.filter(
+          cat => cat.level === 2 && cat.parentId === currentCat!.id
+        );
+        setSubcategories(currentSubcategories);
+        
+        // Fetch products ONLY for the current Level 1 category
+        try {
+          const response = await apiService.getProducts(1, 100, currentCat.name);
+          const categoryProducts = response.products.filter(
+            product => product.categoryLevel1 === currentCat!.name
+          );
+          setProducts(categoryProducts);
+          
+        } catch (productError) {
+          console.error('Error fetching products:', productError);
+          setProducts([]);
+        }
+      } catch (err) {
+        console.error('Error fetching category data:', err);
+        setError('Failed to load categories');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategoryData();
+  }, [categorySlug]);
+
+  // Update Level 3 categories and filter products when selection changes
+  useEffect(() => {
+    if (products.length === 0) {
+      setFilteredProducts([]);
+      setLevel3Categories([]);
+      return;
+    }
+
+    let filtered = [...products];
+
+    // Filter by Level 2 category if selected
+    if (subcategorySlug) {
+      const selectedSubcategory = subcategories.find(sub => sub.slug === subcategorySlug);
+      if (selectedSubcategory) {
+        filtered = filtered.filter(product => 
+          product.categoryLevel2 === selectedSubcategory.name
+        );
+      }
+    }
+
+    // Extract Level 3 categories from the CURRENTLY filtered products
+    const availableLevel3Cats = [...new Set(filtered.map(product => product.categoryLevel3))]
+      .filter(Boolean)
+      .filter(cat => {
+        // Double-check that the Level 3 category actually belongs to products in the current Level 1 category
+        return filtered.some(product => product.categoryLevel3 === cat);
+      }) as string[];
+    
+    setLevel3Categories(availableLevel3Cats);
+
+    // Apply Level 3 filter if selected
+    if (selectedLevel3) {
+      filtered = filtered.filter(product => 
+        product.categoryLevel3 === selectedLevel3
+      );
+    }
+
+    setFilteredProducts(filtered);
+  }, [products, subcategories, subcategorySlug, selectedLevel3]);
+
+  // Reset Level 3 filter when subcategory changes
+  useEffect(() => {
+    setSelectedLevel3(null);
   }, [subcategorySlug]);
 
-  if (!category) {
+  // Only show Level 3 filters if we have more than 1 category
+  const shouldShowLevel3Filters = level3Categories.length > 1;
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-12 text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <h2 className="text-xl font-semibold">Loading category...</h2>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error || !currentCategory) {
     return (
       <Layout>
         <div className="container mx-auto px-4 py-12 text-center">
           <h1 className="text-3xl font-bold mb-4">Category not found</h1>
-          <p className="text-gray-600 mb-8">The category you're looking for doesn't exist.</p>
+          <p className="text-gray-600 mb-8">
+            {error || "The category you're looking for doesn't exist."}
+          </p>
           <Button asChild>
-            <a href="/">Back to Home</a>
+            <Link to="/">Back to Home</Link>
           </Button>
         </div>
       </Layout>
     );
   }
-  
-  const products = subcategorySlug 
-    ? getProductsBySubcategory(subcategorySlug)
-    : activeSubcategory 
-      ? getProductsBySubcategory(activeSubcategory) 
-      : getProductsByCategory(category.id);
-
-  const handleSubcategoryClick = (subcategoryId: string) => {
-    setActiveSubcategory(subcategoryId);
-  };
 
   return (
     <Layout>
-      <div className="bg-gray-50 py-8">
-        <div className="container mx-auto px-4">
-          <h1 className="text-3xl font-bold mb-4">{category.name}</h1>
-          <p className="text-gray-600 max-w-3xl">{category.description}</p>
+      {/* Breadcrumb Navigation */}
+      <div className="border-b border-gray-200 bg-white">
+        <div className="container mx-auto px-4 py-4">
+          <nav className="flex items-center space-x-2 text-sm text-gray-600">
+            <Link to="/" className="hover:text-gray-900">Home</Link>
+            {currentCategory && (
+              <>
+                <ChevronRight className="h-4 w-4" />
+                {subcategorySlug ? (
+                  <Link to={`/category/${currentCategory.slug}`} className="hover:text-gray-900">
+                    {currentCategory.name}
+                  </Link>
+                ) : (
+                  <span className="text-gray-900 font-medium">{currentCategory.name}</span>
+                )}
+              </>
+            )}
+            {subcategorySlug && (
+              <>
+                <ChevronRight className="h-4 w-4" />
+                <span className="text-gray-900 font-medium">
+                  {subcategories.find(sub => sub.slug === subcategorySlug)?.name || subcategorySlug}
+                </span>
+              </>
+            )}
+          </nav>
         </div>
       </div>
-      
-      {category.subcategories && category.subcategories.length > 0 && (
+
+      {/* Level 2 Subcategory Tabs */}
+      {subcategories.length > 0 && (
         <div className="border-b border-gray-200 sticky top-16 bg-white z-30">
-          <div className="container mx-auto px-4 py-4 overflow-x-auto flex space-x-4">
-            <Button 
-              variant={!activeSubcategory ? "default" : "outline"} 
-              onClick={() => setActiveSubcategory(undefined)}
-              className="whitespace-nowrap"
-            >
-              All {category.name}
-            </Button>
-            {category.subcategories.map((subcategory) => (
-              <Button 
-                key={subcategory.id} 
-                variant={activeSubcategory === subcategory.id ? "default" : "outline"}
-                onClick={() => handleSubcategoryClick(subcategory.id)}
-                className="whitespace-nowrap"
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex space-x-2 overflow-x-auto">
+              <Button
+                variant={!subcategorySlug ? "default" : "outline"}
+                asChild
+                className="whitespace-nowrap flex-shrink-0"
               >
-                {subcategory.name}
+                <Link to={`/category/${currentCategory.slug}`}>
+                  All {currentCategory.name}
+                </Link>
               </Button>
-            ))}
+              {subcategories.map((subcategory) => (
+                <Button
+                  key={subcategory.id}
+                  variant={subcategorySlug === subcategory.slug ? "default" : "outline"}
+                  asChild
+                  className="whitespace-nowrap flex-shrink-0"
+                >
+                  <Link to={`/category/${currentCategory.slug}/${subcategory.slug}`}>
+                    {subcategory.name}
+                  </Link>
+                </Button>
+              ))}
+            </div>
           </div>
         </div>
       )}
+
+      {/* Level 3 Category Filters - Only show if we have multiple Level 3 categories */}
+      {shouldShowLevel3Filters && (
+        <div className="border-b border-gray-200 bg-gray-50">
+          <div className="container mx-auto px-4 py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex space-x-2 overflow-x-auto">
+                <Button
+                  variant={!selectedLevel3 ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedLevel3(null)}
+                  className="whitespace-nowrap flex-shrink-0"
+                >
+                  All Types
+                </Button>
+                {level3Categories.map((level3Cat) => (
+                  <Button
+                    key={level3Cat}
+                    variant={selectedLevel3 === level3Cat ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSelectedLevel3(level3Cat)}
+                    className="whitespace-nowrap flex-shrink-0"
+                  >
+                    {level3Cat}
+                  </Button>
+                ))}
+              </div>
+              
+              {/* Product Count */}
+              <div className="text-sm text-gray-600 whitespace-nowrap ml-4">
+                {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''}
+                {selectedLevel3 && ` in ${selectedLevel3}`}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Category Header */}
+      <div className="bg-gray-50 py-8">
+        <div className="container mx-auto px-4">
+          <h1 className="text-3xl font-bold mb-4">
+            {selectedLevel3 
+              ? `${selectedLevel3} ${subcategorySlug ? `- ${subcategories.find(sub => sub.slug === subcategorySlug)?.name}` : ''}`
+              : subcategorySlug 
+                ? `${subcategories.find(sub => sub.slug === subcategorySlug)?.name || subcategorySlug}`
+                : `All ${currentCategory.name}`
+            }
+          </h1>
+          <p className="text-gray-600 max-w-3xl">
+            {subcategorySlug 
+              ? subcategories.find(sub => sub.slug === subcategorySlug)?.description || currentCategory.description
+              : currentCategory.description
+            }
+          </p>
+          
+          {/* Show available types if we don't show the filter bar */}
+          {!shouldShowLevel3Filters && level3Categories.length === 1 && (
+            <p className="text-sm text-gray-500 mt-2">
+              Category: {level3Categories[0]}
+            </p>
+          )}
+        </div>
+      </div>
       
+      {/* Products */}
       <div className="container mx-auto px-4 py-12">
-        <PaginatedProductGrid 
-          products={products} 
-          title={activeSubcategory 
-            ? `${category.subcategories?.find(sub => sub.id === activeSubcategory)?.name}` 
-            : `All ${category.name}`
-          } 
-        />
+        {filteredProducts.length > 0 ? (
+          <PaginatedProductGrid 
+            products={filteredProducts} 
+            title={
+              selectedLevel3 
+                ? `${selectedLevel3} ${subcategorySlug ? `- ${subcategories.find(sub => sub.slug === subcategorySlug)?.name}` : ''}`
+                : subcategorySlug 
+                  ? `${subcategories.find(sub => sub.slug === subcategorySlug)?.name || subcategorySlug}`
+                  : `All ${currentCategory.name}`
+            }
+          />
+        ) : (
+          <div className="text-center py-12">
+            <h3 className="text-lg font-semibold mb-2">No products found</h3>
+            <p className="text-gray-600">
+              {selectedLevel3 
+                ? `There are no ${selectedLevel3} products${subcategorySlug ? ` in ${subcategories.find(sub => sub.slug === subcategorySlug)?.name}` : ''} yet.`
+                : subcategorySlug 
+                  ? `There are no products in the ${subcategories.find(sub => sub.slug === subcategorySlug)?.name || subcategorySlug} category yet.`
+                  : `There are no products in the ${currentCategory.name} category yet.`
+              }
+            </p>
+            {selectedLevel3 && (
+              <Button 
+                variant="outline" 
+                onClick={() => setSelectedLevel3(null)}
+                className="mt-4"
+              >
+                Show All Products
+              </Button>
+            )}
+          </div>
+        )}
       </div>
     </Layout>
   );

@@ -1,34 +1,53 @@
-// In your types file (e.g., src/types/index.ts or src/types/product.ts)
+// src/types/product.ts
 export interface Product {
-  id: string;
+  // Core identifiers
+  id: number;
   name: string;
   slug: string;
   description: string | null;
-  discountPrice?: string;
+  
+  // Pricing
   price: string;
+  discountPrice?: string; // Optional since it's not in your data
+  
+  // Categories
   categoryLevel1: string;
-  categoryLevel2: string;
-  categoryLevel3: string;
-serviceType: 'physical' | 'service';
+  categoryLevel2: string | null;
+  categoryLevel3: string | null;
+  
+  // Product type
+  serviceType: 'physical' | 'service';
   serviceDuration: string | null;
   unit: string;
+  
+  // Inventory
   stock: number;
   images: string[];
   isActive: boolean;
+  
+  // Metadata
   tags: string[];
   brand: string | null;
-  createdAt: string;
-  updatedAt: string;
   
-  // ADD THESE NEW FIELDS:
+  // Special categories
   isFeatured: boolean;
   isTrending: boolean;
   isNewArrival: boolean;
   featuredOrder: number;
   trendingOrder: number;
   newArrivalOrder: number;
+  
+  // Wishlist
+  wishList: boolean;
+  
+  // Size
+  size: string | null;
+  
+  // Timestamps
+  createdAt: string;
+  updatedAt: string;
+  
 }
-
 export interface Order {
   id: string;
   customerName: string;

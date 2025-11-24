@@ -1,13 +1,12 @@
-
-import React, { useState, useRef } from 'react';
+// src/components/products/ProductCard.tsx
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { Product } from '@/hooks/useProducts';
-import { Heart, Download, Scissors, Star, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Heart, ShoppingCart } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { toast } from '@/components/ui/sonner';
-import { removeBackground, loadImageFromUrl } from '@/utils/backgroundRemoval';
+import { Product } from '@/lib/type';
 
 interface ProductCardProps {
   product: Product;
@@ -16,13 +15,17 @@ interface ProductCardProps {
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
-  const [isRemovingBg, setIsRemovingBg] = useState(false);
-  const [processedImageUrl, setProcessedImageUrl] = useState<string | null>(null);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    // addToCart(product);
+    
+    if (product.stock === 0) {
+      toast.error('This product is out of stock');
+      return;
+    }
+    
+    addToCart(product, 1);
     toast.success(`${product.name} added to cart`);
   };
 
@@ -32,177 +35,99 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     
     if (isInWishlist(product.id)) {
       removeFromWishlist(product.id);
+      toast.success('Removed from wishlist');
     } else {
       addToWishlist(product);
+      toast.success('Added to wishlist');
     }
   };
 
-  const handleRemoveBackground = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    setIsRemovingBg(true);
-    toast.info('Removing background...', {
-      description: 'This may take a few moments'
-    });
-
-    try {
-      let imageUrl = '';
-      if (product.images && Array.isArray(product.images)) {
-        imageUrl = product.images[0];
-      } else if (typeof product.images === 'string') {
-        imageUrl = product.images;
-      } else if (product.image) {
-        imageUrl = product.image;
-      }
-      
-      const img = await loadImageFromUrl(imageUrl);
-      const processedBlob = await removeBackground(img);
-      const processedUrl = URL.createObjectURL(processedBlob);
-      setProcessedImageUrl(processedUrl);
-      
-      toast.success('Background removed successfully!');
-    } catch (error) {
-      console.error('Failed to remove background:', error);
-      toast.error('Failed to remove background', {
-        description: 'Please try again later'
-      });
-    } finally {
-      setIsRemovingBg(false);
-    }
-  };
-
-  const handleDownloadProcessed = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (processedImageUrl) {
-      const link = document.createElement('a');
-      link.href = processedImageUrl;
-      link.download = `${product.name}-no-bg.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      toast.success('Image downloaded!');
-    }
-  };
-
-  const displayImage: string = processedImageUrl || (() => {
-    if (product.images && Array.isArray(product.images)) return product.images[0];
-    if (typeof product.images === 'string') return product.images;
-    if (product.image) return product.image;
-    return '';
-  })();
+  // Calculate price display
+  const currentPrice = product.discountPrice ? parseFloat(product.discountPrice.toString()) : parseFloat(product.price.toString());
+  const originalPrice = product.discountPrice ? parseFloat(product.price.toString()) : null;
+  const discountPercentage = product.discountPrice 
+    ? Math.round((1 - parseFloat(product.discountPrice.toString()) / parseFloat(product.price.toString())) * 100)
+    : 0;
 
   return (
-    <div className="bg-card rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden border border-border group">
-      <Link to={`/product/${product.slug}`} className="block">
-        <div className="relative bg-muted overflow-hidden aspect-square">
+    <div className="group relative bg-white rounded-sm border border-gray-200 overflow-hidden hover:shadow-sm transition-all duration-300">
+      <Link to={`/product/${product.slug || product.id}`} className="block">
+        {/* Product Image */}
+        <div className="aspect-square overflow-hidden bg-gray-100 relative">
           <img
-            src={displayImage}
+            src={product.images[0] || '/api/placeholder/300/300'}
             alt={product.name}
-            className="w-full h-full object-cover"
-            style={processedImageUrl ? { backgroundColor: 'white' } : {}}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            onError={(e) => {
+              e.currentTarget.src = '/api/placeholder/300/300';
+            }}
           />
           
-          {/* Top action buttons */}
-          <div className="absolute top-3 right-3 flex flex-col gap-2">
+          {/* Discount Badge */}
+          {product.discountPrice && (
+            <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
+              {discountPercentage}% OFF
+            </div>
+          )}
+          
+          {/* Action Buttons - Top Right */}
+          <div className="absolute top-2 right-2 flex flex-col gap-2">
+            {/* Wishlist Button */}
             <button
               onClick={handleWishlistToggle}
-              className="p-2 bg-background/90 rounded-md shadow-sm hover:bg-background transition-colors border border-border/50"
-              title={isInWishlist(product.id) ? 'Remove from wishlist' : 'Add to wishlist'}
+              className="bg-white/80 hover:bg-white p-2 rounded-full transition-colors shadow-sm"
             >
-              <Heart 
+              <Heart
                 className={`h-4 w-4 ${
-                  isInWishlist(product.id) 
-                    ? 'text-red-500 fill-red-500' 
-                    : 'text-muted-foreground hover:text-foreground'
-                }`} 
+                  isInWishlist(product.id)
+                    ? 'text-red-500 fill-red-500'
+                    : 'text-gray-600'
+                }`}
               />
-              <span className="sr-only">
-                {isInWishlist(product.id) ? 'Remove from wishlist' : 'Add to wishlist'}
-              </span>
             </button>
             
+            {/* Add to Cart Button - Icon Only */}
             <button
               onClick={handleAddToCart}
-              className="p-2 bg-primary hover:bg-primary/90 rounded-md shadow-sm transition-colors"
-              title="Add to cart"
+              disabled={product.stock === 0}
+              className="bg-white/80 hover:bg-blue-600  p-2 rounded-full transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Add to Cart"
             >
-              <ShoppingCart className="h-4 w-4 text-primary-foreground" />
-              <span className="sr-only">Add to cart</span>
+              <ShoppingCart className="h-4 hover:text-white w-4 text-gray-600" />
             </button>
           </div>
+        </div>
+
+        {/* Product Info */}
+        <div className="p-4">
+          <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2 group-hover:text-primary transition-colors">
+            {product.name}
+          </h3>
           
-          {/* Discount badge */}
-          {product.discountPrice && (
-            <div className="absolute top-3 left-3 bg-destructive text-destructive-foreground px-2.5 py-1 text-xs font-semibold rounded">
-              -{Math.round((1 - product.discountPrice / product.price) * 100)}%
-            </div>
-          )}
-          
-          {/* Background removal controls */}
-          <div className="absolute bottom-3 left-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-            <Button
-              size="sm"
-              variant="secondary"
-              className="h-8 w-8 p-0 bg-background/90 hover:bg-background shadow-sm border border-border/50"
-              onClick={handleRemoveBackground}
-              disabled={isRemovingBg}
-              title="Remove background"
-            >
-              <Scissors className="h-3.5 w-3.5" />
-            </Button>
-            
-            {processedImageUrl && (
-              <Button
-                size="sm"
-                variant="secondary"
-                className="h-8 w-8 p-0 bg-background/90 hover:bg-background shadow-sm border border-border/50"
-                onClick={handleDownloadProcessed}
-                title="Download processed image"
-              >
-                <Download className="h-3.5 w-3.5" />
-              </Button>
+          <p className="text-gray-600 text-sm mb-2 line-clamp-2">
+            {product.description}
+          </p>
+
+          {/* Price */}
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-lg font-bold text-gray-900">
+              ${currentPrice.toFixed(2)}
+            </span>
+            {originalPrice && (
+              <span className="text-sm text-gray-500 line-through">
+                ${originalPrice.toFixed(2)}
+              </span>
             )}
           </div>
-          
-          {/* Stock indicator */}
-          {product.stock < 10 && (
-            <div className="absolute bottom-3 right-3 bg-background/90 text-foreground px-2 py-0.5 text-xs font-medium rounded border border-border/50">
-              Only {product.stock} left
-            </div>
-          )}
+
+          {/* Stock Status */}
+          <div className="flex items-center justify-between">
+            <span className={`text-xs ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
+            </span>
+          </div>
         </div>
       </Link>
-      
-      <div className="p-4">
-        <Link to={`/product/${product.slug}`}>
-          <div className="flex items-start justify-between gap-2 mb-3">
-            <h3 className="font-semibold text-foreground line-clamp-2 flex-1 text-sm leading-snug hover:text-primary transition-colors">
-              {product.name}
-            </h3>
-            <div className="flex items-center bg-amber-50 dark:bg-amber-950 px-2 py-0.5 rounded shrink-0 border border-amber-200 dark:border-amber-800">
-              <Star className="w-3 h-3 text-amber-500 fill-amber-500 mr-1" />
-              <span className="text-xs font-semibold text-amber-700 dark:text-amber-400">{product.rating}</span>
-            </div>
-          </div>
-        </Link>
-
-        <div className="flex items-baseline gap-2 mb-1">
-          {product.discountPrice ? (
-            <>
-              <span className="text-xl font-bold text-foreground">${product.discountPrice.toFixed(2)}</span>
-              <span className="text-sm text-muted-foreground line-through">${product.price.toFixed(2)}</span>
-            </>
-          ) : (
-            <span className="text-xl font-bold text-foreground">${product.price.toFixed(2)}</span>
-          )}
-        </div>
-        
-        <p className="text-xs text-muted-foreground">Free shipping on orders over $50</p>
-      </div>
     </div>
   );
 };

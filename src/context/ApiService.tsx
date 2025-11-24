@@ -1,3 +1,4 @@
+import { Product } from "@/lib/type";
 
 
 // Base API configuration
@@ -261,7 +262,67 @@ async verifyToken(): Promise<{ success: boolean; data?: any }> {
   }
 }
 
+// In your ApiService - update the endpoints to match your backend
 
+/**
+ * Get featured products - use correct endpoint
+ */
+async getFeaturedProducts(): Promise<Product[]> {
+  const response = await this.request('/api/products/featured', { // Add correct path
+    method: 'GET',
+    requiresAuth: false,
+  });
+  
+  console.log('📦 [GET_FEATURED_PRODUCTS] Raw response:', response);
+  
+  // Extract just the products array from the response
+  if (response && response.products && Array.isArray(response.products)) {
+    return this.normalizeProducts(response.products);
+  }
+  
+  console.warn('📦 [GET_FEATURED_PRODUCTS] Unexpected response structure:', response);
+  return [];
+}
+
+/**
+ * Get trending products - use correct endpoint
+ */
+async getTrendingProducts(): Promise<Product[]> {
+  const response = await this.request('/api/products/trending', { // Add correct path
+    method: 'GET',
+    requiresAuth: false,
+  });
+  
+  console.log('📦 [GET_TRENDING_PRODUCTS] Raw response:', response);
+  
+  // Extract just the products array from the response
+  if (response && response.products && Array.isArray(response.products)) {
+    return this.normalizeProducts(response.products);
+  }
+  
+  console.warn('📦 [GET_TRENDING_PRODUCTS] Unexpected response structure:', response);
+  return [];
+}
+
+/**
+ * Get new arrivals - use correct endpoint
+ */
+async getNewArrivals(): Promise<Product[]> {
+  const response = await this.request('/api/products/new-arrivals', { // Add correct path
+    method: 'GET',
+    requiresAuth: false,
+  });
+  
+  console.log('📦 [GET_NEW_ARRIVALS] Raw response:', response);
+  
+  // Extract just the products array from the response
+  if (response && response.products && Array.isArray(response.products)) {
+    return this.normalizeProducts(response.products);
+  }
+  
+  console.warn('📦 [GET_NEW_ARRIVALS] Unexpected response structure:', response);
+  return [];
+}
 // In ApiService.tsx - add detailed debugging
 // =============================================
 // 📅 BOOKING ENDPOINTS
@@ -564,12 +625,6 @@ private async requestWithFormData(
   }
 
 
-  async getFeaturedProducts() {
-  return this.request('/featured', {
-    method: 'GET',
-    requiresAuth: false,
-  });
-}
 
 
   /**
@@ -948,130 +1003,16 @@ async updatePassword(passwordData: {
   }
 
 
-    private normalizeProducts(products: any[]) {
-    return products.map(product => {
-      const images = (product.images || []).map((img: string) => {
-        if (img.includes('\\')) {
-          const filename = img.split('\\').pop();
-          return `${this.baseUrl}/uploads/products/${filename}`;
-        } else if (img.includes('/')) {
-          const filename = img.split('/').pop();
-          return `${this.baseUrl}/uploads/products/${filename}`;
-        }
-        return img;
-      });
 
-      return {
-        ...product,
-        images: images.length ? images : ['/api/placeholder/400/400'],
-        stock: typeof product.stock === 'number' ? product.stock : 0,
-        isActive: product.isActive ?? true,
-        price: product.price || '0',
-        discountPrice: product.discountPrice || null,
-        description: product.description || '',
-        tags: Array.isArray(product.tags) ? product.tags : []
-      };
-    });
-  }
 
-  async getProducts(params?: {
-    page?: number;
-    limit?: number;
-    category?: string;
-    search?: string;
-    minPrice?: number;
-    maxPrice?: number;
-  }) {
-    try {
-      const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
-      console.log('📦 [GET_PRODUCTS] Fetching from:', `/api/products${queryString}`);
-      
-      const res = await this.request(`/api/products${queryString}`, {
-        method: 'GET',
-        requiresAuth: false, // Products are public
-      });
 
-      console.log('📦 [GET_PRODUCTS] Raw response:', res);
 
-      // Handle the actual API response structure
-      if (res && Array.isArray(res.products)) {
-        return this.normalizeProducts(res.products);
-      }
-      
-      // Fallback handling for different response structures
-      if (Array.isArray(res)) return this.normalizeProducts(res);
-      if (!res) return [];
-      if (Array.isArray(res.data)) return this.normalizeProducts(res.data);
-      if (Array.isArray(res.items)) return this.normalizeProducts(res.items);
-      if (Array.isArray(res.docs)) return this.normalizeProducts(res.docs);
-      if (Array.isArray(res.results)) return this.normalizeProducts(res.results);
 
-      if (res.data && Array.isArray(res.data.products)) return this.normalizeProducts(res.data.products);
-      if (res.data && Array.isArray(res.data.items)) return this.normalizeProducts(res.data.items);
 
-      for (const key of Object.keys(res)) {
-        if (Array.isArray((res as any)[key])) return this.normalizeProducts((res as any)[key]);
-      }
 
-      console.warn('📦 [GET_PRODUCTS] Unexpected response structure:', res);
-      return [];
-    } catch (error) {
-      console.error('📦 [GET_PRODUCTS] Error:', error);
-      return [];
-    }
-  }
 
-  async getProductById(id: string) {
-    try {
-      console.log('📦 [GET_PRODUCT_BY_ID] Fetching product:', id);
-      
-      const response = await this.request(`/api/products/${id}`, {
-        method: 'GET',
-        requiresAuth: false, // Product details are public
-      });
 
-      console.log('📦 [GET_PRODUCT_BY_ID] Raw response:', response);
 
-      // Handle different response structures
-      let productData = null;
-
-      if (response && typeof response === 'object') {
-        // Case 1: Direct product object
-        if (response.id || response.name) {
-          productData = response;
-        }
-        // Case 2: Nested in data property
-        else if (response.data && (response.data.id || response.data.name)) {
-          productData = response.data;
-        }
-        // Case 3: Nested in product property
-        else if (response.product && (response.product.id || response.product.name)) {
-          productData = response.product;
-        }
-        // Case 4: Array of products (take first)
-        else if (Array.isArray(response.products) && response.products.length > 0) {
-          productData = response.products[0];
-        }
-        // Case 5: Array response (take first)
-        else if (Array.isArray(response) && response.length > 0) {
-          productData = response[0];
-        }
-      }
-
-      if (!productData) {
-        throw new Error(`Product with ID ${id} not found in response`);
-      }
-
-      // Normalize the product data
-      const normalizedProduct = this.normalizeProducts([productData])[0];
-      console.log('📦 [GET_PRODUCT_BY_ID] Normalized product:', normalizedProduct);
-      
-      return normalizedProduct;
-    } catch (error) {
-      console.error(`📦 [GET_PRODUCT_BY_ID] Error fetching product ${id}:`, error);
-      throw error;
-    }
-  }
 
   async getProductBySlug(slug: string) {
     try {
@@ -1089,31 +1030,59 @@ async updatePassword(passwordData: {
     }
   }
 
-
-
-async getTrendingProducts() {
-  return this.request('/trending', {
-    method: 'GET',
-    requiresAuth: false,
-  });
+// In your ApiService - update the normalizeProducts method
+private normalizeProducts(products: any[]): Product[] {
+  return products.map(product => ({
+    // Map all fields exactly as they come from the backend
+    id: product.id,
+    name: product.name || '',
+    slug: product.slug || '',
+    description: product.description || null,
+    price: product.price?.toString() || '0',
+    discountPrice: product.discountPrice?.toString() || undefined,
+    categoryLevel1: product.categoryLevel1 || '',
+    categoryLevel2: product.categoryLevel2 || null,
+    categoryLevel3: product.categoryLevel3 || null,
+    serviceType: product.serviceType || 'physical',
+    serviceDuration: product.serviceDuration || null,
+    unit: product.unit || 'piece',
+    stock: typeof product.stock === 'number' ? product.stock : 0,
+    images: Array.isArray(product.images) ? product.images : [],
+    isActive: product.isActive ?? true,
+    tags: Array.isArray(product.tags) ? product.tags : [],
+    brand: product.brand || null,
+    isFeatured: product.isFeatured || false,
+    isTrending: product.isTrending || false,
+    isNewArrival: product.isNewArrival || false,
+    featuredOrder: product.featuredOrder || 0,
+    trendingOrder: product.trendingOrder || 0,
+    newArrivalOrder: product.newArrivalOrder || 0,
+    wishList: product.wishList || false,
+    size: product.size || null,
+    createdAt: product.createdAt || new Date().toISOString(),
+    updatedAt: product.updatedAt || new Date().toISOString(),
+  }));
 }
 
-async getNewArrivals() {
-  return this.request('/new-arrivals', {
-    method: 'GET',
-    requiresAuth: false,
-  });
-}
 
 
+
+
+
+
+
+
+
+/**
+ * Update product special categories - corrected endpoint
+ */
 async updateProductSpecialCategories(productId: string, categories: string[]) {
-  return this.request(`/${productId}/special-categories`, {
+  return this.request(`/api/products/${productId}/special-categories`, {
     method: 'PATCH',
     body: JSON.stringify({ categories }),
     requiresAuth: true,
   });
 }
-
 // =============================================
 // 📅 BOOKING ENDPOINTS
 // =============================================
@@ -1399,6 +1368,8 @@ async cancelOrder(orderId: string): Promise<{
 /**
  * Get bookings by email (public access)
  */
+
+
 async getBookingsByEmail(email: string): Promise<{
   success: boolean;
   data?: any[];
@@ -1410,6 +1381,52 @@ async getBookingsByEmail(email: string): Promise<{
   });
 }
 
+
+
+
+/**
+ * Get new arrivals
+ */
+
+/**
+ * Get all products
+ */
+async getProducts(params?: {
+  page?: number;
+  limit?: number;
+  category?: string;
+  search?: string;
+  minPrice?: number;
+  maxPrice?: number;
+}): Promise<Product[]> {
+  try {
+    const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+    console.log('📦 [GET_PRODUCTS] Fetching from:', `/api/products${queryString}`);
+    
+    const response = await this.request(`/api/products${queryString}`, {
+      method: 'GET',
+      requiresAuth: false,
+    });
+
+    console.log('📦 [GET_PRODUCTS] Raw response:', response);
+
+    // Extract just the products array from the response
+    if (response && response.products && Array.isArray(response.products)) {
+      return this.normalizeProducts(response.products);
+    }
+    
+    // Fallback: if it's directly an array
+    if (Array.isArray(response)) {
+      return this.normalizeProducts(response);
+    }
+
+    console.warn('📦 [GET_PRODUCTS] Unexpected response structure:', response);
+    return [];
+  } catch (error) {
+    console.error('📦 [GET_PRODUCTS] Error:', error);
+    return [];
+  }
+}
   async getProductsByCategory(categoryLevel1: string, categoryLevel2?: string, categoryLevel3?: string) {
     try {
       let endpoint = '';
@@ -1449,6 +1466,62 @@ async getBookingsByEmail(email: string): Promise<{
       return [];
     }
   }
+
+  /**
+   * Get product by ID - already correct
+   */
+  async getProductById(id: string) {
+    try {
+      console.log('📦 [GET_PRODUCT_BY_ID] Fetching product:', id);
+      
+      const response = await this.request(`/api/products/${id}`, {
+        method: 'GET',
+        requiresAuth: false, // Product details are public
+      });
+
+      console.log('📦 [GET_PRODUCT_BY_ID] Raw response:', response);
+
+      // Handle different response structures
+      let productData = null;
+
+      if (response && typeof response === 'object') {
+        // Case 1: Direct product object
+        if (response.id || response.name) {
+          productData = response;
+        }
+        // Case 2: Nested in data property
+        else if (response.data && (response.data.id || response.data.name)) {
+          productData = response.data;
+        }
+        // Case 3: Nested in product property
+        else if (response.product && (response.product.id || response.product.name)) {
+          productData = response.product;
+        }
+        // Case 4: Array of products (take first)
+        else if (Array.isArray(response.products) && response.products.length > 0) {
+          productData = response.products[0];
+        }
+        // Case 5: Array response (take first)
+        else if (Array.isArray(response) && response.length > 0) {
+          productData = response[0];
+        }
+      }
+
+      if (!productData) {
+        throw new Error(`Product with ID ${id} not found in response`);
+      }
+
+      // Normalize the product data
+      const normalizedProduct = this.normalizeProducts([productData])[0];
+      console.log('📦 [GET_PRODUCT_BY_ID] Normalized product:', normalizedProduct);
+      
+      return normalizedProduct;
+    } catch (error) {
+      console.error(`📦 [GET_PRODUCT_BY_ID] Error fetching product ${id}:`, error);
+      throw error;
+    }
+  }
+
 }
 
 export const apiService = new ApiService(API_BASE_URL);

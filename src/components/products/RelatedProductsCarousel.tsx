@@ -1,6 +1,6 @@
 import React from 'react';
 import ProductCard from './ProductCard';
-import { Product } from '@/hooks/useProducts';
+// import { Product } from '@/hooks/useProducts';
 import {
   Carousel,
   CarouselContent,
@@ -8,6 +8,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel';
+import { Product } from '@/lib/type';
 
 interface RelatedProductsCarouselProps {
   products: Product[];

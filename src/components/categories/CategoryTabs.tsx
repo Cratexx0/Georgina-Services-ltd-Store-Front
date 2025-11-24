@@ -89,7 +89,7 @@ const CategoryTabs: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {categories.slice(0, 3).map((category) => {
+        {categories.slice(1, 4).map((category) => {
           const Icon = CATEGORY_ICONS[category.name] || ShoppingBag;
 
           return (

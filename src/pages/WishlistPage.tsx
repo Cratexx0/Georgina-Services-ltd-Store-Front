@@ -16,6 +16,57 @@ const WishlistPage: React.FC = () => {
     removeFromWishlist(product.id);
   };
 
+  // Helper function to safely format price
+  const formatPrice = (price: any): string => {
+    if (!price) return '0.00';
+    
+    // Convert to number if it's a string
+    const priceNumber = typeof price === 'string' ? parseFloat(price) : price;
+    
+    // Check if it's a valid number
+    if (isNaN(priceNumber)) {
+      console.error('Invalid price:', price);
+      return '0.00';
+    }
+    
+    return priceNumber.toFixed(2);
+  };
+
+  // Helper function to get the display price
+  const getDisplayPrice = (product: any): string => {
+    const price = product.discountPrice || product.price;
+    return formatPrice(price);
+  };
+
+  // Helper function to get the original price (for showing discount)
+  const getOriginalPrice = (product: any): string | null => {
+    if (product.discountPrice && product.price) {
+      return formatPrice(product.price);
+    }
+    return null;
+  };
+
+  // Helper function to get the first image URL
+  const getFirstImage = (product: any): string => {
+    if (!product.images && !product.image) {
+      return '/api/placeholder/300/300';
+    }
+    
+    // Handle images array
+    if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+      const firstImage = product.images[0];
+      return typeof firstImage === 'string' ? firstImage : '/api/placeholder/300/300';
+    }
+    
+    // Handle single image string
+    if (product.image && typeof product.image === 'string') {
+      return product.image;
+    }
+    
+    // Fallback
+    return '/api/placeholder/300/300';
+  };
+
   if (wishlist.length === 0) {
     return (
       <Layout>
@@ -59,9 +110,12 @@ const WishlistPage: React.FC = () => {
                 <Link to={`/product/${product.slug}`}>
                   <div className="aspect-square mb-4 overflow-hidden rounded-lg bg-muted">
                     <img
-                      src={product.image}
+                      src={getFirstImage(product)}
                       alt={product.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      onError={(e) => {
+                        e.currentTarget.src = '/api/placeholder/300/300';
+                      }}
                     />
                   </div>
                 </Link>
@@ -72,11 +126,11 @@ const WishlistPage: React.FC = () => {
                 </Link>
                 <div className="flex items-center justify-between mb-4">
                   <p className="text-xl font-bold text-primary">
-                    ${(product.discountPrice || product.price).toFixed(2)}
+                    ${getDisplayPrice(product)}
                   </p>
-                  {product.discountPrice && (
+                  {product.discountPrice && product.price && (
                     <span className="text-sm text-muted-foreground line-through">
-                      ${product.price.toFixed(2)}
+                      ${getOriginalPrice(product)}
                     </span>
                   )}
                 </div>

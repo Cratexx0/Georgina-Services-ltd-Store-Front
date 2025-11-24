@@ -1,25 +1,24 @@
-
-
+// src/context/CartContext.tsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
-
 import { toast } from '@/components/ui/sonner';
 import { Product } from '@/lib/type';
-
-
 
 export interface CartItem {
   product: Product;
   quantity: number;
+  size: string; // Changed from string[] to string since we're selecting one size
 }
 
 interface CartContextType {
   cart: CartItem[];
-  addToCart: (product: Product, quantity?: number) => void;
-  removeFromCart: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  addToCart: (product: Product, quantity?: number, size?: string) => void;
+  removeFromCart: (productId: string | number) => void;
+  updateQuantity: (productId: string | number, quantity: number) => void;
+  updateSize: (productId: string | number, size: string) => void;
   clearCart: () => void;
   getTotalPrice: () => number;
   getTotalItems: () => number;
+  getItemByProductId: (productId: string | number) => CartItem | undefined;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -38,45 +37,63 @@ interface CartProviderProps {
 
 export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const [cart, setCart] = useState<CartItem[]>(() => {
-    // Initialize from local storage if available
     const savedCart = localStorage.getItem('cart');
     return savedCart ? JSON.parse(savedCart) : [];
   });
 
-  // Update local storage when cart changes
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(cart));
   }, [cart]);
 
-  const addToCart = (product: Product, quantity = 1) => {
+  // Helper function to compare product IDs (handles both string and number)
+  const compareProductIds = (id1: string | number, id2: string | number): boolean => {
+    return id1.toString() === id2.toString();
+  };
+
+  const addToCart = (product: Product, quantity = 1, size?: string) => {
     setCart(currentCart => {
-      const existingItem = currentCart.find(item => item.product.id === product.id);
+      // Check if product with same ID AND same size already exists in cart
+      const existingItem = currentCart.find(item => 
+        compareProductIds(item.product.id, product.id) && item.size === size
+      );
       
       if (existingItem) {
+        // Update quantity for existing item with same size
         toast.success(`Updated ${product.name} quantity in cart`);
         return currentCart.map(item => 
-          item.product.id === product.id 
+          compareProductIds(item.product.id, product.id) && item.size === size
             ? { ...item, quantity: item.quantity + quantity } 
             : item
         );
       } else {
-        toast.success(`${product.name} added to cart`);
-        return [...currentCart, { product, quantity }];
+        // Add new item to cart
+        toast.success(`${product.name} added to cart${size ? ` (Size: ${size})` : ''}`);
+        return [...currentCart, { product, quantity, size: size || '' }];
       }
     });
   };
 
-  const removeFromCart = (productId: string) => {
-    setCart(currentCart => currentCart.filter(item => item.product.id !== productId));
+  const removeFromCart = (productId: string | number) => {
+    setCart(currentCart => 
+      currentCart.filter(item => !compareProductIds(item.product.id, productId))
+    );
     toast.success("Item removed from cart");
   };
 
-  const updateQuantity = (productId: string, quantity: number) => {
+  const updateQuantity = (productId: string | number, quantity: number) => {
     if (quantity < 1) return;
     
     setCart(currentCart => 
       currentCart.map(item => 
-        item.product.id === productId ? { ...item, quantity } : item
+        compareProductIds(item.product.id, productId) ? { ...item, quantity } : item
+      )
+    );
+  };
+
+  const updateSize = (productId: string | number, size: string) => {
+    setCart(currentCart => 
+      currentCart.map(item => 
+        compareProductIds(item.product.id, productId) ? { ...item, size } : item
       )
     );
   };
@@ -89,7 +106,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const getTotalPrice = () => {
     return cart.reduce((total, item) => {
       const priceStr = item.product.discountPrice || item.product.price;
-      const price = parseFloat(priceStr);
+      const price = parseFloat(priceStr.toString());
       if (isNaN(price)) {
         console.error(`Invalid price value: ${priceStr} for product ${item.product.name}`);
         return total;
@@ -102,15 +119,21 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     return cart.reduce((total, item) => total + item.quantity, 0);
   };
 
+  const getItemByProductId = (productId: string | number): CartItem | undefined => {
+    return cart.find(item => compareProductIds(item.product.id, productId));
+  };
+
   return (
     <CartContext.Provider value={{
       cart,
       addToCart,
       removeFromCart,
       updateQuantity,
+      updateSize,
       clearCart,
       getTotalPrice,
       getTotalItems,
+      getItemByProductId,
     }}>
       {children}
     </CartContext.Provider>
