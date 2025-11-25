@@ -62,7 +62,7 @@ const Index = () => {
             Every piece is selected for quality, comfort, and style.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mt-16">
-            <div className="group p-10 bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-500 border border-gray-100 hover:scale-105">
+            <div className="group p-10 bg-white rounded-2xl shadow-sm hover:shadow-sm transition-all duration-500 border border-gray-100 hover:scale-105">
               <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
                 <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>

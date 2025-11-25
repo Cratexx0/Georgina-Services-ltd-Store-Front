@@ -50,14 +50,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     : 0;
 
   return (
-    <div className="group relative bg-white rounded-sm border border-gray-200 overflow-hidden hover:shadow-sm transition-all duration-300">
+    <div className="group relative  rounded-sm overflow-hidden  transition-all duration-300">
       <Link to={`/product/${product.slug || product.id}`} className="block">
         {/* Product Image */}
-        <div className="aspect-square overflow-hidden bg-gray-100 relative">
+        <div className="aspect-square rounded-xl overflow-hidden bg-gray-100 relative">
           <img
             src={product.images[0] || '/api/placeholder/300/300'}
             alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="w-full  h-full object-cover group-hover:scale-105 transition-transform duration-300"
             onError={(e) => {
               e.currentTarget.src = '/api/placeholder/300/300';
             }}
@@ -90,27 +90,27 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             <button
               onClick={handleAddToCart}
               disabled={product.stock === 0}
-              className="bg-white/80 hover:bg-blue-600  p-2 rounded-full transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-blue-600  text-white p-2 rounded-full transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
               title="Add to Cart"
             >
-              <ShoppingCart className="h-4 hover:text-white w-4 text-gray-600" />
+              <ShoppingCart className="h-4 w-4 text-white" />
             </button>
           </div>
         </div>
 
         {/* Product Info */}
         <div className="p-4">
-          <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2 group-hover:text-primary transition-colors">
+          <h3 className="font-normal text-gray-900 mb-1 line-clamp-2">
             {product.name}
           </h3>
           
-          <p className="text-gray-600 text-sm mb-2 line-clamp-2">
+          <p className="text-gray-600  text-xs mb-2 line-clamp-2">
             {product.description}
           </p>
 
           {/* Price */}
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-lg font-bold text-gray-900">
+          <div className="flex items-center gap-8 mb-3">
+            <span className="text-base font-semibold text-gray-900">
               ${currentPrice.toFixed(2)}
             </span>
             {originalPrice && (
@@ -118,14 +118,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 ${originalPrice.toFixed(2)}
               </span>
             )}
-          </div>
 
-          {/* Stock Status */}
+                 {/* Stock Status */}
           <div className="flex items-center justify-between">
             <span className={`text-xs ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
               {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
             </span>
           </div>
+          </div>
+
+     
         </div>
       </Link>
     </div>

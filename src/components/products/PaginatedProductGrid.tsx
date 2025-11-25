@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import ProductCard from './ProductCard';
-import { Product } from '@/hooks/useProducts';
+
 import {
   Pagination,
   PaginationContent,
@@ -10,6 +10,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
+import { Product } from '@/lib/type';
 
 interface PaginatedProductGridProps {
   products: Product[];
@@ -40,7 +41,7 @@ const PaginatedProductGrid: React.FC<PaginatedProductGridProps> = ({
         <h2 className="text-2xl font-bold mb-6">{title}</h2>
       )}
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 mb-8">
         {currentProducts?.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}

@@ -48,7 +48,7 @@ const FeaturedProductsCarousel: React.FC = () => {
     >
       <CarouselContent className="-ml-2 md:-ml-4">
         {products.map((product) => (
-          <CarouselItem key={product.id} className="pl-2 md:pl-4 basis-4/5 sm:basis-1/2 md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
+          <CarouselItem key={product.id} className="pl-2 md:pl-4 basis-4/5 sm:basis-1/2 md:basis-1/2 lg:basis-1/4 xl:basis-1/5">
             <div className="p-1">
               <ProductCard product={product} />
             </div>
