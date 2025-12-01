@@ -1,20 +1,62 @@
-// src/components/products/ProductCard.tsx
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import { Heart, ShoppingCart } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { toast } from '@/components/ui/sonner';
-import { Product } from '@/lib/type';
+import { Product as ApiProduct } from '@/lib/type';
+import { Product as LocalProduct } from '@/data/products';
+
+// Union type that accepts both product formats
+type FlexibleProduct = ApiProduct | LocalProduct;
 
 interface ProductCardProps {
-  product: Product;
+  product: FlexibleProduct;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+
+  // Helper to get price as number
+  const getPrice = (price: string | number): number => {
+    return typeof price === 'string' ? parseFloat(price) : price;
+  };
+
+  // Convert product to API format for cart/wishlist operations
+  const toApiProduct = (p: FlexibleProduct): ApiProduct => {
+    if ('categoryLevel1' in p) return p;
+    
+    return {
+      id: typeof p.id === 'string' ? parseInt(p.id, 10) || 0 : p.id as number,
+      name: p.name,
+      slug: p.slug,
+      description: p.description,
+      price: p.price.toString(),
+      discountPrice: p.discountPrice?.toString(),
+      categoryLevel1: (p as LocalProduct).categoryId || '',
+      categoryLevel2: (p as LocalProduct).subcategoryId || null,
+      categoryLevel3: null,
+      serviceType: 'physical',
+      serviceDuration: null,
+      unit: 'piece',
+      stock: p.stock,
+      images: p.images,
+      isActive: true,
+      tags: [],
+      brand: null,
+      isFeatured: (p as LocalProduct).featured || false,
+      isTrending: (p as LocalProduct).trending || false,
+      isNewArrival: (p as LocalProduct).newArrival || false,
+      featuredOrder: 0,
+      trendingOrder: 0,
+      newArrivalOrder: 0,
+      wishList: false,
+      size: (p as LocalProduct).sizes?.join(',') || null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+  };
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -25,39 +67,41 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       return;
     }
     
-    addToCart(product, 1);
+    addToCart(toApiProduct(product), 1);
     toast.success(`${product.name} added to cart`);
   };
+
+  const productId = typeof product.id === 'string' ? parseInt(product.id, 10) || 0 : product.id;
 
   const handleWishlistToggle = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
-    if (isInWishlist(product.id)) {
-      removeFromWishlist(product.id);
+    if (isInWishlist(productId)) {
+      removeFromWishlist(productId);
       toast.success('Removed from wishlist');
     } else {
-      addToWishlist(product);
+      addToWishlist(toApiProduct(product));
       toast.success('Added to wishlist');
     }
   };
 
   // Calculate price display
-  const currentPrice = product.discountPrice ? parseFloat(product.discountPrice.toString()) : parseFloat(product.price.toString());
-  const originalPrice = product.discountPrice ? parseFloat(product.price.toString()) : null;
+  const currentPrice = product.discountPrice ? getPrice(product.discountPrice) : getPrice(product.price);
+  const originalPrice = product.discountPrice ? getPrice(product.price) : null;
   const discountPercentage = product.discountPrice 
-    ? Math.round((1 - parseFloat(product.discountPrice.toString()) / parseFloat(product.price.toString())) * 100)
+    ? Math.round((1 - getPrice(product.discountPrice) / getPrice(product.price)) * 100)
     : 0;
 
   return (
-    <div className="group relative  rounded-sm overflow-hidden  transition-all duration-300">
+    <div className="group relative rounded-lg overflow-hidden bg-card transition-all duration-300 hover:shadow-md">
       <Link to={`/product/${product.slug || product.id}`} className="block">
         {/* Product Image */}
-        <div className="aspect-square rounded-xl overflow-hidden bg-gray-100 relative">
+        <div className="aspect-square rounded-lg overflow-hidden bg-muted relative">
           <img
             src={product.images[0] || '/api/placeholder/300/300'}
             alt={product.name}
-            className="w-full  h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             onError={(e) => {
               e.currentTarget.src = '/api/placeholder/300/300';
             }}
@@ -65,69 +109,63 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           
           {/* Discount Badge */}
           {product.discountPrice && (
-            <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
+            <div className="absolute top-1.5 left-1.5 md:top-2 md:left-2 bg-destructive text-destructive-foreground text-[10px] md:text-xs font-medium px-1.5 py-0.5 md:px-2 md:py-1 rounded">
               {discountPercentage}% OFF
             </div>
           )}
           
-          {/* Action Buttons - Top Right */}
-          <div className="absolute top-2 right-2 flex flex-col gap-2">
-            {/* Wishlist Button */}
+          {/* Action Buttons */}
+          <div className="absolute top-1.5 right-1.5 md:top-2 md:right-2 flex flex-col gap-1.5 md:gap-2">
             <button
               onClick={handleWishlistToggle}
-              className="bg-white/80 hover:bg-white p-2 rounded-full transition-colors shadow-sm"
+              className="bg-background/80 hover:bg-background p-1.5 md:p-2 rounded-full transition-colors shadow-sm"
             >
               <Heart
-                className={`h-4 w-4 ${
-                  isInWishlist(product.id)
-                    ? 'text-red-500 fill-red-500'
-                    : 'text-gray-600'
+                className={`h-3.5 w-3.5 md:h-4 md:w-4 ${
+                  isInWishlist(productId)
+                    ? 'text-destructive fill-destructive'
+                    : 'text-muted-foreground'
                 }`}
               />
             </button>
             
-            {/* Add to Cart Button - Icon Only */}
             <button
               onClick={handleAddToCart}
               disabled={product.stock === 0}
-              className="bg-blue-600  text-white p-2 rounded-full transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-primary text-primary-foreground p-1.5 md:p-2 rounded-full transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
               title="Add to Cart"
             >
-              <ShoppingCart className="h-4 w-4 text-white" />
+              <ShoppingCart className="h-3.5 w-3.5 md:h-4 md:w-4" />
             </button>
           </div>
         </div>
 
         {/* Product Info */}
-        <div className="p-4">
-          <h3 className="font-normal text-gray-900 mb-1 line-clamp-2">
+        <div className="p-2 md:p-3">
+          <h3 className="font-normal text-foreground text-xs md:text-sm mb-0.5 md:mb-1 line-clamp-2">
             {product.name}
           </h3>
           
-          <p className="text-gray-600  text-xs mb-2 line-clamp-2">
+          <p className="text-muted-foreground text-[10px] md:text-xs mb-1.5 md:mb-2 line-clamp-1 md:line-clamp-2">
             {product.description}
           </p>
 
           {/* Price */}
-          <div className="flex items-center gap-8 mb-3">
-            <span className="text-base font-semibold text-gray-900">
+          <div className="flex flex-wrap items-center gap-1 md:gap-2 mb-1">
+            <span className="text-sm md:text-base font-medium text-foreground">
               ${currentPrice.toFixed(2)}
             </span>
             {originalPrice && (
-              <span className="text-sm text-gray-500 line-through">
+              <span className="text-[10px] md:text-xs text-muted-foreground line-through">
                 ${originalPrice.toFixed(2)}
               </span>
             )}
-
-                 {/* Stock Status */}
-          <div className="flex items-center justify-between">
-            <span className={`text-xs ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
-            </span>
-          </div>
           </div>
 
-     
+          {/* Stock Status */}
+          <span className={`text-[10px] md:text-xs ${product.stock > 0 ? 'text-green-600' : 'text-destructive'}`}>
+            {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
+          </span>
         </div>
       </Link>
     </div>

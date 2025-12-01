@@ -128,9 +128,20 @@ const CategoryPage = () => {
   if (loading) {
     return (
       <Layout>
-        <div className="container mx-auto px-4 py-12 text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <h2 className="text-xl font-semibold">Loading category...</h2>
+        <div className="container mx-auto px-4 py-8 md:py-12">
+          <div className="h-6 w-48 bg-muted animate-pulse rounded mb-6" />
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4 lg:gap-6">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <div key={i} className="bg-card rounded-lg overflow-hidden border border-border">
+                <div className="aspect-square bg-muted animate-pulse" />
+                <div className="p-2 md:p-3 space-y-2">
+                  <div className="h-3 md:h-4 bg-muted animate-pulse rounded w-3/4" />
+                  <div className="h-2 md:h-3 bg-muted animate-pulse rounded w-1/2" />
+                  <div className="h-4 md:h-5 bg-muted animate-pulse rounded w-16" />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </Layout>
     );

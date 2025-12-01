@@ -533,13 +533,47 @@ const ProductPage = () => {
     }
   };
 
-  // Loading state
+  // Loading state with skeleton
   if (loading) {
     return (
       <Layout>
-        <div className="container mx-auto px-4 py-12 text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <h2 className="text-xl font-semibold">Loading product...</h2>
+        <div className="container mx-auto px-4 py-4 md:py-8">
+          {/* Breadcrumb skeleton */}
+          <div className="flex items-center gap-2 mb-4 md:mb-6">
+            <div className="h-3 md:h-4 w-12 bg-muted animate-pulse rounded" />
+            <div className="h-3 md:h-4 w-2 bg-muted animate-pulse rounded" />
+            <div className="h-3 md:h-4 w-16 bg-muted animate-pulse rounded" />
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
+            {/* Image skeleton */}
+            <div className="space-y-3 md:space-y-4">
+              <div className="w-full aspect-square bg-muted animate-pulse rounded-lg" />
+              <div className="flex gap-2 overflow-x-auto">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="w-14 h-14 md:w-16 md:h-16 bg-muted animate-pulse rounded-md flex-shrink-0" />
+                ))}
+              </div>
+            </div>
+            
+            {/* Info skeleton */}
+            <div className="space-y-3 md:space-y-4">
+              <div className="h-6 md:h-8 w-3/4 bg-muted animate-pulse rounded" />
+              <div className="flex items-center gap-2">
+                <div className="h-4 w-24 bg-muted animate-pulse rounded" />
+                <div className="h-4 w-20 bg-muted animate-pulse rounded" />
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="h-6 md:h-7 w-20 bg-muted animate-pulse rounded" />
+                <div className="h-5 w-16 bg-muted animate-pulse rounded" />
+              </div>
+              <div className="h-16 md:h-20 w-full bg-muted animate-pulse rounded" />
+              <div className="flex items-center gap-3 pt-4">
+                <div className="h-9 md:h-10 w-28 bg-muted animate-pulse rounded" />
+                <div className="h-9 md:h-10 flex-1 bg-muted animate-pulse rounded" />
+              </div>
+            </div>
+          </div>
         </div>
       </Layout>
     );
@@ -549,12 +583,12 @@ const ProductPage = () => {
   if (error || !product) {
     return (
       <Layout>
-        <div className="container mx-auto px-4 py-12 text-center">
-          <h1 className="text-3xl font-bold mb-4">Product not found</h1>
-          <p className="text-gray-600 mb-8">
+        <div className="container mx-auto px-4 py-8 md:py-12 text-center">
+          <h1 className="text-xl md:text-2xl lg:text-3xl font-semibold mb-4">Product not found</h1>
+          <p className="text-sm md:text-base text-muted-foreground mb-6 md:mb-8">
             {error || "The product you're looking for doesn't exist or has been removed."}
           </p>
-          <Button asChild>
+          <Button asChild size="sm">
             <Link to="/products">Browse Products</Link>
           </Button>
         </div>
@@ -577,38 +611,38 @@ const ProductPage = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-3 md:px-4 py-4 md:py-8">
         {/* Breadcrumb */}
-        <nav className="flex items-center space-x-2 text-sm text-gray-500 mb-6">
-          <Link to="/" className="hover:text-gray-700">Home</Link>
+        <nav className="flex items-center flex-wrap gap-1 md:gap-2 text-xs md:text-sm text-muted-foreground mb-4 md:mb-6">
+          <Link to="/" className="hover:text-foreground transition-colors">Home</Link>
           <span>/</span>
-          <Link to="/products" className="hover:text-gray-700">Products</Link>
+          <Link to="/products" className="hover:text-foreground transition-colors">Products</Link>
           <span>/</span>
-          <span className="text-gray-900">{product.name}</span>
+          <span className="text-foreground truncate max-w-[150px] md:max-w-none">{product.name}</span>
         </nav>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
           {/* Product Images */}
-          <div className="space-y-4">
-            <div className="aspect-square overflow-hidden rounded-lg bg-gray-50 flex items-center justify-center p-4">
+          <div className="space-y-3 md:space-y-4">
+            <div className="aspect-square overflow-hidden rounded-lg bg-muted">
               <img 
                 src={product.images[selectedImage] || '/api/placeholder/400/400'} 
                 alt={product.name} 
-                className="w-full h-auto max-h-[400px] object-contain object-center" 
+                className="w-full h-full object-contain" 
                 onError={(e) => {
                   e.currentTarget.src = '/api/placeholder/400/400';
                 }}
               />
             </div>
             {product.images.length > 1 && (
-              <div className="flex space-x-2 overflow-x-auto py-2">
+              <div className="flex gap-2 overflow-x-auto py-1 md:py-2">
                 {product.images.map((image, index) => (
                   <button 
                     key={index}
                     onClick={() => setSelectedImage(index)}
                     className={`flex-shrink-0 border-2 ${
-                      selectedImage === index ? 'border-primary' : 'border-transparent'
-                    } rounded-md overflow-hidden h-16 w-16`}
+                      selectedImage === index ? 'border-primary' : 'border-border'
+                    } rounded-md overflow-hidden h-14 w-14 md:h-16 md:w-16`}
                   >
                     <img 
                       src={image} 
@@ -625,48 +659,48 @@ const ProductPage = () => {
           </div>
           
           {/* Product Info */}
-          <div className="space-y-4">
-            <h1 className="text-2xl font-bold">
+          <div className="space-y-3 md:space-y-4">
+            <h1 className="text-lg md:text-xl lg:text-2xl font-semibold text-foreground">
               {product.name}
             </h1>
             
             {/* Rating */}
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-2">
               <div className="flex">
                 {Array.from({ length: 5 }).map((_, index) => (
                   <Star
                     key={index}
-                    className={`w-4 h-4 ${index < 4 ? 'fill-amber-400 text-amber-400' : 'text-gray-300'}`}
+                    className={`w-3.5 h-3.5 md:w-4 md:h-4 ${index < 4 ? 'fill-amber-400 text-amber-400' : 'text-muted'}`}
                   />
                 ))}
               </div>
-              <span className="text-sm text-gray-600">
+              <span className="text-xs md:text-sm text-muted-foreground">
                 4.0 (42 reviews)
               </span>
             </div>
             
             {/* Price */}
-            <div className="py-2">
+            <div className="py-1 md:py-2">
               {product.discountPrice ? (
-                <div className="flex items-center">
-                  <span className="text-xl font-bold text-gray-900">
+                <div className="flex items-center flex-wrap gap-2">
+                  <span className="text-lg md:text-xl font-semibold text-foreground">
                     ${currentPrice.toFixed(2)}
                   </span>
-                  <span className="text-base text-gray-500 line-through ml-2">
+                  <span className="text-sm md:text-base text-muted-foreground line-through">
                     ${originalPrice?.toFixed(2)}
                   </span>
-                  <span className="ml-2 text-xs font-medium text-red-500">
+                  <span className="text-xs font-medium text-destructive">
                     {discountPercentage}% OFF
                   </span>
                 </div>
               ) : (
-                <span className="text-xl font-bold text-gray-900">
+                <span className="text-lg md:text-xl font-semibold text-foreground">
                   ${currentPrice.toFixed(2)}
                 </span>
               )}
             </div>
             
-            <p className="text-gray-700 text-sm">
+            <p className="text-sm text-muted-foreground leading-relaxed">
               {product.description || 'No description available'}
             </p>
 

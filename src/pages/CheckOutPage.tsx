@@ -33,22 +33,21 @@ const CheckoutPage: React.FC = () => {
 
   const handleProceedToStripe = () => {
     try {
-      // Create order before redirecting to Stripe
-      const orderData: Omit<Order, 'id' | 'orderNumber' | 'orderedAt' | 'updatedAt'> = {
-        items: cart.map(item => ({
-          id: item.product.id,
-          name: item.product.name,
-          price: parseFloat(item.product.discountPrice || item.product.price), // Convert string to number
-          quantity: item.quantity,
-          image: item.product.images[0],
-        })),
-        totalAmount: total,
-        shippingAddress: user?.email || 'To be confirmed',
-        status: 'pending' as 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled',
-        paymentStatus: 'pending' as 'pending' | 'paid' | 'failed',
-      };
+      // Create order data for the API
+      const orderItems = cart.map(item => ({
+        productId: item.product.id.toString(),
+        name: item.product.name,
+        price: parseFloat(item.product.discountPrice || item.product.price),
+        quantity: item.quantity,
+        image: item.product.images[0],
+      }));
 
-      addOrder(orderData);
+      addOrder({
+        items: orderItems,
+        shippingAddress: user?.email || 'To be confirmed',
+        totalAmount: total,
+        paymentMethod: 'stripe',
+      });
       
       toast.success('Redirecting to Stripe for secure payment...');
       
