@@ -97,11 +97,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     <div className="group relative rounded-lg overflow-hidden bg-card transition-all duration-300 hover:shadow-md">
       <Link to={`/product/${product.slug || product.id}`} className="block">
         {/* Product Image */}
-        <div className="aspect-square rounded-lg overflow-hidden bg-muted relative">
+        <div className="aspect-[3/4] rounded-lg overflow-hidden bg-muted relative">
           <img
             src={product.images[0] || '/api/placeholder/300/300'}
             alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
             onError={(e) => {
               e.currentTarget.src = '/api/placeholder/300/300';
             }}

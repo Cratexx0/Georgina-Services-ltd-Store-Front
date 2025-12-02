@@ -230,12 +230,12 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Search, ShoppingCart, Menu, X, LogIn, User, Heart, LogOut, ChevronDown } from 'lucide-react';
+import { ShoppingCart, Menu, X, LogIn, User, Heart, LogOut, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { useAuth } from '@/context/AuthContext';
+import SearchBar from '@/components/ui/SearchBar';
 
 const Header = () => {
   const { cart } = useCart();
@@ -245,7 +245,6 @@ const Header = () => {
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const dropdownRef = useRef(null);
   
   // Debug auth state
@@ -275,15 +274,6 @@ const Header = () => {
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
-  };
-  
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
-      setSearchQuery('');
-      setIsMenuOpen(false);
-    }
   };
 
   const handleLogout = () => {
@@ -325,23 +315,7 @@ const Header = () => {
           
           {/* Search and Cart */}
           <div className="hidden md:flex items-center space-x-4">
-            <form onSubmit={handleSearch} className="relative">
-              <Input
-                type="text"
-                placeholder="Search products..."
-                className="w-[200px] lg:w-[300px]"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <Button 
-                type="submit" 
-                variant="ghost" 
-                size="icon" 
-                className="absolute right-0 top-0"
-              >
-                <Search className="h-5 w-5" />
-              </Button>
-            </form>
+            <SearchBar className="w-[200px] lg:w-[300px]" />
             
             <Link to="/wishlist" className="relative">
               <Heart className="h-4 w-4 text-muted-foreground" />
@@ -466,23 +440,7 @@ const Header = () => {
               </div>
             </nav>
             <div className="mt-4 flex items-center space-x-4">
-              <form onSubmit={handleSearch} className="flex-1 relative">
-                <Input
-                  type="text"
-                  placeholder="Search products..."
-                  className="w-full"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <Button 
-                  type="submit" 
-                  variant="ghost" 
-                  size="icon" 
-                  className="absolute right-0 top-0"
-                >
-                  <Search className="h-5 w-5" />
-                </Button>
-              </form>
+              <SearchBar className="flex-1" onClose={toggleMenu} />
               
               <Link to="/cart" className="relative" onClick={toggleMenu}>
                 <ShoppingCart className="h-6 w-6 text-muted-foreground" />
