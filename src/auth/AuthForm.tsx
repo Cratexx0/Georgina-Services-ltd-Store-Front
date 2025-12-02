@@ -4,12 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogIn, UserPlus } from "lucide-react";
+import { LogIn, UserPlus, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
 
 const AuthForm = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [showLoginPassword, setShowLoginPassword] = useState<boolean>(false);
+  const [showRegisterPassword, setShowRegisterPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
   const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [registerData, setRegisterData] = useState({ 
     email: '', 
@@ -192,15 +195,29 @@ const AuthForm = () => {
                   Forgot password?
                 </button>
               </div>
-              <Input 
-                id="login-password" 
-                type="password"
-                value={loginData.password}
-                onChange={(e) => setLoginData({...loginData, password: e.target.value})}
-                required
-                disabled={isLoading}
-                className="mt-1"
-              />
+              <div className="relative mt-1">
+                <Input 
+                  id="login-password" 
+                  type={showLoginPassword ? "text" : "password"}
+                  value={loginData.password}
+                  onChange={(e) => setLoginData({...loginData, password: e.target.value})}
+                  required
+                  disabled={isLoading}
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowLoginPassword(!showLoginPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  disabled={isLoading}
+                >
+                  {showLoginPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
             </div>
             
             <Button 
@@ -262,31 +279,59 @@ const AuthForm = () => {
             
             <div className="animate-fade-in delay-300">
               <Label htmlFor="register-password">Password</Label>
-              <Input 
-                id="register-password" 
-                type="password"
-                placeholder="At least 6 characters"
-                value={registerData.password}
-                onChange={(e) => setRegisterData({...registerData, password: e.target.value})}
-                required
-                minLength={6}
-                disabled={isLoading}
-                className="mt-1"
-              />
+              <div className="relative mt-1">
+                <Input 
+                  id="register-password" 
+                  type={showRegisterPassword ? "text" : "password"}
+                  placeholder="At least 6 characters"
+                  value={registerData.password}
+                  onChange={(e) => setRegisterData({...registerData, password: e.target.value})}
+                  required
+                  minLength={6}
+                  disabled={isLoading}
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  disabled={isLoading}
+                >
+                  {showRegisterPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
             </div>
 
             <div className="animate-fade-in delay-400">
               <Label htmlFor="confirm-password">Confirm Password</Label>
-              <Input 
-                id="confirm-password" 
-                type="password"
-                placeholder="Confirm your password"
-                value={registerData.confirmpassword}
-                onChange={(e) => setRegisterData({...registerData, confirmpassword: e.target.value})}
-                required
-                disabled={isLoading}
-                className="mt-1"
-              />
+              <div className="relative mt-1">
+                <Input 
+                  id="confirm-password" 
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Confirm your password"
+                  value={registerData.confirmpassword}
+                  onChange={(e) => setRegisterData({...registerData, confirmpassword: e.target.value})}
+                  required
+                  disabled={isLoading}
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  disabled={isLoading}
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
             </div>
             
             <Button 

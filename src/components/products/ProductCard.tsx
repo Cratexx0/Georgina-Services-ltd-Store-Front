@@ -150,8 +150,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             {product.description}
           </p>
 
-          {/* Price */}
-          <div className="flex flex-wrap items-center gap-1 md:gap-2 mb-1">
+          {/* Price and Stock */}
+          <div className="flex flex-wrap items-center gap-1 md:gap-2">
             <span className="text-sm md:text-base font-medium text-foreground">
               ${currentPrice.toFixed(2)}
             </span>
@@ -160,12 +160,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 ${originalPrice.toFixed(2)}
               </span>
             )}
+            <span className="text-[10px] md:text-xs">•</span>
+            <span className={`text-[10px] md:text-xs ${product.stock > 0 ? 'text-green-600' : 'text-destructive'}`}>
+              {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
+            </span>
           </div>
-
-          {/* Stock Status */}
-          <span className={`text-[10px] md:text-xs ${product.stock > 0 ? 'text-green-600' : 'text-destructive'}`}>
-            {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
-          </span>
         </div>
       </Link>
     </div>
