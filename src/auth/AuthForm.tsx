@@ -116,33 +116,34 @@ const AuthForm = () => {
   };
 
   const handleForgotPassword = async () => {
-    if (!loginData.email) {
-      toast({
-        title: "Email required",
-        description: "Please enter your email address to reset password.",
-        variant: "destructive"
-      });
-      return;
-    }
+    // if (!loginData.email) {
+    //   toast({
+    //     title: "Email required",
+    //     description: "Please enter your email address to reset password.",
+    //     variant: "destructive"
+    //   });
+    //   return;
+    // }
+        navigate("/forgot/password")
 
-    setIsLoading(true);
-    try {
-      // You'll need to implement this in your AuthContext
-      // await forgotPassword(loginData.email);
+    // setIsLoading(true);
+    // try {
+    //   // You'll need to implement this in your AuthContext
+    //   // await forgotPassword(loginData.email);
       
-      toast({
-        title: "Reset email sent",
-        description: "Check your email for password reset instructions.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Reset failed",
-        description: error.message || "Failed to send reset instructions.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    //   toast({
+    //     title: "Reset email sent",
+    //     description: "Check your email for password reset instructions.",
+    //   });
+    // } catch (error: any) {
+    //   toast({
+    //     title: "Reset failed",
+    //     description: error.message || "Failed to send reset instructions.",
+    //     variant: "destructive"
+    //   });
+    // } finally {
+    //   setIsLoading(false);
+    // }
   };
   
   return (

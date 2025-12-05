@@ -366,6 +366,25 @@ async getAvailableTimeSlots(date: string): Promise<{
   });
 }
 
+
+
+// auth
+// =============================================
+// 🔐 AUTHENTICATION ENDPOINTS
+// =============================================
+
+async forgotPassword(email: string): Promise<{
+  success: boolean;
+  message?: string;
+  data?: any;
+}> {
+  return this.request('/api/auth/forgot-password', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+    requiresAuth: false, // Important: this endpoint doesn't require authentication
+  });
+}
+
 // =============================================
 // 🛒 ORDER ENDPOINTS
 // =============================================
@@ -741,12 +760,7 @@ private async requestWithFormData(
     return response;
   }
 
-  async forgotPassword(email: string) {
-    return this.request('/api/auth/forgot-password', {
-      method: 'POST',
-      body: JSON.stringify({ email }),
-    });
-  }
+
 
   async resetPassword(token: string, newPassword: string) {
     return this.request('/api/auth/resetpassword', {
