@@ -31,7 +31,7 @@ import Failure from "./payment/Failure";
 import ScrollToTop from "./components/ScrollToTop";
 
 const queryClient = new QueryClient();
-
+// Main App Component
 const App = () => (
 	<QueryClientProvider client={queryClient}>
 		<AuthProvider>
