@@ -1,208 +1,172 @@
-
-import React, { useState, useRef } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { Product } from '@/hooks/useProducts';
-import { Heart, Download, Scissors, Star, ShoppingCart } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Heart, ShoppingCart } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { toast } from '@/components/ui/sonner';
-import { removeBackground, loadImageFromUrl } from '@/utils/backgroundRemoval';
+import { Product as ApiProduct } from '@/lib/type';
+import { Product as LocalProduct } from '@/data/products';
+
+// Union type that accepts both product formats
+type FlexibleProduct = ApiProduct | LocalProduct;
 
 interface ProductCardProps {
-  product: Product;
+  product: FlexibleProduct;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
-  const [isRemovingBg, setIsRemovingBg] = useState(false);
-  const [processedImageUrl, setProcessedImageUrl] = useState<string | null>(null);
+
+  // Helper to get price as number
+  const getPrice = (price: string | number): number => {
+    return typeof price === 'string' ? parseFloat(price) : price;
+  };
+
+  // Convert product to API format for cart/wishlist operations
+  const toApiProduct = (p: FlexibleProduct): ApiProduct => {
+    if ('categoryLevel1' in p) return p;
+    
+    return {
+      id: typeof p.id === 'string' ? parseInt(p.id, 10) || 0 : p.id as number,
+      name: p.name,
+      slug: p.slug,
+      description: p.description,
+      price: p.price.toString(),
+      discountPrice: p.discountPrice?.toString(),
+      categoryLevel1: (p as LocalProduct).categoryId || '',
+      categoryLevel2: (p as LocalProduct).subcategoryId || null,
+      categoryLevel3: null,
+      serviceType: 'physical',
+      serviceDuration: null,
+      unit: 'piece',
+      stock: p.stock,
+      images: p.images,
+      isActive: true,
+      tags: [],
+      brand: null,
+      isFeatured: (p as LocalProduct).featured || false,
+      isTrending: (p as LocalProduct).trending || false,
+      isNewArrival: (p as LocalProduct).newArrival || false,
+      featuredOrder: 0,
+      trendingOrder: 0,
+      newArrivalOrder: 0,
+      wishList: false,
+      size: (p as LocalProduct).sizes?.join(',') || null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+  };
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart(product);
+    
+    if (product.stock === 0) {
+      toast.error('This product is out of stock');
+      return;
+    }
+    
+    addToCart(toApiProduct(product), 1);
     toast.success(`${product.name} added to cart`);
   };
+
+  const productId = typeof product.id === 'string' ? parseInt(product.id, 10) || 0 : product.id;
 
   const handleWishlistToggle = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
-    if (isInWishlist(product.id)) {
-      removeFromWishlist(product.id);
+    if (isInWishlist(productId)) {
+      removeFromWishlist(productId);
+      toast.success('Removed from wishlist');
     } else {
-      addToWishlist(product);
+      addToWishlist(toApiProduct(product));
+      toast.success('Added to wishlist');
     }
   };
 
-  const handleRemoveBackground = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    setIsRemovingBg(true);
-    toast.info('Removing background...', {
-      description: 'This may take a few moments'
-    });
-
-    try {
-      let imageUrl = '';
-      if (product.images && Array.isArray(product.images)) {
-        imageUrl = product.images[0];
-      } else if (typeof product.images === 'string') {
-        imageUrl = product.images;
-      } else if (product.image) {
-        imageUrl = product.image;
-      }
-      
-      const img = await loadImageFromUrl(imageUrl);
-      const processedBlob = await removeBackground(img);
-      const processedUrl = URL.createObjectURL(processedBlob);
-      setProcessedImageUrl(processedUrl);
-      
-      toast.success('Background removed successfully!');
-    } catch (error) {
-      console.error('Failed to remove background:', error);
-      toast.error('Failed to remove background', {
-        description: 'Please try again later'
-      });
-    } finally {
-      setIsRemovingBg(false);
-    }
-  };
-
-  const handleDownloadProcessed = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (processedImageUrl) {
-      const link = document.createElement('a');
-      link.href = processedImageUrl;
-      link.download = `${product.name}-no-bg.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      toast.success('Image downloaded!');
-    }
-  };
-
-  const displayImage: string = processedImageUrl || (() => {
-    if (product.images && Array.isArray(product.images)) return product.images[0];
-    if (typeof product.images === 'string') return product.images;
-    if (product.image) return product.image;
-    return '';
-  })();
+  // Calculate price display
+  const currentPrice = product.discountPrice ? getPrice(product.discountPrice) : getPrice(product.price);
+  const originalPrice = product.discountPrice ? getPrice(product.price) : null;
+  const discountPercentage = product.discountPrice 
+    ? Math.round((1 - getPrice(product.discountPrice) / getPrice(product.price)) * 100)
+    : 0;
 
   return (
-    <div className="bg-card rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden border border-border group">
-      <Link to={`/product/${product.slug}`} className="block">
-        <div className="relative bg-muted overflow-hidden aspect-square">
+    <div className="group relative rounded-lg overflow-hidden bg-card transition-all duration-300 hover:shadow-md">
+      <Link to={`/product/${product.slug || product.id}`} className="block">
+        {/* Product Image */}
+        <div className="aspect-[3/4] rounded-lg overflow-hidden bg-muted relative">
           <img
-            src={displayImage}
+            src={product.images[0] || '/api/placeholder/300/300'}
             alt={product.name}
-            className="w-full h-full object-cover"
-            style={processedImageUrl ? { backgroundColor: 'white' } : {}}
+            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+            onError={(e) => {
+              e.currentTarget.src = '/api/placeholder/300/300';
+            }}
           />
           
-          {/* Top action buttons */}
-          <div className="absolute top-3 right-3 flex flex-col gap-2">
+          {/* Discount Badge */}
+          {product.discountPrice && (
+            <div className="absolute top-1.5 left-1.5 md:top-2 md:left-2 bg-destructive text-destructive-foreground text-[10px] md:text-xs font-medium px-1.5 py-0.5 md:px-2 md:py-1 rounded">
+              {discountPercentage}% OFF
+            </div>
+          )}
+          
+          {/* Action Buttons */}
+          <div className="absolute top-1.5 right-1.5 md:top-2 md:right-2 flex flex-col gap-1.5 md:gap-2">
             <button
               onClick={handleWishlistToggle}
-              className="p-2 bg-background/90 rounded-md shadow-sm hover:bg-background transition-colors border border-border/50"
-              title={isInWishlist(product.id) ? 'Remove from wishlist' : 'Add to wishlist'}
+              className="bg-background/80 hover:bg-background p-1.5 md:p-2 rounded-full transition-colors shadow-sm"
             >
-              <Heart 
-                className={`h-4 w-4 ${
-                  isInWishlist(product.id) 
-                    ? 'text-red-500 fill-red-500' 
-                    : 'text-muted-foreground hover:text-foreground'
-                }`} 
+              <Heart
+                className={`h-3.5 w-3.5 md:h-4 md:w-4 ${
+                  isInWishlist(productId)
+                    ? 'text-destructive fill-destructive'
+                    : 'text-muted-foreground'
+                }`}
               />
-              <span className="sr-only">
-                {isInWishlist(product.id) ? 'Remove from wishlist' : 'Add to wishlist'}
-              </span>
             </button>
             
             <button
               onClick={handleAddToCart}
-              className="p-2 bg-primary hover:bg-primary/90 rounded-md shadow-sm transition-colors"
-              title="Add to cart"
+              disabled={product.stock === 0}
+              className="bg-primary text-primary-foreground p-1.5 md:p-2 rounded-full transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Add to Cart"
             >
-              <ShoppingCart className="h-4 w-4 text-primary-foreground" />
-              <span className="sr-only">Add to cart</span>
+              <ShoppingCart className="h-3.5 w-3.5 md:h-4 md:w-4" />
             </button>
           </div>
+        </div>
+
+        {/* Product Info */}
+        <div className="p-2 md:p-3">
+          <h3 className="font-normal text-foreground text-xs md:text-sm mb-0.5 md:mb-1 line-clamp-2">
+            {product.name}
+          </h3>
           
-          {/* Discount badge */}
-          {product.discountPrice && (
-            <div className="absolute top-3 left-3 bg-destructive text-destructive-foreground px-2.5 py-1 text-xs font-semibold rounded">
-              -{Math.round((1 - product.discountPrice / product.price) * 100)}%
-            </div>
-          )}
-          
-          {/* Background removal controls */}
-          <div className="absolute bottom-3 left-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-            <Button
-              size="sm"
-              variant="secondary"
-              className="h-8 w-8 p-0 bg-background/90 hover:bg-background shadow-sm border border-border/50"
-              onClick={handleRemoveBackground}
-              disabled={isRemovingBg}
-              title="Remove background"
-            >
-              <Scissors className="h-3.5 w-3.5" />
-            </Button>
-            
-            {processedImageUrl && (
-              <Button
-                size="sm"
-                variant="secondary"
-                className="h-8 w-8 p-0 bg-background/90 hover:bg-background shadow-sm border border-border/50"
-                onClick={handleDownloadProcessed}
-                title="Download processed image"
-              >
-                <Download className="h-3.5 w-3.5" />
-              </Button>
+          <p className="text-muted-foreground text-[10px] md:text-xs mb-1.5 md:mb-2 line-clamp-1 md:line-clamp-2">
+            {product.description}
+          </p>
+
+          {/* Price and Stock */}
+          <div className="flex flex-wrap items-center gap-1 md:gap-2">
+            <span className="text-sm md:text-base font-medium text-foreground">
+              ${currentPrice.toFixed(2)}
+            </span>
+            {originalPrice && (
+              <span className="text-[10px] md:text-xs text-muted-foreground line-through">
+                ${originalPrice.toFixed(2)}
+              </span>
             )}
+            <span className="text-[10px] md:text-xs">•</span>
+            <span className={`text-[10px] md:text-xs ${product.stock > 0 ? 'text-green-600' : 'text-destructive'}`}>
+              {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
+            </span>
           </div>
-          
-          {/* Stock indicator */}
-          {product.stock < 10 && (
-            <div className="absolute bottom-3 right-3 bg-background/90 text-foreground px-2 py-0.5 text-xs font-medium rounded border border-border/50">
-              Only {product.stock} left
-            </div>
-          )}
         </div>
       </Link>
-      
-      <div className="p-4">
-        <Link to={`/product/${product.slug}`}>
-          <div className="flex items-start justify-between gap-2 mb-3">
-            <h3 className="font-semibold text-foreground line-clamp-2 flex-1 text-sm leading-snug hover:text-primary transition-colors">
-              {product.name}
-            </h3>
-            <div className="flex items-center bg-amber-50 dark:bg-amber-950 px-2 py-0.5 rounded shrink-0 border border-amber-200 dark:border-amber-800">
-              <Star className="w-3 h-3 text-amber-500 fill-amber-500 mr-1" />
-              <span className="text-xs font-semibold text-amber-700 dark:text-amber-400">{product.rating}</span>
-            </div>
-          </div>
-        </Link>
-
-        <div className="flex items-baseline gap-2 mb-1">
-          {product.discountPrice ? (
-            <>
-              <span className="text-xl font-bold text-foreground">${product.discountPrice.toFixed(2)}</span>
-              <span className="text-sm text-muted-foreground line-through">${product.price.toFixed(2)}</span>
-            </>
-          ) : (
-            <span className="text-xl font-bold text-foreground">${product.price.toFixed(2)}</span>
-          )}
-        </div>
-        
-        <p className="text-xs text-muted-foreground">Free shipping on orders over $50</p>
-      </div>
     </div>
   );
 };

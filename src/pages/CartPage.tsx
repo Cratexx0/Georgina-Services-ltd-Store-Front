@@ -11,6 +11,7 @@ const CartPage = () => {
   const { cart, removeFromCart, updateQuantity, clearCart, getTotalPrice } = useCart();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const stripe_url = "https://buy.stripe.com/test_4gM5kF1NAd2vfF83KU4Rq00";
 
   const handleCheckout = () => {
     if (!isAuthenticated) {
@@ -56,7 +57,7 @@ const CartPage = () => {
         <h1 className="text-3xl font-bold mb-8">Your Shopping Cart</h1>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="col-span-2">
+          <div className="lg:col-span-2">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200">
               <div className="p-6 border-b border-gray-200">
                 <div className="flex justify-between items-center">
@@ -69,65 +70,71 @@ const CartPage = () => {
               </div>
               
               <div className="divide-y divide-gray-200">
-                {cart.map((item) => (
-                  <div key={item.product.id} className="p-6 flex flex-col sm:flex-row items-start">
-                    <Link to={`/product/${item.product.slug}`} className="flex-shrink-0 mb-4 sm:mb-0 sm:mr-6">
-                      <img 
-                        src={item.product.images[0]} 
-                        alt={item.product.name} 
-                        className="w-20 h-20 object-cover rounded-md"
-                      />
-                    </Link>
-                    
-                    <div className="flex-grow">
-                      <div className="flex justify-between mb-1">
-                        <Link to={`/product/${item.product.slug}`} className="font-semibold text-gray-900 hover:text-primary transition-colors">
-                          {item.product.name}
-                        </Link>
-                        <div className="font-semibold">
-                          ${((item.product.discountPrice || item.product.price) * item.quantity).toFixed(2)}
-                        </div>
-                      </div>
+                {cart.map((item) => {
+                  // Convert string prices to numbers
+                  const itemPrice = parseFloat(item.product.discountPrice || item.product.price);
+                  const itemTotal = itemPrice * item.quantity;
+                  
+                  return (
+                    <div key={item.product.id} className="p-6 flex flex-col sm:flex-row items-start">
+                      <Link to={`/product/${item.product.slug}`} className="flex-shrink-0 mb-4 sm:mb-0 sm:mr-6">
+                        <img 
+                          src={item.product.images[0]} 
+                          alt={item.product.name} 
+                          className="w-20 h-20 object-cover rounded-md"
+                        />
+                      </Link>
                       
-                      <p className="text-sm text-gray-500 mb-4">
-                        ${(item.product.discountPrice || item.product.price).toFixed(2)} each
-                      </p>
-                      
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center border border-gray-300 rounded-md">
-                          <button 
-                            onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-                            className="px-2 py-1 border-r border-gray-300"
-                            disabled={item.quantity <= 1}
-                          >
-                            -
-                          </button>
-                          <span className="px-3 py-1">{item.quantity}</span>
-                          <button 
-                            onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                            className="px-2 py-1 border-l border-gray-300"
-                          >
-                            +
-                          </button>
+                      <div className="flex-grow w-full">
+                        <div className="flex justify-between mb-1">
+                          <Link to={`/product/${item.product.slug}`} className="font-semibold text-gray-900 hover:text-primary transition-colors">
+                            {item.product.name}
+                          </Link>
+                          <div className="font-semibold ml-4">
+                            ${itemTotal.toFixed(2)}
+                          </div>
                         </div>
                         
-                        <button 
-                          onClick={() => removeFromCart(item.product.id)}
-                          className="text-red-500 hover:text-red-700 transition-colors"
-                          aria-label="Remove item"
-                        >
-                          <Trash2 className="h-5 w-5" />
-                        </button>
+                        <p className="text-sm text-gray-500 mb-4">
+                          ${itemPrice.toFixed(2)} each
+                        </p>
+                        
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center border border-gray-300 rounded-md">
+                            <button 
+                              onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                              className="px-3 py-1 border-r border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                              disabled={item.quantity <= 1}
+                            >
+                              -
+                            </button>
+                            <span className="px-4 py-1 min-w-[40px] text-center">{item.quantity}</span>
+                            <button 
+                              onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                              className="px-3 py-1 border-l border-gray-300 hover:bg-gray-50"
+                            >
+                              +
+                            </button>
+                          </div>
+                          
+                          <button 
+                            onClick={() => removeFromCart(item.product.id)}
+                            className="text-red-500 hover:text-red-700 transition-colors p-2"
+                            aria-label="Remove item"
+                          >
+                            <Trash2 className="h-5 w-5" />
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
           
-          <div className="col-span-1">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-24">
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 lg:sticky lg:top-24">
               <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
               
               <div className="space-y-3 mb-6">
@@ -143,7 +150,7 @@ const CartPage = () => {
                   <span>Tax</span>
                   <span>Calculated at checkout</span>
                 </div>
-                <div className="border-t border-gray-200 pt-3 flex justify-between font-semibold">
+                <div className="border-t border-gray-200 pt-3 flex justify-between font-semibold text-lg">
                   <span>Total</span>
                   <span>${getTotalPrice().toFixed(2)}</span>
                 </div>

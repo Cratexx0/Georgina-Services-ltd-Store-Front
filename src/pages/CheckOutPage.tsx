@@ -1,423 +1,497 @@
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import Layout from "@/components/layout/Layout";
+import { useCart, CartItem } from "@/context/CartContext";
+import { useAuth, User } from "@/context/AuthContext";
+import { useOrder } from "@/context/OrderContext";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ShoppingCart, ArrowLeft, CreditCard } from "lucide-react";
+import { toast } from "@/components/ui/sonner";
+import StripeProvider from "@/providers/CheckoutProvider";
+import CheckoutForm from "@/components/stripe/CheckoutForm";
+import type { PaymentIntent } from "@stripe/stripe-js";
 
-import React, { useEffect, useState } from 'react';
-import { useCart } from '@/context/CartContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, CheckCircle, ArrowLeft, CreditCard, Smartphone } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
-import { Link, useNavigate } from 'react-router-dom';
-import Layout from '@/components/layout/Layout';
+const CheckoutPage: React.FC = () => {
+	const { cart, getTotalPrice, clearCart } = useCart();
+	const { user } = useAuth();
+	const { addOrder } = useOrder();
+	const navigate = useNavigate();
+	const [countryCode, setCountryCode] = useState<string>("US"); // Default to US
+	const [clientSecret, setClientSecret] = useState<string>("");
+	const [isLoadingPayment, setIsLoadingPayment] = useState(false);
 
-const CheckoutPage = () => {
-  const { cart, clearCart, getTotalPrice } = useCart();
-  const [loading, setLoading] = useState(false);
-  const [paymentSuccess, setPaymentSuccess] = useState(false);
-  const [clientSecret, setClientSecret] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('card');
-  const [billingInfo, setBillingInfo] = useState({
-    email: '',
-    firstName: '',
-    lastName: '',
-    address: '',
-    city: '',
-    zipCode: '',
-    country: 'US'
-  });
-  const [cardInfo, setCardInfo] = useState({
-    cardNumber: '',
-    expiryDate: '',
-    cvv: '',
-    cardName: ''
-  });
-  const [mobileMoneyInfo, setMobileMoneyInfo] = useState({
-    phoneNumber: '',
-    provider: ''
-  });
-  const { toast } = useToast();
-  const navigate = useNavigate();
+	const shippingCost = 10;
+	const taxRate = 0.15; // 15% tax
+	const subtotal = getTotalPrice();
+	const tax = subtotal * taxRate;
+	const total = subtotal + shippingCost + tax;
 
-  // Simulate fetching client secret from backend
-  useEffect(() => {
-    if (cart.length === 0) {
-      navigate('/cart');
-      return;
-    }
+	useEffect(() => {
+		if (cart.length === 0) {
+			navigate("/cart");
+		}
+	}, [cart, navigate]);
 
-    const fetchClientSecret = async () => {
-      try {
-        setLoading(true);
-        // In a real app, you would call your backend API here
-        setTimeout(() => {
-          setClientSecret('pi_mock_123456789');
-          setLoading(false);
-        }, 1000);
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to initialize payment",
-          variant: "destructive"
-        });
-        setLoading(false);
-      }
-    };
+	// Detect user's country for currency and payment processing
+	useEffect(() => {
+		const detectCountry = async () => {
+			try {
+				// Try to get country from browser's timezone
+				const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-    fetchClientSecret();
-  }, [cart, navigate, toast]);
+				// Simple mapping of common timezones to countries
+				if (
+					timezone.includes("America/New_York") ||
+					timezone.includes("America/Chicago") ||
+					timezone.includes("America/Denver") ||
+					timezone.includes("America/Los_Angeles")
+				) {
+					setCountryCode("US");
+				} else if (timezone.includes("Europe/London")) {
+					setCountryCode("GB");
+				} else if (timezone.includes("Europe/")) {
+					setCountryCode("DE"); // Default EU country
+				} else if (timezone.includes("Africa/Accra")) {
+					setCountryCode("GH");
+				} else if (navigator.geolocation) {
+					// Fallback to geolocation API if available
+					setCountryCode("US"); // Keep US as default
+				} else {
+					setCountryCode("US"); // Final fallback
+				}
+			} catch (error) {
+				// Country detection failed, log error and use default
+				setCountryCode("US");
+			}
+		};
 
-  const handlePayment = async () => {
-    // Validate billing information
-    if (!billingInfo.email || !billingInfo.firstName || !billingInfo.lastName || 
-        !billingInfo.address || !billingInfo.city || !billingInfo.zipCode) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in all billing information fields",
-        variant: "destructive"
-      });
-      return;
-    }
+		detectCountry();
+	}, []);
 
-    // Validate payment method specific info
-    if (paymentMethod === 'card') {
-      if (!cardInfo.cardNumber || !cardInfo.expiryDate || !cardInfo.cvv || !cardInfo.cardName) {
-        toast({
-          title: "Missing Card Information",
-          description: "Please fill in all card details",
-          variant: "destructive"
-        });
-        return;
-      }
-    } else if (paymentMethod === 'mobile_money') {
-      if (!mobileMoneyInfo.phoneNumber || !mobileMoneyInfo.provider) {
-        toast({
-          title: "Missing Mobile Money Information",
-          description: "Please fill in mobile money details",
-          variant: "destructive"
-        });
-        return;
-      }
-    }
+	// Enhanced product and user data handling
+	const firstCartItem = cart[0]; // For single product checkout
+	const productId = firstCartItem?.product.id?.toString() || "";
+	const userId = user?.id?.toString() || user?.email?.toString() || "";
 
-    try {
-      setLoading(true);
+	// Calculate total quantity of all items in cart
+	const totalQuantity = cart.reduce((total, item) => total + item.quantity, 0);
 
-      // Simulate payment processing
-      setTimeout(() => {
-        setPaymentSuccess(true);
-        clearCart();
-        setLoading(false);
+	// For single product checkout, use first item's quantity
+	const quantity = firstCartItem?.quantity || 1;
 
-        toast({
-          title: "Payment successful!",
-          description: "Your order has been placed and you'll receive a confirmation email shortly.",
-        });
-      }, 3000);
+	// Validation checks
+	const isValidCheckout = !!(
+		productId &&
+		userId &&
+		firstCartItem &&
+		user &&
+		totalQuantity > 0
+	);
 
-    } catch (error) {
-      toast({
-        title: "Payment failed",
-        description: "Please try again or use a different payment method.",
-        variant: "destructive"
-      });
-      setLoading(false);
-    }
-  };
+	// Create currency helper function
+	const getCurrency = (code: string): string => {
+		if (code === "GB") return "gbp";
+		if (code === "GH") return "ghs";
+		return "usd";
+	};
 
-  if (cart.length === 0 && !paymentSuccess) {
-    return (
-      <Layout>
-        <div className="container mx-auto px-4 py-12 text-center">
-          <div className="max-w-md mx-auto">
-            <div className="p-6 border border-gray-200 rounded-lg bg-white shadow-sm">
-              <h1 className="text-2xl font-bold mb-4">No items in cart</h1>
-              <p className="text-gray-600 mb-6">
-                Your cart is empty. Please add items before checking out.
-              </p>
-              <Button asChild>
-                <Link to="/">Continue Shopping</Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </Layout>
-    );
-  }
+	// Helper function for error messages
+	const getCheckoutErrorMessage = (
+		user: User | null,
+		firstCartItem: CartItem
+	): string => {
+		if (user === null) return "Please log in to continue with payment";
+		if (firstCartItem === null) return "No items in cart";
+		return "Unable to process checkout. Please try again.";
+	};
 
-  if (paymentSuccess) {
-    return (
-      <Layout>
-        <div className="container mx-auto px-4 py-12 text-center">
-          <div className="max-w-md mx-auto">
-            <div className="p-6 border border-gray-200 rounded-lg bg-white shadow-sm">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 mb-4">
-                <CheckCircle className="h-6 w-6 text-green-600" />
-              </div>
-              <h1 className="text-2xl font-bold mb-4">Order Confirmed!</h1>
-              <p className="text-gray-600 mb-6">
-                Thank you for your purchase. A confirmation email has been sent to your email address.
-              </p>
-              <div className="flex flex-col space-y-2">
-                <Button asChild>
-                  <Link to="/">Continue Shopping</Link>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Layout>
-    );
-  }
+	// Create PaymentIntent when component mounts and user/cart is ready
+	useEffect(() => {
+		const createPaymentIntent = async () => {
+			if (!isValidCheckout || clientSecret) return;
 
-  return (
-    <Layout>
-      <div className="container mx-auto px-4 py-8">
-        <Button
-          variant="ghost"
-          onClick={() => navigate(-1)}
-          className="mb-4 flex items-center"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Cart
-        </Button>
+			try {
+				setIsLoadingPayment(true);
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-xl font-bold mb-6">Checkout</h2>
+				console.log("Creating PaymentIntent with:", {
+					productId,
+					userId,
+					quantity,
+					countryCode,
+					total: total,
+				});
 
-            {/* Billing Information */}
-            <div className="space-y-4 mb-6">
-              <h3 className="text-lg font-semibold">Billing Information</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="email">Email *</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={billingInfo.email}
-                    onChange={(e) => setBillingInfo({...billingInfo, email: e.target.value})}
-                    placeholder="john@example.com"
-                  />
-                </div>
-                <div></div>
-                <div>
-                  <Label htmlFor="firstName">First Name *</Label>
-                  <Input
-                    id="firstName"
-                    value={billingInfo.firstName}
-                    onChange={(e) => setBillingInfo({...billingInfo, firstName: e.target.value})}
-                    placeholder="John"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="lastName">Last Name *</Label>
-                  <Input
-                    id="lastName"
-                    value={billingInfo.lastName}
-                    onChange={(e) => setBillingInfo({...billingInfo, lastName: e.target.value})}
-                    placeholder="Doe"
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <Label htmlFor="address">Address *</Label>
-                  <Input
-                    id="address"
-                    value={billingInfo.address}
-                    onChange={(e) => setBillingInfo({...billingInfo, address: e.target.value})}
-                    placeholder="123 Main Street"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="city">City *</Label>
-                  <Input
-                    id="city"
-                    value={billingInfo.city}
-                    onChange={(e) => setBillingInfo({...billingInfo, city: e.target.value})}
-                    placeholder="New York"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="zipCode">Zip Code *</Label>
-                  <Input
-                    id="zipCode"
-                    value={billingInfo.zipCode}
-                    onChange={(e) => setBillingInfo({...billingInfo, zipCode: e.target.value})}
-                    placeholder="10001"
-                  />
-                </div>
-              </div>
-            </div>
+				// Create PaymentIntent using the backend endpoint
+				const response = await fetch(
+					`${
+						import.meta.env.VITE_API_URL ||
+						"https://georgina-server-code.onrender.com"
+					}/api/payment`,
+					{
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+						},
+						body: JSON.stringify({
+							productId,
+							userId,
+							quantity,
+							countryCode,
+							// Flag to indicate we want PaymentIntent instead of CheckoutSession
+							paymentIntentMode: true,
+						}),
+					}
+				);
 
-            {/* Payment Method Selection */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Payment Method</h3>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <button
-                  onClick={() => setPaymentMethod('card')}
-                  className={`flex items-center justify-center p-4 border-2 rounded-lg transition-colors ${
-                    paymentMethod === 'card' ? 'border-primary bg-primary/5' : 'border-gray-200'
-                  }`}
-                >
-                  <CreditCard className="w-5 h-5 mr-2" />
-                  Credit Card
-                </button>
-                <button
-                  onClick={() => setPaymentMethod('mobile_money')}
-                  className={`flex items-center justify-center p-4 border-2 rounded-lg transition-colors ${
-                    paymentMethod === 'mobile_money' ? 'border-primary bg-primary/5' : 'border-gray-200'
-                  }`}
-                >
-                  <Smartphone className="w-5 h-5 mr-2" />
-                  Mobile Money
-                </button>
-              </div>
+				console.log("PaymentIntent API response status:", response.status);
 
-              {/* Card Payment Form */}
-              {paymentMethod === 'card' && (
-                <div className="space-y-4 p-4 border border-gray-200 rounded-lg">
-                  <div>
-                    <Label htmlFor="cardNumber">Card Number *</Label>
-                    <Input
-                      id="cardNumber"
-                      value={cardInfo.cardNumber}
-                      onChange={(e) => setCardInfo({...cardInfo, cardNumber: e.target.value})}
-                      placeholder="1234 5678 9012 3456"
-                      maxLength={19}
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="expiryDate">Expiry Date *</Label>
-                      <Input
-                        id="expiryDate"
-                        value={cardInfo.expiryDate}
-                        onChange={(e) => setCardInfo({...cardInfo, expiryDate: e.target.value})}
-                        placeholder="MM/YY"
-                        maxLength={5}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="cvv">CVV *</Label>
-                      <Input
-                        id="cvv"
-                        value={cardInfo.cvv}
-                        onChange={(e) => setCardInfo({...cardInfo, cvv: e.target.value})}
-                        placeholder="123"
-                        maxLength={4}
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="cardName">Name on Card *</Label>
-                    <Input
-                      id="cardName"
-                      value={cardInfo.cardName}
-                      onChange={(e) => setCardInfo({...cardInfo, cardName: e.target.value})}
-                      placeholder="John Doe"
-                    />
-                  </div>
-                </div>
-              )}
+				if (!response.ok) {
+					let errorDetails;
+					try {
+						const errorJson = await response.json();
+						errorDetails = errorJson;
+						console.error("PaymentIntent API JSON error:", errorJson);
+					} catch {
+						const errorText = await response.text();
+						errorDetails = errorText;
+						console.error("PaymentIntent API text error:", errorText);
+					}
 
-              {/* Mobile Money Form */}
-              {paymentMethod === 'mobile_money' && (
-                <div className="space-y-4 p-4 border border-gray-200 rounded-lg">
-                  <div>
-                    <Label htmlFor="provider">Mobile Money Provider *</Label>
-                    <Select onValueChange={(value) => setMobileMoneyInfo({...mobileMoneyInfo, provider: value})}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select provider" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="mtn">MTN Mobile Money</SelectItem>
-                        <SelectItem value="airtel">Airtel Money</SelectItem>
-                        <SelectItem value="vodafone">Vodafone Cash</SelectItem>
-                        <SelectItem value="tigo">Tigo Cash</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="phoneNumber">Phone Number *</Label>
-                    <Input
-                      id="phoneNumber"
-                      value={mobileMoneyInfo.phoneNumber}
-                      onChange={(e) => setMobileMoneyInfo({...mobileMoneyInfo, phoneNumber: e.target.value})}
-                      placeholder="+233 XX XXX XXXX"
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+					console.error("PaymentIntent creation failed:", {
+						status: response.status,
+						statusText: response.statusText,
+						url: response.url,
+						error: errorDetails,
+					});
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-24">
-            <h2 className="text-xl font-bold mb-6">Order Summary</h2>
+					// Handle specific error cases
+					if (response.status === 500) {
+						toast.error("Payment initialization failed. Please try again.");
+						throw new Error(`Backend error: ${response.status}`);
+					}
 
-            <div className="space-y-4 mb-6">
-              {cart.map(item => (
-                <div key={item.product.id} className="flex justify-between">
-                  <div className="flex items-center space-x-4">
-                    <img
-                      src={item.product.images[0]}
-                      alt={item.product.name}
-                      className="w-12 h-12 object-cover rounded-md"
-                    />
-                    <div>
-                      <div className="font-medium">{item.product.name}</div>
-                      <div className="text-sm text-gray-500">Qty: {item.quantity}</div>
-                    </div>
-                  </div>
-                  <div className="font-medium">
-                    ${((item.product.discountPrice || item.product.price) * item.quantity).toFixed(2)}
-                  </div>
-                </div>
-              ))}
-            </div>
+					if (response.status === 404) {
+						toast.error("Payment service not found. Please contact support.");
+						throw new Error(`Endpoint not found: ${response.status}`);
+					}
 
-            <div className="space-y-3 border-t border-gray-200 pt-4 mb-6">
-              <div className="flex justify-between text-gray-600">
-                <span>Subtotal</span>
-                <span>${getTotalPrice().toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-gray-600">
-                <span>Shipping</span>
-                <span>Free</span>
-              </div>
-              <div className="flex justify-between text-gray-600">
-                <span>Tax</span>
-                <span>$0.00</span>
-              </div>
-              <div className="flex justify-between font-semibold text-lg pt-2">
-                <span>Total</span>
-                <span>${getTotalPrice().toFixed(2)}</span>
-              </div>
-            </div>
+					throw new Error(
+						`PaymentIntent creation failed: ${response.status} ${response.statusText}`
+					);
+				}
 
-            <Button
-              onClick={handlePayment}
-              disabled={loading || !clientSecret}
-              className="w-full"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Processing Payment...
-                </>
-              ) : (
-                `Pay $${getTotalPrice().toFixed(2)}`
-              )}
-            </Button>
+				const responseData = await response.json();
+				console.log("PaymentIntent API response data:", responseData);
 
-            <div className="mt-4 text-xs text-gray-500 text-center">
-              Your payment is secured with Stripe. We never store your payment information.
-            </div>
-          </div>
-        </div>
-      </div>
-    </Layout>
-  );
+				const { clientSecret: secret, paymentIntentId } = responseData;
+
+				if (!secret) {
+					throw new Error("No client secret received from PaymentIntent API");
+				}
+
+				// Decode the client secret in case it's URL-encoded
+				// const decodedSecret = decodeURIComponent(secret);
+
+				// Check if this is a CheckoutSession secret instead of PaymentIntent
+				if (secret.startsWith("cs_")) {
+					console.error(
+						"Received CheckoutSession client secret, but need PaymentIntent client secret"
+					);
+					throw new Error(
+						"Backend returned CheckoutSession instead of PaymentIntent. Please ensure backend creates PaymentIntent when paymentIntentMode=true"
+					);
+				}
+
+				// Validate PaymentIntent client secret format
+				const isValidPaymentIntentSecret = secret.match(
+					/^pi_[a-zA-Z0-9]+_secret_[a-zA-Z0-9]+$/
+				);
+
+				if (!isValidPaymentIntentSecret) {
+					console.error("Invalid PaymentIntent client secret format:", secret);
+					throw new Error(
+						"Invalid PaymentIntent client secret format received from server"
+					);
+				}
+
+				console.log("PaymentIntent created successfully:", {
+					paymentIntentId,
+					clientSecretLength: secret.length,
+					isEncoded: false,
+					format: "valid PaymentIntent secret",
+				});
+
+				setClientSecret(secret);
+				toast.success("Payment initialized successfully!");
+			} catch (error) {
+				console.error("PaymentIntent creation error:", error);
+				toast.error("Failed to initialize payment. Please try again.");
+				setClientSecret(""); // Reset on error
+			} finally {
+				setIsLoadingPayment(false);
+			}
+		};
+
+		createPaymentIntent();
+	}, [
+		isValidCheckout,
+		total,
+		countryCode,
+		productId,
+		userId,
+		quantity,
+		clientSecret,
+	]);
+
+	const handlePaymentSuccess = async (paymentIntent: PaymentIntent) => {
+		try {
+			console.log("PaymentIntent completed successfully:", paymentIntent);
+
+			// Create order data for tracking
+			const orderItems = cart.map((item) => ({
+				productId: item.product.id.toString(),
+				name: item.product.name,
+				price: Number.parseFloat(
+					item.product.discountPrice || item.product.price
+				),
+				quantity: item.quantity,
+				image: item.product.images[0],
+			}));
+
+			// Add order to local context for tracking
+			addOrder({
+				items: orderItems,
+				shippingAddress: user?.email || "To be confirmed",
+				totalAmount: total,
+				paymentMethod: "stripe",
+				customerNotes: `PaymentIntent ID: ${
+					paymentIntent.id
+				} | Amount: $${total.toFixed(2)} ${getCurrency(
+					countryCode
+				).toUpperCase()}`,
+			});
+
+			// Clear the cart after successful payment
+			clearCart();
+
+			toast.success("Payment completed successfully!");
+
+			// Navigate to success page with payment details
+			navigate("/payment/success", {
+				state: {
+					paymentIntentId: paymentIntent.id,
+					amount: total,
+					currency: getCurrency(countryCode),
+					orderItems,
+					paymentMethod: "PaymentIntent",
+				},
+			});
+		} catch (error) {
+			console.error("Error processing successful payment:", error);
+			toast.error(
+				"Payment succeeded but there was an error processing your order. Please contact support."
+			);
+		}
+	};
+
+	const handlePaymentError = (error: string) => {
+		console.error("PaymentIntent error:", error);
+		toast.error(`Payment failed: ${error}`);
+
+		// Reset loading state in case user wants to retry
+		setIsLoadingPayment(false);
+	};
+
+	if (cart.length === 0) {
+		return null;
+	}
+
+	return (
+		<Layout>
+			<div className="container mx-auto px-4 py-8 md:py-12">
+				<div className="max-w-7xl mx-auto">
+					<Button
+						variant="ghost"
+						onClick={() => navigate("/cart")}
+						className="mb-4 md:mb-6"
+					>
+						<ArrowLeft className="h-4 w-4 mr-2" />
+						Back to Cart
+					</Button>
+
+					<h1 className="text-2xl md:text-3xl font-bold mb-2">
+						Secure Checkout
+					</h1>
+					<p className="text-sm md:text-base text-muted-foreground mb-6 md:mb-8">
+						Complete your purchase with our secure payment system
+					</p>
+
+					<div className="flex flex-col md:flex-row gap-6 xl:gap-8">
+						{/* Right Column - Payment Form */}
+						<div className="w-full xl:w-[500px]">
+							{isValidCheckout ? (
+								<>
+									{isLoadingPayment && (
+										<Card>
+											<CardContent className="py-12 text-center">
+												<p className="text-muted-foreground">
+													Preparing payment...
+												</p>
+											</CardContent>
+										</Card>
+									)}
+									{!isLoadingPayment && clientSecret && (
+										<StripeProvider clientSecret={clientSecret}>
+											<CheckoutForm
+												clientSecret={clientSecret}
+												amount={Math.round(total * 100)}
+												currency={getCurrency(countryCode)}
+												onSuccess={handlePaymentSuccess}
+												onError={handlePaymentError}
+											/>
+										</StripeProvider>
+									)}
+									{!isLoadingPayment && !clientSecret && (
+										<Card>
+											<CardContent className="py-12 text-center">
+												<p className="text-muted-foreground">
+													Failed to initialize payment
+												</p>
+											</CardContent>
+										</Card>
+									)}
+								</>
+							) : (
+								<Card>
+									<CardContent className="py-12 text-center">
+										<p className="text-muted-foreground mb-4">
+											{getCheckoutErrorMessage(user, firstCartItem)}
+										</p>
+										{user === null && (
+											<Button
+												onClick={() => navigate("/auth")}
+												variant="outline"
+											>
+												Login to Continue
+											</Button>
+										)}
+									</CardContent>
+								</Card>
+							)}
+						</div>
+
+						{/* Left Column - Order Summary */}
+						<div className="w-full xl:flex-1">
+							<Card className="mb-6">
+								<CardHeader>
+									<CardTitle className="flex items-center gap-2 text-lg md:text-xl">
+										<ShoppingCart className="h-5 w-5" />
+										Order Summary
+									</CardTitle>
+								</CardHeader>
+								<CardContent className="space-y-4">
+									{/* Products List */}
+									<div className="space-y-3 max-h-[400px] md:max-h-96 overflow-y-auto">
+										{cart.map((item) => {
+											const itemPrice = Number.parseFloat(
+												item.product.discountPrice || item.product.price
+											);
+											const itemTotal = itemPrice * item.quantity;
+
+											return (
+												<div
+													key={item.product.id}
+													className="flex gap-3 md:gap-4 pb-3 border-b last:border-0"
+												>
+													<img
+														src={item.product.images[0]}
+														alt={item.product.name}
+														className="w-16 h-16 md:w-20 md:h-20 object-cover rounded flex-shrink-0"
+													/>
+													<div className="flex-1 min-w-0">
+														<p className="font-medium text-sm md:text-base truncate">
+															{item.product.name}
+														</p>
+														<p className="text-xs md:text-sm text-muted-foreground">
+															Qty: {item.quantity} × ${itemPrice.toFixed(2)}
+														</p>
+														<p className="text-sm md:text-base font-semibold mt-1">
+															${itemTotal.toFixed(2)}
+														</p>
+													</div>
+												</div>
+											);
+										})}
+									</div>
+
+									{/* Price Breakdown */}
+									<div className="pt-4 border-t space-y-3">
+										<div className="flex justify-between text-sm md:text-base">
+											<span className="text-muted-foreground">Subtotal</span>
+											<span className="font-medium">
+												${subtotal.toFixed(2)}
+											</span>
+										</div>
+										<div className="flex justify-between text-sm md:text-base">
+											<span className="text-muted-foreground">Shipping</span>
+											<span className="font-medium">
+												${shippingCost.toFixed(2)}
+											</span>
+										</div>
+										<div className="flex justify-between text-sm md:text-base">
+											<span className="text-muted-foreground">Tax (15%)</span>
+											<span className="font-medium">${tax.toFixed(2)}</span>
+										</div>
+										<div className="flex justify-between text-lg md:text-xl font-bold pt-3 border-t">
+											<span>Total</span>
+											<span>${total.toFixed(2)}</span>
+										</div>
+									</div>
+								</CardContent>
+							</Card>
+						</div>
+					</div>
+
+					{/* Trust Badges */}
+					<div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 text-xs md:text-sm text-muted-foreground mt-8 pt-8 border-t">
+						<div className="flex items-center gap-2">
+							<svg
+								className="h-5 w-5 text-green-600 flex-shrink-0"
+								fill="currentColor"
+								viewBox="0 0 20 20"
+							>
+								<path
+									fillRule="evenodd"
+									d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+									clipRule="evenodd"
+								/>
+							</svg>
+							<span>Secure Checkout</span>
+						</div>
+						<div className="flex items-center gap-2">
+							<svg
+								className="h-5 w-5 text-green-600 flex-shrink-0"
+								fill="currentColor"
+								viewBox="0 0 20 20"
+							>
+								<path
+									fillRule="evenodd"
+									d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 616 0z"
+									clipRule="evenodd"
+								/>
+							</svg>
+							<span>SSL Encrypted</span>
+						</div>
+						<div className="flex items-center gap-2">
+							<CreditCard className="h-5 w-5 text-green-600" />
+							<span>PCI Compliant</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</Layout>
+	);
 };
 
 export default CheckoutPage;

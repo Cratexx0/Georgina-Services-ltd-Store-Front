@@ -374,7 +374,7 @@ const AccountPage = () => {
                               />
                               {product.discountPrice && (
                                 <Badge className="absolute top-2 left-2 bg-red-500">
-                                  {Math.round((1 - product.discountPrice / product.price) * 100)}% OFF
+                                  {Math.round((1 - parseFloat(product.discountPrice.toString()) / parseFloat(product.price.toString())) * 100)}% OFF
                                 </Badge>
                               )}
                             </div>
@@ -389,16 +389,16 @@ const AccountPage = () => {
                               <div className="flex items-center gap-2">
                                 {product.discountPrice ? (
                                   <>
-                                    <span className="text-lg font-semibold text-gray-900">
-                                      ${product.discountPrice.toFixed(2)}
+                                    <span className="text-base md:text-lg font-medium text-foreground">
+                                      ${parseFloat(product.discountPrice.toString()).toFixed(2)}
                                     </span>
-                                    <span className="text-sm text-gray-500 line-through">
-                                      ${product.price.toFixed(2)}
+                                    <span className="text-xs md:text-sm text-muted-foreground line-through">
+                                      ${parseFloat(product.price.toString()).toFixed(2)}
                                     </span>
                                   </>
                                 ) : (
-                                  <span className="text-lg font-semibold text-gray-900">
-                                    ${product.price.toFixed(2)}
+                                  <span className="text-base md:text-lg font-medium text-foreground">
+                                    ${parseFloat(product.price.toString()).toFixed(2)}
                                   </span>
                                 )}
                               </div>

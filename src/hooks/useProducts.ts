@@ -1,28 +1,7 @@
+// src/hooks/useProducts.ts
 import { useState, useEffect } from 'react';
-
-export interface Product {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  discountPrice?: number;
-  image?: string;
-  images?: string[];
-  categoryId: string;
-  subcategoryId?: string;
-  subCategoryId?: string;
-  rating?: number;
-  likes?: number;
-  stock: number;
-  slug?: string;
-  featured?: boolean;
-  trending?: boolean;
-  newArrival?: boolean;
-  sizes?: string[];
-  colors?: string[];
-  createdAt?: string;
-  updatedAt?: string;
-}
+import { apiService } from '@/lib/api';
+import { Product } from '@/lib/type';
 
 interface UseProductsResult {
   products: Product[];
@@ -33,50 +12,7 @@ interface UseProductsResult {
   limit: number;
 }
 
-export const useProducts = (page = 1, limit = 10, category?: string, subcategory?: string): UseProductsResult => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [total, setTotal] = useState(0);
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 300));
-        
-        // Import dummy products
-        const { products: dummyProducts, getProductsByCategory, getProductsBySubcategory } = await import('@/data/products');
-        
-        let filteredProducts = dummyProducts;
-        
-        if (category) {
-          filteredProducts = getProductsByCategory(category);
-        }
-        
-        if (subcategory) {
-          filteredProducts = getProductsBySubcategory(subcategory);
-        }
-        
-        setTotal(filteredProducts.length);
-        setProducts(filteredProducts);
-      } catch (err) {
-        console.error("Failed to load products:", err);
-        setError("Failed to load products.");
-        setProducts([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProducts();
-  }, [page, limit, category, subcategory]);
-
-  return { products, loading, error, total, page, limit };
-};
-
+// All hooks now simply use the normalized Product[] from ApiService
 export const useTrendingProducts = (page = 1, limit = 10): UseProductsResult => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -88,18 +24,17 @@ export const useTrendingProducts = (page = 1, limit = 10): UseProductsResult => 
       try {
         setLoading(true);
         setError(null);
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 300));
         
-        const { getTrendingProducts } = await import('@/data/products');
-        const trendingProducts = getTrendingProducts();
+        // ApiService returns normalized Product[] directly
+        const productsData = await apiService.getTrendingProducts();
         
-        setTotal(trendingProducts.length);
-        setProducts(trendingProducts);
+        setProducts(productsData.products);
+        setTotal(productsData.total);
       } catch (err) {
         console.error("Failed to load trending products:", err);
         setError("Failed to load trending products.");
         setProducts([]);
+        setTotal(0);
       } finally {
         setLoading(false);
       }
@@ -122,18 +57,17 @@ export const useNewArrivalProducts = (page = 1, limit = 10): UseProductsResult =
       try {
         setLoading(true);
         setError(null);
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 300));
         
-        const { getNewArrivalProducts } = await import('@/data/products');
-        const newArrivals = getNewArrivalProducts();
+        // ApiService returns normalized Product[] directly
+        const productsData = await apiService.getNewArrivalProducts();
         
-        setTotal(newArrivals.length);
-        setProducts(newArrivals);
+        setProducts(productsData.products);
+        setTotal(productsData.total);
       } catch (err) {
         console.error("Failed to load new arrival products:", err);
         setError("Failed to load new arrival products.");
         setProducts([]);
+        setTotal(0);
       } finally {
         setLoading(false);
       }
@@ -156,18 +90,17 @@ export const useFeaturedProducts = (page = 1, limit = 10): UseProductsResult => 
       try {
         setLoading(true);
         setError(null);
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 300));
         
-        const { getFeaturedProducts } = await import('@/data/products');
-        const featured = getFeaturedProducts();
+        // ApiService returns normalized Product[] directly
+        const productsData = await apiService.getFeaturedProducts();
         
-        setTotal(featured.length);
-        setProducts(featured);
+        setProducts(productsData.products);
+        setTotal(productsData.total); // FIXED: Changed .limit to .length
       } catch (err) {
         console.error("Failed to load featured products:", err);
         setError("Failed to load featured products.");
         setProducts([]);
+        setTotal(0);
       } finally {
         setLoading(false);
       }
@@ -175,6 +108,52 @@ export const useFeaturedProducts = (page = 1, limit = 10): UseProductsResult => 
 
     fetchFeaturedProducts();
   }, [page, limit]);
+
+  return { products, loading, error, total, page, limit };
+};
+
+export const useProducts = (page = 1, limit = 10, category?: string, search?: string): UseProductsResult => {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [total, setTotal] = useState(0);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const params: any = {
+          page,
+          limit,
+        };
+        
+        if (category) {
+          params.category = category;
+        }
+        
+        if (search) {
+          params.search = search;
+        }
+        
+        // ApiService returns normalized Product[] directly
+        const productsData = await apiService.getProducts(params);
+        
+        setProducts(productsData.products);
+        setTotal(productsData.total);
+      } catch (err) {
+        console.error("Failed to load products:", err);
+        setError("Failed to load products.");
+        setProducts([]);
+        setTotal(0);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [page, limit, category, search]);
 
   return { products, loading, error, total, page, limit };
 };

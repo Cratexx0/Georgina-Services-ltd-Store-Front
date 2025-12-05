@@ -20,443 +20,602 @@ export interface Product {
 }
 
 export const products: Product[] = [
-  // Women's Clothing - Dresses
+  // Women's Clothes - African Print
   {
-    id: "1",
-    name: "Elegant Evening Dress",
-    description: "Sophisticated evening dress with flowing silhouette. Perfect for special occasions.",
-    price: 129.99,
-    discountPrice: 99.99,
-    images: ["https://images.unsplash.com/photo-1566479179817-c0ad84ce1f6d?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
-    categoryId: "womens-clothing",
-    subcategoryId: "women-dresses",
-    rating: 4.8,
-    likes: 156,
-    stock: 25,
-    slug: "elegant-evening-dress",
-    featured: true,
-    sizes: ["XS", "S", "M", "L", "XL"],
-    colors: ["Black", "Navy", "Burgundy", "Emerald"]
-  },
-  {
-    id: "2",
-    name: "Summer Floral Dress",
-    description: "Light and breezy floral dress perfect for summer days.",
-    price: 79.99,
-    images: ["https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
-    categoryId: "womens-clothing",
-    subcategoryId: "women-dresses",
-    rating: 4.6,
-    likes: 89,
-    stock: 40,
-    slug: "summer-floral-dress",
-    featured: true,
-    newArrival: true,
-    sizes: ["XS", "S", "M", "L", "XL"],
-    colors: ["Pink", "Blue", "Yellow", "White"]
-  },
-
-  // Women's Clothing - Tops
-  {
-    id: "3",
-    name: "Women's Silk Blouse",
-    description: "Elegant silk blouse with delicate details. Perfect for professional or formal occasions.",
-    price: 79.99,
-    images: ["https://images.unsplash.com/photo-1564257631407-1edf1cb2e1dd?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
-    categoryId: "womens-clothing",
-    subcategoryId: "women-tops",
-    rating: 4.7,
-    likes: 167,
-    stock: 35,
-    slug: "womens-silk-blouse",
-    featured: true,
-    trending: true,
-    sizes: ["XS", "S", "M", "L", "XL"],
-    colors: ["White", "Blush", "Navy", "Black", "Cream"]
-  },
-  {
-    id: "4",
-    name: "Casual Cotton Top",
-    description: "Comfortable cotton top for everyday wear.",
-    price: 39.99,
-    images: ["https://images.unsplash.com/photo-1581553680321-4fffae59fccd?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
-    categoryId: "womens-clothing",
-    subcategoryId: "women-tops",
-    rating: 4.4,
-    likes: 92,
-    stock: 60,
-    slug: "casual-cotton-top",
-    newArrival: true,
-    sizes: ["XS", "S", "M", "L", "XL"],
-    colors: ["White", "Black", "Gray", "Pink"]
-  },
-
-  // Women's Clothing - Bottoms
-  {
-    id: "5",
-    name: "Women's Midi Skirt",
-    description: "Flowing midi skirt with elegant drape. Comfortable and stylish for any occasion.",
-    price: 49.99,
-    discountPrice: 39.99,
-    images: ["https://images.unsplash.com/photo-1551698618-1dfe5d97d256?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
-    categoryId: "womens-clothing",
-    subcategoryId: "women-bottoms",
-    rating: 4.6,
-    likes: 189,
-    stock: 50,
-    slug: "womens-midi-skirt",
-    featured: true,
-    sizes: ["XS", "S", "M", "L", "XL"],
-    colors: ["Black", "Navy", "Burgundy", "Floral", "Gray"]
-  },
-  {
-    id: "6",
-    name: "High-Waist Trousers",
-    description: "Classic high-waist trousers with a modern fit.",
-    price: 69.99,
-    images: ["https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
-    categoryId: "womens-clothing",
-    subcategoryId: "women-bottoms",
-    rating: 4.5,
-    likes: 134,
-    stock: 45,
-    slug: "high-waist-trousers",
-    sizes: ["XS", "S", "M", "L", "XL"],
-    colors: ["Black", "Navy", "Gray", "Beige"]
-  },
-
-  // Men's Clothing - Shirts
-  {
-    id: "7",
-    name: "Men's Performance Polo",
-    description: "Moisture-wicking polo shirt perfect for sports and casual wear.",
-    price: 45.99,
-    images: ["https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
-    categoryId: "mens-clothing",
-    subcategoryId: "men-shirts",
-    rating: 4.5,
-    likes: 134,
-    stock: 70,
-    slug: "mens-performance-polo",
-    featured: true,
-    sizes: ["S", "M", "L", "XL", "XXL"],
-    colors: ["White", "Navy", "Gray", "Black", "Red"]
-  },
-  {
-    id: "8",
-    name: "Classic Dress Shirt",
-    description: "Timeless dress shirt perfect for business or formal occasions.",
-    price: 59.99,
-    images: ["https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
-    categoryId: "mens-clothing",
-    subcategoryId: "men-shirts",
-    rating: 4.6,
-    likes: 98,
-    stock: 55,
-    slug: "classic-dress-shirt",
-    sizes: ["S", "M", "L", "XL", "XXL"],
-    colors: ["White", "Light Blue", "Pink", "Gray"]
-  },
-
-  // Men's Clothing - Pants
-  {
-    id: "9",
-    name: "Men's Chino Pants",
-    description: "Classic chino pants with modern tailoring. Versatile for work or weekend.",
-    price: 59.99,
-    images: ["https://images.unsplash.com/photo-1473966968600-fa801b869a1a?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
-    categoryId: "mens-clothing",
-    subcategoryId: "men-pants",
-    rating: 4.4,
-    likes: 98,
-    stock: 45,
-    slug: "mens-chino-pants",
-    featured: true,
-    sizes: ["30", "32", "34", "36", "38", "40"],
-    colors: ["Khaki", "Navy", "Black", "Olive", "Gray"]
-  },
-  {
-    id: "10",
-    name: "Casual Stretch Jeans",
-    description: "Comfortable stretch denim jeans with a modern slim fit.",
-    price: 69.99,
-    images: ["https://images.unsplash.com/photo-1541099649105-f69ad21f3246?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
-    categoryId: "mens-clothing",
-    subcategoryId: "men-pants",
-    rating: 4.4,
-    likes: 201,
-    stock: 85,
-    slug: "casual-stretch-jeans",
-    featured: true,
-    trending: true,
-    sizes: ["28", "30", "32", "34", "36", "38"],
-    colors: ["Dark Blue", "Light Blue", "Black", "Gray"]
-  },
-
-  // Kids Clothing - Boys
-  {
-    id: "11",
-    name: "Boys' Graphic T-Shirt",
-    description: "Fun graphic t-shirt perfect for active boys.",
-    price: 19.99,
-    images: ["https://images.unsplash.com/photo-1503944583220-79d8926ad5e2?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
-    categoryId: "kids-clothing",
-    subcategoryId: "kids-boys",
-    rating: 4.7,
-    likes: 76,
-    stock: 80,
-    slug: "boys-graphic-tshirt",
-    featured: true,
-    sizes: ["2T", "3T", "4T", "5T", "XS", "S"],
-    colors: ["Blue", "Red", "Green", "Black"]
-  },
-  {
-    id: "12",
-    name: "Boys' Cargo Shorts",
-    description: "Durable cargo shorts perfect for play and adventure.",
-    price: 29.99,
-    images: ["https://images.unsplash.com/photo-1519689680058-324335c77eba?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
-    categoryId: "kids-clothing",
-    subcategoryId: "kids-boys",
-    rating: 4.5,
-    likes: 54,
-    stock: 65,
-    slug: "boys-cargo-shorts",
-    newArrival: true,
-    sizes: ["2T", "3T", "4T", "5T", "XS", "S"],
-    colors: ["Khaki", "Navy", "Gray", "Olive"]
-  },
-
-  // Kids Clothing - Girls
-  {
-    id: "13",
-    name: "Girls' Princess Dress",
-    description: "Beautiful princess dress perfect for special occasions.",
-    price: 39.99,
-    images: ["https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
-    categoryId: "kids-clothing",
-    subcategoryId: "kids-girls",
-    rating: 4.8,
-    likes: 123,
-    stock: 40,
-    slug: "girls-princess-dress",
-    featured: true,
-    sizes: ["2T", "3T", "4T", "5T", "XS", "S"],
-    colors: ["Pink", "Purple", "Blue", "White"]
-  },
-  {
-    id: "14",
-    name: "Girls' Denim Jacket",
-    description: "Stylish denim jacket perfect for layering.",
-    price: 34.99,
-    images: ["https://images.unsplash.com/photo-1596755389378-c31d21fd1273?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
-    categoryId: "kids-clothing",
-    subcategoryId: "kids-girls",
-    rating: 4.6,
-    likes: 87,
-    stock: 50,
-    slug: "girls-denim-jacket",
-    trending: true,
-    sizes: ["2T", "3T", "4T", "5T", "XS", "S"],
-    colors: ["Light Blue", "Dark Blue", "Pink", "White"]
-  },
-
-  // Accessories - Bags
-  {
-    id: "15",
-    name: "Leather Handbag",
-    description: "Premium leather handbag with elegant design.",
+    id: "w1",
+    name: "African Print Maxi Dress",
+    description: "Beautiful African print maxi dress with vibrant colors and traditional patterns.",
     price: 89.99,
     discountPrice: 69.99,
-    images: ["https://images.unsplash.com/photo-1553062407-98eeb64c6a62?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
-    categoryId: "accessories",
-    subcategoryId: "bags",
-    rating: 4.7,
+    images: ["https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=800&q=80"],
+    categoryId: "clothes",
+    subcategoryId: "women",
+    rating: 4.8,
     likes: 145,
-    stock: 30,
-    slug: "leather-handbag",
-    featured: true,
-    colors: ["Black", "Brown", "Tan", "Navy"]
-  },
-  {
-    id: "16",
-    name: "Canvas Backpack",
-    description: "Durable canvas backpack perfect for everyday use.",
-    price: 49.99,
-    images: ["https://images.unsplash.com/photo-1546938576-6e6a64f317cc?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
-    categoryId: "accessories",
-    subcategoryId: "bags",
-    rating: 4.5,
-    likes: 98,
-    stock: 75,
-    slug: "canvas-backpack",
-    newArrival: true,
-    colors: ["Black", "Gray", "Navy", "Olive"]
-  },
-
-  // Accessories - Shoes
-  {
-    id: "17",
-    name: "Classic Sneakers",
-    description: "Comfortable sneakers perfect for everyday wear.",
-    price: 79.99,
-    images: ["https://images.unsplash.com/photo-1549298916-b41d501d3772?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
-    categoryId: "accessories",
-    subcategoryId: "shoes",
-    rating: 4.6,
-    likes: 234,
-    stock: 90,
-    slug: "classic-sneakers",
+    stock: 25,
+    slug: "african-print-maxi-dress",
     featured: true,
     trending: true,
-    sizes: ["6", "7", "8", "9", "10", "11", "12"],
-    colors: ["White", "Black", "Gray", "Navy"]
+    sizes: ["S", "M", "L", "XL"],
+    colors: ["Multi"]
   },
   {
-    id: "18",
-    name: "Formal Dress Shoes",
-    description: "Elegant leather dress shoes for formal occasions.",
+    id: "w2",
+    name: "African Print Blouse",
+    description: "Stylish African print blouse perfect for casual and formal occasions.",
+    price: 49.99,
+    images: ["https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=800&q=80"],
+    categoryId: "clothes",
+    subcategoryId: "women",
+    rating: 4.7,
+    likes: 98,
+    stock: 35,
+    slug: "african-print-blouse",
+    sizes: ["S", "M", "L", "XL"],
+    colors: ["Multi", "Red", "Blue"]
+  },
+  // Women's Clothes - African Wear
+  {
+    id: "w3",
+    name: "Traditional African Wear Set",
+    description: "Authentic African wear set with matching top and wrapper for special occasions.",
     price: 129.99,
-    images: ["https://images.unsplash.com/photo-1603808033192-082d6919d3e1?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
-    categoryId: "accessories",
-    subcategoryId: "shoes",
-    rating: 4.8,
-    likes: 167,
-    stock: 45,
-    slug: "formal-dress-shoes",
+    images: ["https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800&q=80"],
+    categoryId: "clothes",
+    subcategoryId: "women",
+    rating: 4.9,
+    likes: 187,
+    stock: 18,
+    slug: "traditional-african-wear-set",
+    featured: true,
+    sizes: ["S", "M", "L", "XL"],
+    colors: ["Gold", "Royal Blue", "Purple"]
+  },
+  {
+    id: "w4",
+    name: "African Wear Kaftan",
+    description: "Elegant African kaftan with intricate embroidery.",
+    price: 95.99,
+    images: ["https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=800&q=80"],
+    categoryId: "clothes",
+    subcategoryId: "women",
+    rating: 4.6,
+    likes: 112,
+    stock: 22,
+    slug: "african-wear-kaftan",
     newArrival: true,
-    sizes: ["6", "7", "8", "9", "10", "11", "12"],
-    colors: ["Black", "Brown", "Burgundy"]
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    colors: ["White", "Cream", "Black"]
+  },
+  // Women's Clothes - Ankara
+  {
+    id: "w5",
+    name: "Ankara Maxi Dress",
+    description: "Stunning Ankara maxi dress with bold patterns.",
+    price: 85.99,
+    images: ["https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=800&q=80"],
+    categoryId: "clothes",
+    subcategoryId: "women",
+    rating: 4.8,
+    likes: 156,
+    stock: 28,
+    slug: "ankara-maxi-dress",
+    trending: true,
+    sizes: ["S", "M", "L", "XL"],
+    colors: ["Multi"]
+  },
+  {
+    id: "w6",
+    name: "Ankara Pencil Skirt",
+    description: "Elegant Ankara pencil skirt for office or evening wear.",
+    price: 45.99,
+    images: ["https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=800&q=80"],
+    categoryId: "clothes",
+    subcategoryId: "women",
+    rating: 4.5,
+    likes: 89,
+    stock: 40,
+    slug: "ankara-pencil-skirt",
+    sizes: ["S", "M", "L", "XL"],
+    colors: ["Multi", "Red", "Green"]
+  },
+  // Women's Clothes - Bonnet
+  {
+    id: "w7",
+    name: "African Print Satin Bonnet",
+    description: "Stylish satin bonnet with African print design for hair protection.",
+    price: 15.99,
+    images: ["https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=800&q=80"],
+    categoryId: "clothes",
+    subcategoryId: "women",
+    rating: 4.7,
+    likes: 234,
+    stock: 100,
+    slug: "african-print-satin-bonnet",
+    featured: true,
+    colors: ["Multi", "Blue", "Pink", "Green", "Purple"]
+  },
+  {
+    id: "w8",
+    name: "Ankara Bonnet Set",
+    description: "Set of 3 Ankara bonnets in different designs.",
+    price: 35.99,
+    discountPrice: 29.99,
+    images: ["https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=800&q=80"],
+    categoryId: "clothes",
+    subcategoryId: "women",
+    rating: 4.6,
+    likes: 178,
+    stock: 75,
+    slug: "ankara-bonnet-set",
+    newArrival: true,
+    colors: ["Mixed Designs"]
   },
 
-  // Food & Spices - Spices
+  // Men's Clothes - African Wear
   {
-    id: "19",
-    name: "Organic Turmeric Powder",
-    description: "Premium organic turmeric powder with anti-inflammatory properties.",
+    id: "m1",
+    name: "Men's African Wear Dashiki",
+    description: "Traditional African dashiki shirt with intricate embroidery.",
+    price: 79.99,
+    images: ["https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=800&q=80"],
+    categoryId: "clothes",
+    subcategoryId: "men",
+    rating: 4.7,
+    likes: 112,
+    stock: 30,
+    slug: "mens-african-wear-dashiki",
+    featured: true,
+    sizes: ["M", "L", "XL", "XXL"],
+    colors: ["White", "Black", "Blue", "Gold"]
+  },
+  {
+    id: "m2",
+    name: "African Senator Suit",
+    description: "Elegant African senator suit for formal occasions.",
+    price: 149.99,
+    discountPrice: 129.99,
+    images: ["https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=800&q=80"],
+    categoryId: "clothes",
+    subcategoryId: "men",
+    rating: 4.9,
+    likes: 201,
+    stock: 15,
+    slug: "african-senator-suit",
+    trending: true,
+    sizes: ["M", "L", "XL", "XXL"],
+    colors: ["White", "Navy", "Burgundy"]
+  },
+  // Men's Clothes - Trousers
+  {
+    id: "m3",
+    name: "Men's African Print Trousers",
+    description: "Comfortable trousers with African print design.",
+    price: 69.99,
+    discountPrice: 54.99,
+    images: ["https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=800&q=80"],
+    categoryId: "clothes",
+    subcategoryId: "men",
+    rating: 4.5,
+    likes: 89,
+    stock: 35,
+    slug: "mens-african-print-trousers",
+    sizes: ["M", "L", "XL", "XXL"],
+    colors: ["Multi", "Brown", "Navy"]
+  },
+  {
+    id: "m4",
+    name: "Classic Men's Dress Trousers",
+    description: "Elegant formal trousers for professional occasions.",
+    price: 59.99,
+    images: ["https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=800&q=80"],
+    categoryId: "clothes",
+    subcategoryId: "men",
+    rating: 4.6,
+    likes: 124,
+    stock: 50,
+    slug: "classic-mens-dress-trousers",
+    featured: true,
+    sizes: ["M", "L", "XL", "XXL"],
+    colors: ["Black", "Navy", "Gray", "Khaki"]
+  },
+
+  // Kids Clothes - African Wear
+  {
+    id: "k1",
+    name: "Kids African Wear Complete Outfit",
+    description: "Adorable African wear outfit for children with matching accessories.",
+    price: 49.99,
+    images: ["https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?w=800&q=80"],
+    categoryId: "clothes",
+    subcategoryId: "kids",
+    rating: 4.8,
+    likes: 156,
+    stock: 40,
+    slug: "kids-african-wear-complete-outfit",
+    featured: true,
+    newArrival: true,
+    sizes: ["2Y", "4Y", "6Y", "8Y", "10Y"],
+    colors: ["Multi", "Blue", "Pink", "Yellow"]
+  },
+  {
+    id: "k2",
+    name: "Children's Traditional Dashiki Set",
+    description: "Beautiful traditional dashiki set for boys and girls.",
+    price: 45.99,
+    images: ["https://images.unsplash.com/photo-1503944583220-79d8926ad5e2?w=800&q=80"],
+    categoryId: "clothes",
+    subcategoryId: "kids",
+    rating: 4.7,
+    likes: 98,
+    stock: 35,
+    slug: "childrens-traditional-dashiki-set",
+    sizes: ["2Y", "4Y", "6Y", "8Y", "10Y"],
+    colors: ["Red", "Gold", "Green", "Purple"]
+  },
+  {
+    id: "k3",
+    name: "Kids Ankara Dress",
+    description: "Cute Ankara dress for girls with vibrant patterns.",
+    price: 39.99,
+    images: ["https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?w=800&q=80"],
+    categoryId: "clothes",
+    subcategoryId: "kids",
+    rating: 4.6,
+    likes: 123,
+    stock: 45,
+    slug: "kids-ankara-dress",
+    trending: true,
+    sizes: ["2Y", "4Y", "6Y", "8Y", "10Y"],
+    colors: ["Multi", "Pink", "Blue"]
+  },
+
+  // Pantry Items - Vegetable Oils
+  {
+    id: "p1",
+    name: "Premium Vegetable Oil 5L",
+    description: "High-quality vegetable oil for cooking and frying.",
+    price: 24.99,
+    images: ["https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=800&q=80"],
+    categoryId: "foodstuffs",
+    subcategoryId: "pantry",
+    rating: 4.5,
+    likes: 167,
+    stock: 100,
+    slug: "premium-vegetable-oil-5l",
+    featured: true
+  },
+  {
+    id: "p2",
+    name: "Pure Vegetable Oil 2L",
+    description: "Pure vegetable oil ideal for all cooking needs.",
     price: 12.99,
-    images: ["https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
-    categoryId: "food-stuffs",
-    subcategoryId: "spices",
+    images: ["https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=800&q=80"],
+    categoryId: "foodstuffs",
+    subcategoryId: "pantry",
+    rating: 4.6,
+    likes: 134,
+    stock: 150,
+    slug: "pure-vegetable-oil-2l"
+  },
+  // Pantry Items - Zomi
+  {
+    id: "p3",
+    name: "Organic Zomi (Millet) 1kg",
+    description: "Nutritious organic millet grain perfect for traditional dishes.",
+    price: 8.99,
+    images: ["https://images.unsplash.com/photo-1586201375761-83865001e31c?w=800&q=80"],
+    categoryId: "foodstuffs",
+    subcategoryId: "pantry",
     rating: 4.7,
     likes: 89,
-    stock: 150,
-    slug: "organic-turmeric-powder",
-    featured: true
+    stock: 75,
+    slug: "organic-zomi-millet-1kg",
+    newArrival: true
   },
   {
-    id: "20",
-    name: "Cinnamon Sticks",
-    description: "Premium Ceylon cinnamon sticks for cooking and baking.",
-    price: 8.99,
-    images: ["https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
-    categoryId: "food-stuffs",
-    subcategoryId: "spices",
+    id: "p4",
+    name: "Premium Zomi 2kg",
+    description: "Premium quality millet for healthy meals.",
+    price: 15.99,
+    images: ["https://images.unsplash.com/photo-1586201375761-83865001e31c?w=800&q=80"],
+    categoryId: "foodstuffs",
+    subcategoryId: "pantry",
     rating: 4.6,
     likes: 67,
-    stock: 200,
-    slug: "cinnamon-sticks"
+    stock: 60,
+    slug: "premium-zomi-2kg"
   },
+  // Pantry Items - Gari
   {
-    id: "21",
-    name: "Black Peppercorns",
-    description: "Whole black peppercorns for fresh ground pepper.",
-    price: 15.99,
-    images: ["https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
-    categoryId: "food-stuffs",
-    subcategoryId: "spices",
+    id: "p5",
+    name: "White Gari 2kg",
+    description: "Premium quality white gari for making eba and other dishes.",
+    price: 12.99,
+    images: ["https://images.unsplash.com/photo-1586201375761-83865001e31c?w=800&q=80"],
+    categoryId: "foodstuffs",
+    subcategoryId: "pantry",
     rating: 4.8,
-    likes: 134,
+    likes: 234,
     stock: 120,
-    slug: "black-peppercorns",
-    featured: true
-  },
-
-  // Food & Spices - Herbs
-  {
-    id: "22",
-    name: "Dried Basil Leaves",
-    description: "Aromatic dried basil leaves perfect for Mediterranean dishes.",
-    price: 6.99,
-    images: ["https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
-    categoryId: "food-stuffs",
-    subcategoryId: "herbs",
-    rating: 4.5,
-    likes: 45,
-    stock: 180,
-    slug: "dried-basil-leaves"
+    slug: "white-gari-2kg",
+    featured: true,
+    trending: true
   },
   {
-    id: "23",
-    name: "Organic Rosemary",
-    description: "Fresh dried organic rosemary for seasoning and aromatherapy.",
-    price: 9.99,
-    images: ["https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
-    categoryId: "food-stuffs",
-    subcategoryId: "herbs",
+    id: "p6",
+    name: "Yellow Gari 1kg",
+    description: "Traditional yellow gari with authentic taste.",
+    price: 7.99,
+    images: ["https://images.unsplash.com/photo-1586201375761-83865001e31c?w=800&q=80"],
+    categoryId: "foodstuffs",
+    subcategoryId: "pantry",
     rating: 4.7,
-    likes: 78,
-    stock: 95,
-    slug: "organic-rosemary",
+    likes: 178,
+    stock: 140,
+    slug: "yellow-gari-1kg"
+  },
+  // Pantry Items - Spaghetti
+  {
+    id: "p7",
+    name: "Italian Spaghetti 500g",
+    description: "Premium pasta for authentic Italian dishes.",
+    price: 4.99,
+    images: ["https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=800&q=80"],
+    categoryId: "foodstuffs",
+    subcategoryId: "pantry",
+    rating: 4.5,
+    likes: 145,
+    stock: 200,
+    slug: "italian-spaghetti-500g"
+  },
+  {
+    id: "p8",
+    name: "Whole Wheat Spaghetti 500g",
+    description: "Healthy whole wheat spaghetti for nutritious meals.",
+    price: 6.99,
+    images: ["https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=800&q=80"],
+    categoryId: "foodstuffs",
+    subcategoryId: "pantry",
+    rating: 4.4,
+    likes: 98,
+    stock: 180,
+    slug: "whole-wheat-spaghetti-500g",
+    newArrival: true
+  },
+  // Pantry Items - Tomato Paste
+  {
+    id: "p9",
+    name: "Tomato Paste 400g",
+    description: "Rich tomato paste for soups and stews.",
+    price: 3.99,
+    images: ["https://images.unsplash.com/photo-1546548970-71785318a17b?w=800&q=80"],
+    categoryId: "foodstuffs",
+    subcategoryId: "pantry",
+    rating: 4.6,
+    likes: 167,
+    stock: 150,
+    slug: "tomato-paste-400g"
+  },
+  {
+    id: "p10",
+    name: "Organic Tomato Paste 800g",
+    description: "Premium organic tomato paste with no additives.",
+    price: 7.99,
+    images: ["https://images.unsplash.com/photo-1546548970-71785318a17b?w=800&q=80"],
+    categoryId: "foodstuffs",
+    subcategoryId: "pantry",
+    rating: 4.7,
+    likes: 189,
+    stock: 100,
+    slug: "organic-tomato-paste-800g",
     featured: true
   },
 
-  // Cleaning Services
+  // Prepared Mixes - Fufu
   {
-    id: "24",
-    name: "Home Deep Cleaning",
-    description: "Comprehensive deep cleaning service for your entire home.",
-    price: 149.99,
-    images: ["https://images.unsplash.com/photo-1721322800607-8c38375eef04?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
-    categoryId: "cleaning-services",
-    subcategoryId: "home-cleaning",
-    rating: 4.9,
-    likes: 245,
-    stock: 50,
-    slug: "home-deep-cleaning",
-    featured: true
-  },
-  {
-    id: "25",
-    name: "Office Cleaning Service",
-    description: "Professional office cleaning with flexible scheduling.",
-    price: 99.99,
-    images: ["https://images.unsplash.com/photo-1721322800607-8c38375eef04?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
-    categoryId: "cleaning-services",
-    subcategoryId: "office-cleaning",
+    id: "pm1",
+    name: "Instant Fufu Mix 1kg",
+    description: "Easy-to-prepare fufu mix for authentic African meals.",
+    price: 9.99,
+    images: ["https://images.unsplash.com/photo-1586201375761-83865001e31c?w=800&q=80"],
+    categoryId: "foodstuffs",
+    subcategoryId: "prepared-mixes",
     rating: 4.8,
-    likes: 189,
-    stock: 30,
-    slug: "office-cleaning-service",
-    featured: true
+    likes: 201,
+    stock: 90,
+    slug: "instant-fufu-mix-1kg",
+    featured: true,
+    trending: true
   },
   {
-    id: "26",
-    name: "Carpet Steam Cleaning",
-    description: "Professional carpet cleaning using eco-friendly steam methods.",
-    price: 79.99,
-    images: ["https://images.unsplash.com/photo-1582562124811-c09040d0a901?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"],
-    categoryId: "cleaning-services",
-    subcategoryId: "carpet-cleaning",
+    id: "pm2",
+    name: "Premium Fufu Flour 2kg",
+    description: "High-quality fufu flour for traditional preparation.",
+    price: 17.99,
+    images: ["https://images.unsplash.com/photo-1586201375761-83865001e31c?w=800&q=80"],
+    categoryId: "foodstuffs",
+    subcategoryId: "prepared-mixes",
     rating: 4.7,
     likes: 156,
-    stock: 25,
-    slug: "carpet-steam-cleaning"
-  }
+    stock: 75,
+    slug: "premium-fufu-flour-2kg"
+  },
+  // Prepared Mixes - Banku
+  {
+    id: "pm3",
+    name: "Banku Powder 1kg",
+    description: "Traditional banku powder for quick meal preparation.",
+    price: 8.99,
+    images: ["https://images.unsplash.com/photo-1586201375761-83865001e31c?w=800&q=80"],
+    categoryId: "foodstuffs",
+    subcategoryId: "prepared-mixes",
+    rating: 4.6,
+    likes: 123,
+    stock: 85,
+    slug: "banku-powder-1kg",
+    newArrival: true
+  },
+  {
+    id: "pm4",
+    name: "Instant Banku Mix 500g",
+    description: "Quick and easy banku mix for authentic taste.",
+    price: 5.99,
+    images: ["https://images.unsplash.com/photo-1586201375761-83865001e31c?w=800&q=80"],
+    categoryId: "foodstuffs",
+    subcategoryId: "prepared-mixes",
+    rating: 4.5,
+    likes: 98,
+    stock: 100,
+    slug: "instant-banku-mix-500g"
+  },
+  // Prepared Mixes - Tom Brown
+  {
+    id: "pm5",
+    name: "Tom Brown Mix 1kg",
+    description: "Nutritious tom brown mix for a healthy breakfast.",
+    price: 11.99,
+    images: ["https://images.unsplash.com/photo-1525385133512-2f3bdd039054?w=800&q=80"],
+    categoryId: "foodstuffs",
+    subcategoryId: "prepared-mixes",
+    rating: 4.8,
+    likes: 178,
+    stock: 110,
+    slug: "tom-brown-mix-1kg",
+    featured: true
+  },
+  {
+    id: "pm6",
+    name: "Organic Tom Brown 500g",
+    description: "Organic tom brown powder for nutritious meals.",
+    price: 7.99,
+    images: ["https://images.unsplash.com/photo-1525385133512-2f3bdd039054?w=800&q=80"],
+    categoryId: "foodstuffs",
+    subcategoryId: "prepared-mixes",
+    rating: 4.7,
+    likes: 145,
+    stock: 95,
+    slug: "organic-tom-brown-500g"
+  },
+  // Prepared Mixes - Konkonte
+  {
+    id: "pm7",
+    name: "Konkonte Powder 1kg",
+    description: "Traditional konkonte powder from cassava.",
+    price: 8.99,
+    images: ["https://images.unsplash.com/photo-1586201375761-83865001e31c?w=800&q=80"],
+    categoryId: "foodstuffs",
+    subcategoryId: "prepared-mixes",
+    rating: 4.6,
+    likes: 112,
+    stock: 95,
+    slug: "konkonte-powder-1kg"
+  },
+  {
+    id: "pm8",
+    name: "Premium Konkonte 2kg",
+    description: "Premium quality konkonte for authentic meals.",
+    price: 15.99,
+    images: ["https://images.unsplash.com/photo-1586201375761-83865001e31c?w=800&q=80"],
+    categoryId: "foodstuffs",
+    subcategoryId: "prepared-mixes",
+    rating: 4.7,
+    likes: 89,
+    stock: 70,
+    slug: "premium-konkonte-2kg",
+    newArrival: true
+  },
+
+  // Soup Base - Palm Nut Soup
+  {
+    id: "sb1",
+    name: "Palm Nut Soup Base 500g",
+    description: "Rich palm nut soup base for authentic African soups.",
+    price: 13.99,
+    images: ["https://images.unsplash.com/photo-1547592166-23ac45744acd?w=800&q=80"],
+    categoryId: "foodstuffs",
+    subcategoryId: "soup-base",
+    rating: 4.9,
+    likes: 234,
+    stock: 70,
+    slug: "palm-nut-soup-base-500g",
+    featured: true,
+    trending: true
+  },
+  {
+    id: "sb2",
+    name: "Organic Palm Nut Concentrate 1L",
+    description: "Premium organic palm nut concentrate for rich soups.",
+    price: 19.99,
+    images: ["https://images.unsplash.com/photo-1547592166-23ac45744acd?w=800&q=80"],
+    categoryId: "foodstuffs",
+    subcategoryId: "soup-base",
+    rating: 4.8,
+    likes: 201,
+    stock: 50,
+    slug: "organic-palm-nut-concentrate-1l",
+    newArrival: true
+  },
+  // Soup Base - Okro Stew
+  {
+    id: "sb3",
+    name: "Okro Stew Base 400g",
+    description: "Traditional okro stew base ready to cook.",
+    price: 10.99,
+    images: ["https://images.unsplash.com/photo-1547592166-23ac45744acd?w=800&q=80"],
+    categoryId: "foodstuffs",
+    subcategoryId: "soup-base",
+    rating: 4.7,
+    likes: 178,
+    stock: 80,
+    slug: "okro-stew-base-400g"
+  },
+  {
+    id: "sb4",
+    name: "Fresh Okro Stew Mix 800g",
+    description: "Fresh okro stew mix with vegetables.",
+    price: 15.99,
+    images: ["https://images.unsplash.com/photo-1547592166-23ac45744acd?w=800&q=80"],
+    categoryId: "foodstuffs",
+    subcategoryId: "soup-base",
+    rating: 4.6,
+    likes: 156,
+    stock: 65,
+    slug: "fresh-okro-stew-mix-800g",
+    featured: true
+  },
+  // Soup Base - Groundnut Soup
+  {
+    id: "sb5",
+    name: "Groundnut Soup Base 500g",
+    description: "Creamy groundnut soup base with authentic flavor.",
+    price: 12.99,
+    images: ["https://images.unsplash.com/photo-1547592166-23ac45744acd?w=800&q=80"],
+    categoryId: "foodstuffs",
+    subcategoryId: "soup-base",
+    rating: 4.8,
+    likes: 198,
+    stock: 75,
+    slug: "groundnut-soup-base-500g",
+    trending: true
+  },
+  {
+    id: "sb6",
+    name: "Premium Groundnut Paste 1kg",
+    description: "Rich groundnut paste for traditional soups and stews.",
+    price: 18.99,
+    images: ["https://images.unsplash.com/photo-1547592166-23ac45744acd?w=800&q=80"],
+    categoryId: "foodstuffs",
+    subcategoryId: "soup-base",
+    rating: 4.9,
+    likes: 212,
+    stock: 60,
+    slug: "premium-groundnut-paste-1kg",
+    featured: true
+  },
 ];
 
-export const getFeaturedProducts = (): Product[] => {
-  return products.filter(product => product.featured);
-};
-
-export const getTrendingProducts = (): Product[] => {
-  return products.filter(product => product.trending);
-};
-
-export const getNewArrivalProducts = (): Product[] => {
-  return products.filter(product => product.newArrival);
-};
-
+// Helper functions
 export const getProductsByCategory = (categoryId: string): Product[] => {
   return products.filter(product => product.categoryId === categoryId);
 };
@@ -465,14 +624,32 @@ export const getProductsBySubcategory = (subcategoryId: string): Product[] => {
   return products.filter(product => product.subcategoryId === subcategoryId);
 };
 
+export const getProductById = (id: string): Product | undefined => {
+  return products.find(product => product.id === id);
+};
+
 export const getProductBySlug = (slug: string): Product | undefined => {
   return products.find(product => product.slug === slug);
 };
 
+export const getTrendingProducts = (): Product[] => {
+  return products.filter(product => product.trending === true);
+};
+
+export const getNewArrivalProducts = (): Product[] => {
+  return products.filter(product => product.newArrival === true);
+};
+
+export const getFeaturedProducts = (): Product[] => {
+  return products.filter(product => product.featured === true);
+};
+
 export const searchProducts = (query: string): Product[] => {
-  const lowercaseQuery = query.toLowerCase();
+  if (!query.trim()) return [];
+  const lowerQuery = query.toLowerCase();
   return products.filter(product => 
-    product.name.toLowerCase().includes(lowercaseQuery) ||
-    product.description.toLowerCase().includes(lowercaseQuery)
+    product.name.toLowerCase().includes(lowerQuery) ||
+    product.description.toLowerCase().includes(lowerQuery) ||
+    product.slug.toLowerCase().includes(lowerQuery)
   );
 };
