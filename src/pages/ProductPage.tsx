@@ -60,7 +60,7 @@ const ProductPage = () => {
           if (sizes.length > 0) {
             setSelectedSize(sizes[0]); // Auto-select first size
           } else {
-            setSelectedSize('');
+            setSelectedSize(''); // Clear size selection
           }
           
           // Fetch related products
