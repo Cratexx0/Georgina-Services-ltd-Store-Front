@@ -1,7 +1,6 @@
 import { Product } from "@/lib/type";
 
-// Base API configuration
-// "https://georgina-server-code.onrender.com" ||
+
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8003";
 
 interface RequestOptions extends RequestInit {
