@@ -114,14 +114,6 @@ const CheckoutPage: React.FC = () => {
 			try {
 				setIsLoadingPayment(true);
 
-				console.log("Creating PaymentIntent with:", {
-					productId,
-					userId,
-					quantity,
-					countryCode,
-					total: total,
-				});
-
 				// Create PaymentIntent using the backend endpoint
 				const response = await fetch(
 					`${
@@ -144,26 +136,15 @@ const CheckoutPage: React.FC = () => {
 					}
 				);
 
-				console.log("PaymentIntent API response status:", response.status);
-
 				if (!response.ok) {
 					let errorDetails;
 					try {
 						const errorJson = await response.json();
 						errorDetails = errorJson;
-						console.error("PaymentIntent API JSON error:", errorJson);
 					} catch {
 						const errorText = await response.text();
 						errorDetails = errorText;
-						console.error("PaymentIntent API text error:", errorText);
 					}
-
-					console.error("PaymentIntent creation failed:", {
-						status: response.status,
-						statusText: response.statusText,
-						url: response.url,
-						error: errorDetails,
-					});
 
 					// Handle specific error cases
 					if (response.status === 500) {
@@ -182,7 +163,6 @@ const CheckoutPage: React.FC = () => {
 				}
 
 				const responseData = await response.json();
-				console.log("PaymentIntent API response data:", responseData);
 
 				const { clientSecret: secret, paymentIntentId } = responseData;
 
@@ -195,9 +175,6 @@ const CheckoutPage: React.FC = () => {
 
 				// Check if this is a CheckoutSession secret instead of PaymentIntent
 				if (secret.startsWith("cs_")) {
-					console.error(
-						"Received CheckoutSession client secret, but need PaymentIntent client secret"
-					);
 					throw new Error(
 						"Backend returned CheckoutSession instead of PaymentIntent. Please ensure backend creates PaymentIntent when paymentIntentMode=true"
 					);
@@ -209,23 +186,14 @@ const CheckoutPage: React.FC = () => {
 				);
 
 				if (!isValidPaymentIntentSecret) {
-					console.error("Invalid PaymentIntent client secret format:", secret);
 					throw new Error(
 						"Invalid PaymentIntent client secret format received from server"
 					);
 				}
 
-				console.log("PaymentIntent created successfully:", {
-					paymentIntentId,
-					clientSecretLength: secret.length,
-					isEncoded: false,
-					format: "valid PaymentIntent secret",
-				});
-
 				setClientSecret(secret);
 				toast.success("Payment initialized successfully!");
 			} catch (error) {
-				console.error("PaymentIntent creation error:", error);
 				toast.error("Failed to initialize payment. Please try again.");
 				setClientSecret(""); // Reset on error
 			} finally {
@@ -246,8 +214,6 @@ const CheckoutPage: React.FC = () => {
 
 	const handlePaymentSuccess = async (paymentIntent: PaymentIntent) => {
 		try {
-			console.log("PaymentIntent completed successfully:", paymentIntent);
-
 			// Create order data for tracking
 			const orderItems = cart.map((item) => ({
 				productId: item.product.id.toString(),
@@ -288,7 +254,6 @@ const CheckoutPage: React.FC = () => {
 				},
 			});
 		} catch (error) {
-			console.error("Error processing successful payment:", error);
 			toast.error(
 				"Payment succeeded but there was an error processing your order. Please contact support."
 			);
@@ -296,7 +261,6 @@ const CheckoutPage: React.FC = () => {
 	};
 
 	const handlePaymentError = (error: string) => {
-		console.error("PaymentIntent error:", error);
 		toast.error(`Payment failed: ${error}`);
 
 		// Reset loading state in case user wants to retry
