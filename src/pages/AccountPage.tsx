@@ -4,6 +4,7 @@ import { Navigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { useAuth } from '@/context/AuthContext';
 import { useWishlist } from '@/context/WishlistContext';
+import { useOrder } from '@/context/OrderContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -19,6 +20,7 @@ import { toast } from '@/components/ui/sonner';
 const AccountPage = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const { wishlist, removeFromWishlist } = useWishlist();
+  const { orders, isLoading: ordersLoading } = useOrder();
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   
   // Parse name into firstName and lastName
@@ -39,33 +41,7 @@ const AccountPage = () => {
     return <Navigate to="/auth" replace />;
   }
 
-  // Mock order data - in a real app this would come from a backend
-  const mockOrders = [
-    {
-      id: 'ORD-001',
-      date: '2024-01-15',
-      status: 'Delivered',
-      total: 89.99,
-      items: 3,
-      products: ['Elegant Evening Dress', 'Classic Sneakers']
-    },
-    {
-      id: 'ORD-002',
-      date: '2024-01-10',
-      status: 'Shipped',
-      total: 149.50,
-      items: 2,
-      products: ['Men\'s Chino Pants', 'Leather Handbag']
-    },
-    {
-      id: 'ORD-003',
-      date: '2024-01-05',
-      status: 'Processing',
-      total: 29.99,
-      items: 1,
-      products: ['Boys\' Graphic T-Shirt']
-    }
-  ];
+
 
   const handleLogout = () => {
     logout();
@@ -75,15 +51,6 @@ const AccountPage = () => {
     // In a real app, this would make an API call to update the user profile
     setIsEditingProfile(false);
     toast.success('Profile updated successfully!');
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Delivered': return 'bg-green-100 text-green-800 border-green-200';
-      case 'Shipped': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'Processing': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
   };
 
   const getUserInitials = () => {
@@ -122,7 +89,7 @@ const AccountPage = () => {
                   <div className="flex items-center gap-4 mt-3">
                     <Badge variant="secondary" className="flex items-center gap-1">
                       <Package className="h-3 w-3" />
-                      {mockOrders.length} Orders
+                      {orders.length} Orders
                     </Badge>
                     <Badge variant="secondary" className="flex items-center gap-1">
                       <Heart className="h-3 w-3" />
@@ -296,39 +263,48 @@ const AccountPage = () => {
                   <CardDescription>Track your orders and view order details</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {mockOrders.length > 0 ? (
+                  {ordersLoading ? (
+                    <div className="text-center py-12">
+                      <div className="inline-block animate-spin">
+                        <Package className="h-8 w-8 text-primary" />
+                      </div>
+                      <p className="mt-4 text-gray-600">Loading your orders...</p>
+                    </div>
+                  ) : orders.length > 0 ? (
                     <div className="space-y-4">
-                      {mockOrders.map((order) => (
+                      {orders.map((order) => (
                         <div key={order.id} className="border rounded-lg p-6 hover:shadow-md transition-shadow">
                           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <div className="flex-1">
                               <div className="flex items-center gap-4 mb-2">
-                                <h3 className="font-semibold text-lg">{order.id}</h3>
-                                <Badge variant="secondary" className={getStatusColor(order.status)}>
-                                  {order.status}
+                                <h3 className="font-semibold text-lg">{order.orderNumber}</h3>
+                                <Badge variant={order.status === 'delivered' ? 'default' : order.status === 'cancelled' ? 'destructive' : 'secondary'}>
+                                  {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                                 </Badge>
                               </div>
                               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
                                 <div className="flex items-center gap-2">
                                   <Calendar className="h-4 w-4" />
-                                  <span>Ordered: {order.date}</span>
+                                  <span>Ordered: {new Date(order.orderedAt).toLocaleDateString()}</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <Package className="h-4 w-4" />
-                                  <span>{order.items} items</span>
+                                  <span>{order.items.length} item{order.items.length !== 1 ? 's' : ''}</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <CreditCard className="h-4 w-4" />
-                                  <span className="font-semibold text-gray-900">${order.total.toFixed(2)}</span>
+                                  <span className="font-semibold text-gray-900">GH₵{order.totalAmount.toFixed(2)}</span>
                                 </div>
                               </div>
                               <div className="mt-3">
-                                <p className="text-sm text-gray-600">Products: {order.products?.join(', ')}</p>
+                                <p className="text-sm text-gray-600">
+                                  Products: {order.items.map(item => item.name).join(', ') || 'No items'}
+                                </p>
                               </div>
                             </div>
                             <div className="flex gap-2">
                               <Button variant="outline" size="sm">View Details</Button>
-                              {order.status === 'Delivered' && (
+                              {order.status === 'delivered' && (
                                 <Button variant="outline" size="sm">Reorder</Button>
                               )}
                             </div>
