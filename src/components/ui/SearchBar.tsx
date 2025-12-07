@@ -1,30 +1,72 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, X } from 'lucide-react';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { searchProducts } from '@/data/products';
-import { Product } from '@/data/products';
+import { Search, X, ShoppingBag, FolderOpen, Sparkles } from 'lucide-react';
+import { searchProducts, Product } from '@/data/products';
+import { categories, Category, SubCategory } from '@/data/categories';
 
 interface SearchBarProps {
   onClose?: () => void;
   className?: string;
 }
 
+interface SearchResults {
+  products: Product[];
+  categories: Category[];
+  subcategories: { subcategory: SubCategory; category: Category }[];
+}
+
 const SearchBar: React.FC<SearchBarProps> = ({ onClose, className = '' }) => {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<Product[]>([]);
+  const [results, setResults] = useState<SearchResults>({
+    products: [],
+    categories: [],
+    subcategories: [],
+  });
   const navigate = useNavigate();
 
-  // Debounce search
+  // Search across all data types
   useEffect(() => {
     const timer = setTimeout(() => {
       if (query.trim().length > 1) {
-        const searchResults = searchProducts(query);
-        setResults(searchResults.slice(0, 5)); // Show max 5 suggestions
-        setOpen(searchResults.length > 0);
+        const searchQuery = query.toLowerCase().trim();
+
+        // Search products
+        const productResults = searchProducts(query).slice(0, 4);
+
+        // Search categories
+        const categoryResults = categories.filter(
+          (cat) =>
+            cat.name.toLowerCase().includes(searchQuery) ||
+            cat.description.toLowerCase().includes(searchQuery)
+        );
+
+        // Search subcategories
+        const subcategoryResults: { subcategory: SubCategory; category: Category }[] = [];
+        categories.forEach((cat) => {
+          cat.subcategories?.forEach((sub) => {
+            if (
+              sub.name.toLowerCase().includes(searchQuery) ||
+              sub.description?.toLowerCase().includes(searchQuery)
+            ) {
+              subcategoryResults.push({ subcategory: sub, category: cat });
+            }
+          });
+        });
+
+        setResults({
+          products: productResults,
+          categories: categoryResults.slice(0, 3),
+          subcategories: subcategoryResults.slice(0, 3),
+        });
+
+        const hasResults =
+          productResults.length > 0 ||
+          categoryResults.length > 0 ||
+          subcategoryResults.length > 0;
+        setOpen(hasResults);
       } else {
-        setResults([]);
+        setResults({ products: [], categories: [], subcategories: [] });
         setOpen(false);
       }
     }, 300);
@@ -32,30 +74,44 @@ const SearchBar: React.FC<SearchBarProps> = ({ onClose, className = '' }) => {
     return () => clearTimeout(timer);
   }, [query]);
 
-  const handleSelect = (productSlug: string) => {
+  const handleSelectProduct = (productSlug: string) => {
     navigate(`/product/${productSlug}`);
-    setQuery('');
-    setResults([]);
-    setOpen(false);
-    onClose?.();
+    handleClear();
+  };
+
+  const handleSelectCategory = (categorySlug: string) => {
+    navigate(`/category/${categorySlug}`);
+    handleClear();
+  };
+
+  const handleSelectSubcategory = (categorySlug: string, subcategorySlug: string) => {
+    if (subcategorySlug === 'cleaning-services') {
+      navigate('/cleaning-services');
+    } else {
+      navigate(`/category/${categorySlug}/${subcategorySlug}`);
+    }
+    handleClear();
   };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
       navigate(`/search?q=${encodeURIComponent(query)}`);
-      setQuery('');
-      setResults([]);
-      setOpen(false);
-      onClose?.();
+      handleClear();
     }
   };
 
   const handleClear = () => {
     setQuery('');
-    setResults([]);
+    setResults({ products: [], categories: [], subcategories: [] });
     setOpen(false);
+    onClose?.();
   };
+
+  const hasResults =
+    results.products.length > 0 ||
+    results.categories.length > 0 ||
+    results.subcategories.length > 0;
 
   return (
     <div className={`relative ${className}`}>
@@ -66,8 +122,8 @@ const SearchBar: React.FC<SearchBarProps> = ({ onClose, className = '' }) => {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            onFocus={() => query.trim().length > 1 && results.length > 0 && setOpen(true)}
-            placeholder="Search products..."
+            onFocus={() => query.trim().length > 1 && hasResults && setOpen(true)}
+            placeholder="Search products, categories, services..."
             className="w-full h-10 pl-9 pr-9 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
           {query && (
@@ -83,49 +139,110 @@ const SearchBar: React.FC<SearchBarProps> = ({ onClose, className = '' }) => {
       </form>
 
       {/* Autocomplete Dropdown */}
-      {open && results.length > 0 && (
-        <div className="absolute top-full mt-2 w-full bg-background border border-border rounded-lg shadow-lg z-50 max-h-[400px] overflow-y-auto">
-          <div className="p-2">
-            {results.map((product) => {
-              const currentPrice = product.discountPrice ? parseFloat(product.discountPrice.toString()) : parseFloat(product.price.toString());
-              const originalPrice = product.discountPrice ? parseFloat(product.price.toString()) : null;
-              
-              return (
+      {open && hasResults && (
+        <div className="absolute top-full mt-2 w-full bg-background border border-border rounded-lg shadow-lg z-50 max-h-[450px] overflow-y-auto">
+          {/* Categories Section */}
+          {results.categories.length > 0 && (
+            <div className="p-2 border-b border-border">
+              <p className="text-xs font-medium text-muted-foreground px-2 py-1 flex items-center gap-1">
+                <FolderOpen className="h-3 w-3" /> Categories
+              </p>
+              {results.categories.map((category) => (
                 <button
-                  key={product.id}
-                  onClick={() => handleSelect(product.slug || product.id.toString())}
+                  key={category.id}
+                  onClick={() => handleSelectCategory(category.slug)}
                   className="w-full flex items-center gap-3 p-2 rounded-md hover:bg-accent transition-colors text-left"
                 >
-                  <div className="w-12 h-12 rounded overflow-hidden bg-muted flex-shrink-0">
+                  <div className="w-10 h-10 rounded overflow-hidden bg-muted flex-shrink-0">
                     <img
-                      src={product.images[0] || '/api/placeholder/50/50'}
-                      alt={product.name}
-                      className="w-full h-full object-contain"
-                      onError={(e) => {
-                        e.currentTarget.src = '/api/placeholder/50/50';
-                      }}
+                      src={category.image}
+                      alt={category.name}
+                      className="w-full h-full object-cover"
                     />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">
-                      {product.name}
-                    </p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-sm font-medium text-foreground">
-                        ${currentPrice.toFixed(2)}
-                      </span>
-                      {originalPrice && (
-                        <span className="text-xs text-muted-foreground line-through">
-                          ${originalPrice.toFixed(2)}
-                        </span>
-                      )}
-                    </div>
+                    <p className="text-sm font-medium text-foreground">{category.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">{category.description}</p>
                   </div>
                 </button>
-              );
-            })}
-          </div>
-          
+              ))}
+            </div>
+          )}
+
+          {/* Subcategories/Services Section */}
+          {results.subcategories.length > 0 && (
+            <div className="p-2 border-b border-border">
+              <p className="text-xs font-medium text-muted-foreground px-2 py-1 flex items-center gap-1">
+                <Sparkles className="h-3 w-3" /> Subcategories & Services
+              </p>
+              {results.subcategories.map(({ subcategory, category }) => (
+                <button
+                  key={subcategory.id}
+                  onClick={() => handleSelectSubcategory(category.slug, subcategory.slug)}
+                  className="w-full flex items-center gap-3 p-2 rounded-md hover:bg-accent transition-colors text-left"
+                >
+                  <div className="w-10 h-10 rounded bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Sparkles className="h-4 w-4 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground">{subcategory.name}</p>
+                    <p className="text-xs text-muted-foreground">in {category.name}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Products Section */}
+          {results.products.length > 0 && (
+            <div className="p-2">
+              <p className="text-xs font-medium text-muted-foreground px-2 py-1 flex items-center gap-1">
+                <ShoppingBag className="h-3 w-3" /> Products
+              </p>
+              {results.products.map((product) => {
+                const currentPrice = product.discountPrice
+                  ? parseFloat(product.discountPrice.toString())
+                  : parseFloat(product.price.toString());
+                const originalPrice = product.discountPrice
+                  ? parseFloat(product.price.toString())
+                  : null;
+
+                return (
+                  <button
+                    key={product.id}
+                    onClick={() => handleSelectProduct(product.slug || product.id.toString())}
+                    className="w-full flex items-center gap-3 p-2 rounded-md hover:bg-accent transition-colors text-left"
+                  >
+                    <div className="w-10 h-10 rounded overflow-hidden bg-muted flex-shrink-0">
+                      <img
+                        src={product.images[0] || '/api/placeholder/50/50'}
+                        alt={product.name}
+                        className="w-full h-full object-contain"
+                        onError={(e) => {
+                          e.currentTarget.src = '/api/placeholder/50/50';
+                        }}
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{product.name}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-sm font-medium text-foreground">
+                          ${currentPrice.toFixed(2)}
+                        </span>
+                        {originalPrice && (
+                          <span className="text-xs text-muted-foreground line-through">
+                            ${originalPrice.toFixed(2)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* View All Results */}
           {query.trim() && (
             <div className="border-t border-border p-2">
               <button
