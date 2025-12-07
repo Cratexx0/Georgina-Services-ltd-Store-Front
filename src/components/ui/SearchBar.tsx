@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, X, ShoppingBag, FolderOpen, Sparkles } from 'lucide-react';
-import { searchProducts, Product } from '@/data/products';
-import { categories, Category, SubCategory } from '@/data/categories';
+import { Search, X, ShoppingBag, FolderOpen, Sparkles, Loader2 } from 'lucide-react';
+import { apiService, Product, Category, SubCategory } from '@/lib/api';
 
 interface SearchBarProps {
   onClose?: () => void;
@@ -18,61 +17,86 @@ interface SearchResults {
 const SearchBar: React.FC<SearchBarProps> = ({ onClose, className = '' }) => {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<SearchResults>({
     products: [],
     categories: [],
     subcategories: [],
   });
+  const [allCategories, setAllCategories] = useState<Category[]>([]);
   const navigate = useNavigate();
+
+  // Fetch categories once on mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const cats = await apiService.getCategories();
+        setAllCategories(cats);
+      } catch (err) {
+        console.error('Failed to fetch categories for search:', err);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   // Search across all data types
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const timer = setTimeout(async () => {
       if (query.trim().length > 1) {
+        setLoading(true);
         const searchQuery = query.toLowerCase().trim();
 
-        // Search products
-        const productResults = searchProducts(query).slice(0, 4);
+        try {
+          // Search products via API
+          const productsData = await apiService.getProducts(1, 10, undefined, searchQuery);
+          const productResults = productsData.products?.slice(0, 4) || [];
 
-        // Search categories
-        const categoryResults = categories.filter(
-          (cat) =>
-            cat.name.toLowerCase().includes(searchQuery) ||
-            cat.description.toLowerCase().includes(searchQuery)
-        );
+          // Search categories locally from fetched API data
+          const categoryResults = allCategories.filter(
+            (cat) =>
+              cat.name.toLowerCase().includes(searchQuery) ||
+              cat.description?.toLowerCase().includes(searchQuery)
+          );
 
-        // Search subcategories
-        const subcategoryResults: { subcategory: SubCategory; category: Category }[] = [];
-        categories.forEach((cat) => {
-          cat.subcategories?.forEach((sub) => {
-            if (
-              sub.name.toLowerCase().includes(searchQuery) ||
-              sub.description?.toLowerCase().includes(searchQuery)
-            ) {
-              subcategoryResults.push({ subcategory: sub, category: cat });
-            }
+          // Search subcategories
+          const subcategoryResults: { subcategory: SubCategory; category: Category }[] = [];
+          allCategories.forEach((cat) => {
+            cat.subcategories?.forEach((sub) => {
+              if (
+                sub.name.toLowerCase().includes(searchQuery) ||
+                sub.description?.toLowerCase().includes(searchQuery)
+              ) {
+                subcategoryResults.push({ subcategory: sub, category: cat });
+              }
+            });
           });
-        });
 
-        setResults({
-          products: productResults,
-          categories: categoryResults.slice(0, 3),
-          subcategories: subcategoryResults.slice(0, 3),
-        });
+          setResults({
+            products: productResults,
+            categories: categoryResults.slice(0, 3),
+            subcategories: subcategoryResults.slice(0, 3),
+          });
 
-        const hasResults =
-          productResults.length > 0 ||
-          categoryResults.length > 0 ||
-          subcategoryResults.length > 0;
-        setOpen(hasResults);
+          const hasResults =
+            productResults.length > 0 ||
+            categoryResults.length > 0 ||
+            subcategoryResults.length > 0;
+          setOpen(hasResults);
+        } catch (err) {
+          console.error('Search failed:', err);
+          setResults({ products: [], categories: [], subcategories: [] });
+          setOpen(false);
+        } finally {
+          setLoading(false);
+        }
       } else {
         setResults({ products: [], categories: [], subcategories: [] });
         setOpen(false);
       }
-    }, 300);
+    }, 400);
 
     return () => clearTimeout(timer);
-  }, [query]);
+  }, [query, allCategories]);
 
   const handleSelectProduct = (productSlug: string) => {
     navigate(`/product/${productSlug}`);
@@ -117,7 +141,11 @@ const SearchBar: React.FC<SearchBarProps> = ({ onClose, className = '' }) => {
     <div className={`relative ${className}`}>
       <form onSubmit={handleSearch} className="relative">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          {loading ? (
+            <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground animate-spin" />
+          ) : (
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          )}
           <input
             type="text"
             value={query}
@@ -153,12 +181,16 @@ const SearchBar: React.FC<SearchBarProps> = ({ onClose, className = '' }) => {
                   onClick={() => handleSelectCategory(category.slug)}
                   className="w-full flex items-center gap-3 p-2 rounded-md hover:bg-accent transition-colors text-left"
                 >
-                  <div className="w-10 h-10 rounded overflow-hidden bg-muted flex-shrink-0">
-                    <img
-                      src={category.image}
-                      alt={category.name}
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="w-10 h-10 rounded overflow-hidden bg-muted flex-shrink-0 flex items-center justify-center">
+                    {category.image ? (
+                      <img
+                        src={category.image}
+                        alt={category.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <FolderOpen className="h-4 w-4 text-muted-foreground" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground">{category.name}</p>
@@ -215,7 +247,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onClose, className = '' }) => {
                   >
                     <div className="w-10 h-10 rounded overflow-hidden bg-muted flex-shrink-0">
                       <img
-                        src={product.images[0] || '/api/placeholder/50/50'}
+                        src={product.images?.[0] || '/api/placeholder/50/50'}
                         alt={product.name}
                         className="w-full h-full object-contain"
                         onError={(e) => {
