@@ -1,7 +1,7 @@
 import { Product } from "@/lib/type";
 
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8003";
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 interface RequestOptions extends RequestInit {
 	requiresAuth?: boolean;
@@ -298,10 +298,6 @@ class ApiService {
 
 		return [];
 	}
-	// In ApiService.tsx - add detailed debugging
-	// =============================================
-	// 📅 BOOKING ENDPOINTS
-	// =============================================
 
 	/**
 	 * Create a new booking
@@ -341,9 +337,7 @@ class ApiService {
 		});
 	}
 
-	// =============================================
-	// 🛒 ORDER ENDPOINTS
-	// =============================================
+
 
 	/**
 	 * Create a new order
@@ -554,28 +548,7 @@ class ApiService {
 		});
 	}
 
-	/**
-	 * Create a new booking (Public)
-	 */
-	//   async createBooking(bookingData: {
-	//     customerName: string;
-	//     customerEmail: string;
-	//     customerPhone: string;
-	//     serviceType: string;
-	//     address: string;
-	//     date: string;
-	//     time: string;
-	//     duration: number;
-	//     price: number;
-	//     selectedFeatures?: string[];
-	//     specialInstructions?: string;
-	//   }) {
-	//     return this.request('/api/bookings', {
-	//       method: 'POST',
-	//       body: JSON.stringify(bookingData),
-	//       requiresAuth: true,
-	//     });
-	//   }
+
 
 	/**
 	 * Get user's bookings for dashboard - AUTO email detection
