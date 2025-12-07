@@ -322,6 +322,7 @@ interface OrderContextType {
   }) => Promise<void>;
   updateOrderStatus: (id: string, status: Order['status']) => void;
   cancelOrder: (id: string) => Promise<void>;
+  deleteOrder: (id: string) => Promise<void>;
   refreshOrders: () => Promise<void>;
   getRecentOrders: () => Order[];
   getPendingOrders: () => Order[];
@@ -531,6 +532,26 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
     }
   };
 
+  const deleteOrder = async (id: string) => {
+    try {
+      setIsLoading(true);
+      const response = await apiService.deleteOrder(id);
+
+      if (response.success) {
+        setOrders(prev => prev.filter(order => order.id !== id));
+        toast.success('Order deleted successfully');
+      } else {
+        throw new Error(response.message || 'Failed to delete order');
+      }
+    } catch (error: any) {
+      console.error('Delete order error:', error);
+      toast.error(error.message || 'Failed to delete order');
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const getRecentOrders = (): Order[] => {
     return orders
       .sort((a, b) => new Date(b.orderedAt).getTime() - new Date(a.orderedAt).getTime())
@@ -551,6 +572,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
         addOrder,
         updateOrderStatus,
         cancelOrder,
+        deleteOrder,
         refreshOrders,
         getRecentOrders,
         getPendingOrders,

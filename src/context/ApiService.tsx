@@ -1278,6 +1278,21 @@ class ApiService {
 			requiresAuth: true,
 		});
 	}
+
+	/**
+	 * Delete an order (for unpaid orders)
+	 */
+	async deleteOrder(orderId: string): Promise<{
+		success: boolean;
+		message?: string;
+		data?: any;
+	}> {
+		return this.request(`/api/orders/${orderId}`, {
+			method: "DELETE",
+			requiresAuth: true,
+		});
+	}
+
 	/**
 	 * Get bookings by email (public access)
 	 */
@@ -1446,6 +1461,113 @@ class ApiService {
 			);
 			throw error;
 		}
+	}
+
+	// ==================== WISHLIST ENDPOINTS ====================
+
+	/**
+	 * Add product to wishlist
+	 */
+	async addToWishlist(productId: string): Promise<{
+		success: boolean;
+		message?: string;
+		data?: any;
+	}> {
+		return this.request("/api/wishlist/add", {
+			method: "POST",
+			body: JSON.stringify({ productId }),
+			requiresAuth: true,
+		});
+	}
+
+	/**
+	 * Get user's wishlist
+	 */
+	async getWishlist(): Promise<{
+		success: boolean;
+		data?: any[];
+		wishlist?: any[];
+		message?: string;
+	}> {
+		try {
+			const response = await this.request("/api/wishlist/my-wishlist", {
+				method: "GET",
+				requiresAuth: true,
+			});
+
+			return {
+				success: response.success !== false,
+				data: response.data || response.wishlist || response,
+				wishlist: response.wishlist || response.data || response,
+				message: response.message,
+			};
+		} catch (error) {
+			return {
+				success: false,
+				message:
+					error instanceof Error ? error.message : "Failed to fetch wishlist",
+			};
+		}
+	}
+
+	/**
+	 * Check if product is in wishlist
+	 */
+	async checkWishlist(productId: string): Promise<{
+		success: boolean;
+		isInWishlist?: boolean;
+		message?: string;
+	}> {
+		try {
+			const response = await this.request(
+				`/api/wishlist/check/${productId}`,
+				{
+					method: "GET",
+					requiresAuth: true,
+				}
+			);
+
+			return {
+				success: response.success !== false,
+				isInWishlist: response.isInWishlist || response.inWishlist || false,
+				message: response.message,
+			};
+		} catch (error) {
+			return {
+				success: false,
+				isInWishlist: false,
+				message:
+					error instanceof Error ? error.message : "Failed to check wishlist",
+			};
+		}
+	}
+
+	/**
+	 * Remove product from wishlist
+	 */
+	async removeFromWishlist(productId: string): Promise<{
+		success: boolean;
+		message?: string;
+		data?: any;
+	}> {
+		return this.request(`/api/wishlist/remove/${productId}`, {
+			method: "DELETE",
+			requiresAuth: true,
+		});
+	}
+
+	/**
+	 * Clear entire wishlist
+	 */
+	async clearWishlist(): Promise<{
+		success: boolean;
+		message?: string;
+		data?: any;
+	}> {
+		return this.request("/api/wishlist/clear", {
+			method: "DELETE",
+			requiresAuth: true,
+		});
 	}
 }
 

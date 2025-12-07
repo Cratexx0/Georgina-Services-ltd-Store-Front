@@ -38,7 +38,7 @@ const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
 	formatCurrency,
 	formatDate,
 }) => {
-	const { orders, cancelOrder, isLoading } = useOrder();
+	const { orders, cancelOrder, deleteOrder, isLoading } = useOrder();
 	const navigate = useNavigate();
 
 	return (
@@ -374,15 +374,28 @@ const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
 
 											{(order.status === "pending" ||
 												order.status === "processing") && (
-												<Button
-													variant="outline"
-													size="sm"
-													onClick={() => cancelOrder(order.id)}
-													className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
-												>
-													<XCircle className="h-4 w-4 mr-2" />
-													Cancel Order
-												</Button>
+												<>
+													<Button
+														variant="outline"
+														size="sm"
+														onClick={() => cancelOrder(order.id)}
+														className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+													>
+														<XCircle className="h-4 w-4 mr-2" />
+														Cancel Order
+													</Button>
+													{order.paymentStatus === "pending" && (
+														<Button
+															variant="outline"
+															size="sm"
+															onClick={() => deleteOrder(order.id)}
+															className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 border-orange-200"
+														>
+															<XCircle className="h-4 w-4 mr-2" />
+															Delete Order
+														</Button>
+													)}
+												</>
 											)}
 										</div>
 									</div>
