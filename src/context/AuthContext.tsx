@@ -16,6 +16,8 @@ export interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
+  loginWithGoogle: (accessToken: string) => Promise<void>;
+  loginWithFacebook: (accessToken: string) => Promise<void>;
   logout: () => void;
   register: (name: string, email: string, password: string) => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
@@ -205,6 +207,70 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const handleSocialLogin = async (
+    provider: 'google' | 'facebook',
+    token: string
+  ): Promise<void> => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      if (!token) {
+        throw new Error(
+          provider === 'google'
+            ? 'Missing Google idToken'
+            : 'Missing Facebook access token'
+        );
+      }
+
+      console.log(`🔐 [SOCIAL-${provider}] Starting social login`);
+      clearAuthData();
+
+      const response =
+        provider === 'google'
+          ? await apiService.socialLoginGoogle(token)
+          : await apiService.socialLoginFacebook(token);
+
+      const token = response.token || response.data?.token;
+      const userDataFromBackend = response.user || response.data?.user;
+
+      if (!token || !userDataFromBackend) {
+        throw new Error('Social login failed: missing token or user data');
+      }
+
+      const userData: User = {
+        id: userDataFromBackend.id,
+        email: userDataFromBackend.email,
+        fullname: userDataFromBackend.fullname || userDataFromBackend.name || '',
+        name: userDataFromBackend.name,
+        role: userDataFromBackend.role,
+        phoneNumber: userDataFromBackend.phoneNumber || userDataFromBackend.contact,
+      };
+
+      sessionStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('user', JSON.stringify(userData));
+      sessionStorage.setItem('token', token);
+      localStorage.setItem('token', token);
+
+      setUser(userData);
+      console.log(`🔐 [SOCIAL-${provider}] Login success for ${userData.email}`);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Social login failed. Please try again.';
+      setError(errorMessage);
+      clearAuthData();
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loginWithGoogle = async (accessToken: string) =>
+    handleSocialLogin('google', accessToken);
+
+  const loginWithFacebook = async (accessToken: string) =>
+    handleSocialLogin('facebook', accessToken);
+
   // Remove const from method declaration
   const register = async (name: string, email: string, password: string): Promise<void> => {
     try {
@@ -334,6 +400,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     user,
     isAuthenticated: !!user,
     login,
+    loginWithGoogle,
+    loginWithFacebook,
     logout,
     register,
     forgotPassword,

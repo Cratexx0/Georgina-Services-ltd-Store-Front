@@ -22,8 +22,60 @@ const AuthForm = () => {
     confirmpassword: '' 
   });
   const { toast } = useToast();
-  const { login, register } = useAuth();
+  const { login, register, loginWithGoogle, loginWithFacebook } = useAuth();
   const navigate = useNavigate();
+  
+  const requestOAuthToken = async (provider: 'google' | 'facebook') => {
+    const presetToken =
+      (window as any)?.ginaSocialToken?.[provider] ||
+      (window as any)?.[`gina_${provider}_accessToken`];
+
+    if (presetToken) return presetToken as string;
+
+    const label =
+      provider === 'google'
+        ? 'Google idToken'
+        : 'Facebook access token';
+
+    const entered = window.prompt(`Paste the ${label}:`);
+    return entered ?? '';
+  };
+
+  const handleSocialLogin = async (provider: 'google' | 'facebook') => {
+    setIsLoading(true);
+    try {
+      const token = await requestOAuthToken(provider);
+
+      if (!token) {
+        toast({
+          title: "Login cancelled",
+          description:
+            provider === 'google'
+              ? "No Google idToken provided."
+              : "No Facebook access token provided.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const loginFn = provider === 'google' ? loginWithGoogle : loginWithFacebook;
+      await loginFn(token);
+
+      toast({
+        title: "Login successful",
+        description: `Signed in with ${provider === 'google' ? 'Google' : 'Facebook'}.`,
+      });
+      navigate('/', { replace: true });
+    } catch (error: any) {
+      toast({
+        title: "Social login failed",
+        description: error?.message || `Unable to sign in with ${provider}.`,
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
   
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -252,7 +304,7 @@ const AuthForm = () => {
               variant="outline" 
               type="button"
               disabled={isLoading}
-              onClick={() => toast({ title: "Coming soon", description: "Google authentication will be available soon." })}
+              onClick={() => handleSocialLogin('google')}
               className="flex items-center gap-2"
             >
               <svg className="h-4 w-4" viewBox="0 0 24 24">
@@ -279,7 +331,7 @@ const AuthForm = () => {
               variant="outline" 
               type="button"
               disabled={isLoading}
-              onClick={() => toast({ title: "Coming soon", description: "Facebook authentication will be available soon." })}
+              onClick={() => handleSocialLogin('facebook')}
               className="flex items-center gap-2"
             >
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="#1877F2">
@@ -417,7 +469,7 @@ const AuthForm = () => {
               variant="outline" 
               type="button"
               disabled={isLoading}
-              onClick={() => toast({ title: "Coming soon", description: "Google authentication will be available soon." })}
+              onClick={() => handleSocialLogin('google')}
               className="flex items-center gap-2"
             >
               <svg className="h-4 w-4" viewBox="0 0 24 24">
@@ -444,7 +496,7 @@ const AuthForm = () => {
               variant="outline" 
               type="button"
               disabled={isLoading}
-              onClick={() => toast({ title: "Coming soon", description: "Facebook authentication will be available soon." })}
+              onClick={() => handleSocialLogin('facebook')}
               className="flex items-center gap-2"
             >
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="#1877F2">
