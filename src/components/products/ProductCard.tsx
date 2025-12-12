@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, ShoppingCart } from 'lucide-react';
+import { Heart, ShoppingCart, Star } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { toast } from '@/components/ui/sonner';
@@ -142,26 +142,39 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
         {/* Product Info */}
         <div className="p-2 md:p-3">
-          <h3 className="font-normal text-foreground text-xs md:text-sm mb-0.5 md:mb-1 line-clamp-2">
+          <h3 className="font-normal text-foreground text-[11px] md:text-xs mb-0.5 line-clamp-2">
             {product.name}
           </h3>
           
-          <p className="text-muted-foreground text-[10px] md:text-xs mb-1.5 md:mb-2 line-clamp-1 md:line-clamp-2">
+          <p className="text-muted-foreground text-[9px] md:text-[10px] mb-1 line-clamp-1">
             {product.description}
           </p>
 
+          {/* Rating */}
+          <div className="flex items-center gap-0.5 mb-1">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <Star
+                key={index}
+                className={`w-2.5 h-2.5 md:w-3 md:h-3 ${
+                  index < 4 ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground'
+                }`}
+              />
+            ))}
+            <span className="text-[9px] md:text-[10px] text-muted-foreground ml-0.5">(42)</span>
+          </div>
+
           {/* Price and Stock */}
-          <div className="flex flex-wrap items-center gap-1 md:gap-2">
-            <span className="text-sm md:text-base font-medium text-foreground">
+          <div className="flex flex-wrap items-center gap-1">
+            <span className="text-xs md:text-sm font-medium text-foreground">
               ${currentPrice.toFixed(2)}
             </span>
             {originalPrice && (
-              <span className="text-[10px] md:text-xs text-muted-foreground line-through">
+              <span className="text-[9px] md:text-[10px] text-muted-foreground line-through">
                 ${originalPrice.toFixed(2)}
               </span>
             )}
-            <span className="text-[10px] md:text-xs">•</span>
-            <span className={`text-[10px] md:text-xs ${product.stock > 0 ? 'text-green-600' : 'text-destructive'}`}>
+            <span className="text-[9px] md:text-[10px]">•</span>
+            <span className={`text-[9px] md:text-[10px] ${product.stock > 0 ? 'text-green-600' : 'text-destructive'}`}>
               {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
             </span>
           </div>
