@@ -231,10 +231,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           ? await apiService.socialLoginGoogle(token)
           : await apiService.socialLoginFacebook(token);
 
-      const token = response.token || response.data?.token;
+      const authToken = response.token || response.data?.token;
       const userDataFromBackend = response.user || response.data?.user;
 
-      if (!token || !userDataFromBackend) {
+      if (!authToken || !userDataFromBackend) {
         throw new Error('Social login failed: missing token or user data');
       }
 
@@ -249,8 +249,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       sessionStorage.setItem('user', JSON.stringify(userData));
       localStorage.setItem('user', JSON.stringify(userData));
-      sessionStorage.setItem('token', token);
-      localStorage.setItem('token', token);
+      sessionStorage.setItem('token', authToken);
+      localStorage.setItem('token', authToken);
 
       setUser(userData);
       console.log(`🔐 [SOCIAL-${provider}] Login success for ${userData.email}`);

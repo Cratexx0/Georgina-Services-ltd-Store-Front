@@ -1981,6 +1981,10 @@ export interface SocialLoginResponse {
 	success: boolean;
 	token?: string;
 	user?: any;
+	data?: {
+		token?: string;
+		user?: any;
+	};
 	message?: string;
 }
 
