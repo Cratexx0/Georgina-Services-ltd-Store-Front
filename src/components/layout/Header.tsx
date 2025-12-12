@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
 	ShoppingCart,
 	Menu,
@@ -8,9 +8,18 @@ import {
 	User,
 	Heart,
 	LogOut,
-	ChevronDown,
+	LayoutDashboard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
@@ -22,39 +31,20 @@ const Header = () => {
 	const { isAuthenticated, user, logout } = useAuth();
 	const navigate = useNavigate();
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
-	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-	const dropdownRef = useRef(null);
-
-	// Close dropdown when clicking outside
-	useEffect(() => {
-		const handleClickOutside = (event) => {
-			if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-				setIsDropdownOpen(false);
-			}
-		};
-
-		document.addEventListener("mousedown", handleClickOutside);
-		return () => document.removeEventListener("mousedown", handleClickOutside);
-	}, []);
 
 	const toggleMenu = () => {
 		setIsMenuOpen(!isMenuOpen);
 	};
 
-	const toggleDropdown = () => {
-		setIsDropdownOpen(!isDropdownOpen);
-	};
-
 	const handleLogout = () => {
 		logout();
 		setIsMenuOpen(false);
-		setIsDropdownOpen(false);
 		navigate("/");
 	};
 
-	const handleDashboardClick = () => {
-		setIsDropdownOpen(false);
-		navigate("/dashboard");
+	const getUserInitials = () => {
+		const name = user?.name || user?.fullname || user?.email || "U";
+		return name.charAt(0).toUpperCase();
 	};
 
 	return (
@@ -122,50 +112,53 @@ const Header = () => {
 						</Link>
 
 						<div className="flex items-center space-x-4">
-							{isAuthenticated ? (
-								<div className="relative" ref={dropdownRef}>
-									<Button
-										variant="ghost"
-										size="sm"
-										onClick={toggleDropdown}
-										className="flex items-center gap-2"
+						{isAuthenticated ? (
+								<DropdownMenu>
+									<DropdownMenuTrigger asChild>
+										<Button
+											variant="ghost"
+											size="sm"
+											className="flex items-center gap-2 hover:bg-accent"
+										>
+											<Avatar className="h-8 w-8">
+												<AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
+													{getUserInitials()}
+												</AvatarFallback>
+											</Avatar>
+										</Button>
+									</DropdownMenuTrigger>
+									<DropdownMenuContent 
+										align="end" 
+										className="w-56 bg-background border border-border shadow-lg"
 									>
-										<User className="h-4 w-4" />
-										<ChevronDown
-											className={`h-4 w-4 transition-transform ${
-												isDropdownOpen ? "rotate-180" : ""
-											}`}
-										/>
-									</Button>
-
-									{/* Dropdown Menu */}
-									{isDropdownOpen && (
-										<div className="absolute right-0 mt-2 w-48 bg-background border border-border rounded-lg shadow-lg py-2 z-50">
-											<div className="px-4 py-2 border-b border-border">
-												<p className="text-sm font-medium">
+										<DropdownMenuLabel className="font-normal">
+											<div className="flex flex-col space-y-1">
+												<p className="text-sm font-medium leading-none">
 													{user?.name || user?.fullname || "User"}
 												</p>
 												<p className="text-xs text-muted-foreground truncate">
 													{user?.email}
 												</p>
 											</div>
-											<button
-												onClick={handleDashboardClick}
-												className="w-full text-left px-4 py-2 text-sm hover:bg-accent flex items-center gap-2"
-											>
-												<User className="h-4 w-4" />
-												Dashboard
-											</button>
-											<button
-												onClick={handleLogout}
-												className="w-full text-left px-4 py-2 text-sm hover:bg-accent flex items-center gap-2 text-red-600"
-											>
-												<LogOut className="h-4 w-4" />
-												Logout
-											</button>
-										</div>
-									)}
-								</div>
+										</DropdownMenuLabel>
+										<DropdownMenuSeparator />
+										<DropdownMenuItem
+											onClick={() => navigate("/dashboard")}
+											className="cursor-pointer"
+										>
+											<LayoutDashboard className="mr-2 h-4 w-4" />
+											<span>Dashboard</span>
+										</DropdownMenuItem>
+										<DropdownMenuSeparator />
+										<DropdownMenuItem
+											onClick={handleLogout}
+											className="cursor-pointer text-destructive focus:text-destructive"
+										>
+											<LogOut className="mr-2 h-4 w-4" />
+											<span>Logout</span>
+										</DropdownMenuItem>
+									</DropdownMenuContent>
+								</DropdownMenu>
 							) : (
 								<Link to="/auth">
 									<Button
