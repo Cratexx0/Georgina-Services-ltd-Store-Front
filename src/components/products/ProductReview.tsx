@@ -75,27 +75,30 @@ const ProductReview: React.FC<ProductReviewProps> = ({
     : initialRating;
 
   return (
-    <div className="space-y-4">
-      {/* Rating Summary */}
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-1">
-          {Array.from({ length: 5 }).map((_, index) => (
-            <Star
-              key={index}
-              className={`w-4 h-4 cursor-pointer transition-colors ${
-                index < Math.round(averageRating)
-                  ? 'fill-amber-400 text-amber-400'
-                  : 'text-muted hover:text-amber-300'
-              }`}
-              onClick={() => handleStarClick(index + 1)}
-              onMouseEnter={() => setHoverRating(index + 1)}
-              onMouseLeave={() => setHoverRating(0)}
-            />
-          ))}
+    <div className="space-y-3">
+      {/* Rating Summary & Add Review */}
+      <div className="p-3 bg-muted/30 rounded-lg">
+        <p className="text-[10px] text-muted-foreground mb-2">Tap a star to rate this product</p>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <Star
+                key={index}
+                className={`w-5 h-5 cursor-pointer transition-all hover:scale-110 ${
+                  index < (hoverRating || Math.round(averageRating))
+                    ? 'fill-amber-400 text-amber-400'
+                    : 'text-muted-foreground hover:text-amber-300'
+                }`}
+                onClick={() => handleStarClick(index + 1)}
+                onMouseEnter={() => setHoverRating(index + 1)}
+                onMouseLeave={() => setHoverRating(0)}
+              />
+            ))}
+          </div>
+          <span className="text-[10px] text-muted-foreground">
+            {averageRating.toFixed(1)} ({reviews.length + initialReviewCount} reviews)
+          </span>
         </div>
-        <span className="text-xs text-muted-foreground">
-          {averageRating.toFixed(1)} ({reviews.length + initialReviewCount} reviews)
-        </span>
       </div>
 
       {/* Add Review Form */}
