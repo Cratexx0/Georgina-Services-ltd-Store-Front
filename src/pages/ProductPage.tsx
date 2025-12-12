@@ -5,10 +5,11 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
-import { Heart, Share2, Star, Loader2 } from 'lucide-react';
+import { Heart, Share2, Loader2 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import RelatedProductsCarousel from '@/components/products/RelatedProductsCarousel';
+import ProductReview from '@/components/products/ProductReview';
 import { toast } from '@/components/ui/sonner';
 import { apiService } from '@/lib/api';
 import { Product } from '@/lib/type';
@@ -272,48 +273,33 @@ const ProductPage = () => {
           </div>
           
           {/* Product Info */}
-          <div className="space-y-3 md:space-y-4">
-            <h1 className="text-lg md:text-xl lg:text-2xl font-semibold text-foreground">
+          <div className="space-y-2 md:space-y-3">
+            <h1 className="text-base md:text-lg font-semibold text-foreground">
               {product.name}
             </h1>
             
-            {/* Rating */}
-            <div className="flex items-center gap-2">
-              <div className="flex">
-                {Array.from({ length: 5 }).map((_, index) => (
-                  <Star
-                    key={index}
-                    className={`w-3.5 h-3.5 md:w-4 md:h-4 ${index < 4 ? 'fill-amber-400 text-amber-400' : 'text-muted'}`}
-                  />
-                ))}
-              </div>
-              <span className="text-xs md:text-sm text-muted-foreground">
-                4.0 (42 reviews)
-              </span>
-            </div>
-            
             {/* Price */}
-            <div className="py-1 md:py-2">
+            <div className="py-1">
               {product.discountPrice ? (
                 <div className="flex items-center flex-wrap gap-2">
-                  <span className="text-lg md:text-xl font-semibold text-foreground">
+                  <span className="text-base md:text-lg font-semibold text-foreground">
                     ${currentPrice.toFixed(2)}
                   </span>
-                  <span className="text-sm md:text-base text-muted-foreground line-through">
+                  <span className="text-xs md:text-sm text-muted-foreground line-through">
                     ${originalPrice?.toFixed(2)}
                   </span>
-                  <span className="text-xs font-medium text-destructive">
+                  <span className="text-[10px] md:text-xs font-medium text-destructive">
                     {discountPercentage}% OFF
                   </span>
                 </div>
               ) : (
-                <span className="text-lg md:text-xl font-semibold text-foreground">
+                <span className="text-base md:text-lg font-semibold text-foreground">
                   ${currentPrice.toFixed(2)}
                 </span>
               )}
             </div>
             
-            <p className="text-sm text-muted-foreground leading-relaxed">
+            <p className="text-xs text-muted-foreground leading-relaxed">
               {product.description || 'No description available'}
             </p>
 
@@ -398,49 +384,70 @@ const ProductPage = () => {
               )}
             </div>
             
-            <div className="flex space-x-3 pt-4">
+            {/* Wishlist and Share Actions */}
+            <div className="flex flex-col gap-2 pt-3 border-t border-border">
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="flex items-center space-x-1"
+                className="flex items-center justify-start gap-2 text-xs h-8"
                 onClick={handleWishlistToggle}
               >
                 <Heart 
-                  className={`h-4 w-4 ${
+                  className={`h-3.5 w-3.5 ${
                     isInWishlist(product.id) 
-                      ? 'text-red-500 fill-red-500' 
-                      : 'text-gray-500'
+                      ? 'text-destructive fill-destructive' 
+                      : 'text-muted-foreground'
                   }`}
                 />
                 <span>
-                  {isInWishlist(product.id) ? 'Remove from Wishlist' : 'Add to Wishlist'}
+                  {isInWishlist(product.id) ? 'Remove from Wishlist' : 'Save to Wishlist'}
                 </span>
               </Button>
               <Button 
-                variant="outline" 
+                variant="ghost" 
                 size="sm" 
-                className="flex items-center space-x-1"
+                className="flex items-center justify-start gap-2 text-xs h-8 text-muted-foreground hover:text-foreground"
                 onClick={handleShare}
               >
-                <Share2 className="h-4 w-4" />
-                <span>Share</span>
+                <Share2 className="h-3.5 w-3.5" />
+                <span className="truncate">
+                  Share this {product.name.split(' ').slice(0, 3).join(' ')} with friends
+                </span>
               </Button>
+            </div>
+
+            {/* Product Details Summary */}
+            <div className="pt-3 border-t border-border space-y-1.5">
+              <p className="text-[10px] text-muted-foreground">
+                <span className="font-medium">Category:</span> {product.categoryLevel1}
+                {product.categoryLevel2 && ` › ${product.categoryLevel2}`}
+              </p>
+              <p className="text-[10px] text-muted-foreground">
+                <span className="font-medium">Type:</span> {product.serviceType}
+              </p>
+              {hasSizes && (
+                <p className="text-[10px] text-muted-foreground">
+                  <span className="font-medium">Sizes:</span> {availableSizes.join(', ')}
+                </p>
+              )}
+            </div>
+
+            {/* Reviews Section */}
+            <div className="pt-3 border-t border-border">
+              <ProductReview productId={product.id} />
             </div>
           </div>
         </div>
         
-        {/* Product details */}
-        <div className="mt-8">
-          <h2 className="text-xl font-bold mb-4">
-            Product Details
+        {/* Product Features */}
+        <div className="mt-6">
+          <h2 className="text-sm font-semibold mb-3">
+            Features & Specifications
           </h2>
-          <div className="border-t border-gray-200 pt-4">
+          <div className="border-t border-border pt-3">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <h3 className="font-medium text-sm">
-                  Features
-                </h3>
-                <ul className="list-disc list-inside space-y-1 text-sm text-gray-700">
+                <ul className="list-disc list-inside space-y-1 text-xs text-muted-foreground">
                   <li>Premium quality materials</li>
                   <li>Designed for durability and comfort</li>
                   <li>Easy to maintain and clean</li>
@@ -449,37 +456,24 @@ const ProductPage = () => {
                   ))}
                 </ul>
               </div>
-              <div className="space-y-2">
-                <h3 className="font-medium text-sm">
-                  Specifications
-                </h3>
-                <div className="space-y-1 text-sm">
+              <div className="space-y-1 text-xs">
+                <div className="flex">
+                  <span className="font-medium w-20 text-muted-foreground">Category:</span>
+                  <span className="text-foreground capitalize">{product.categoryLevel1}</span>
+                </div>
+                <div className="flex">
+                  <span className="font-medium w-20 text-muted-foreground">Subcategory:</span>
+                  <span className="text-foreground capitalize">{product.categoryLevel2 || 'N/A'}</span>
+                </div>
+                {hasSizes && (
                   <div className="flex">
-                    <span className="font-medium w-24 text-gray-600">Category:</span>
-                    <span className="text-gray-700 capitalize">{product.categoryLevel1}</span>
+                    <span className="font-medium w-20 text-muted-foreground">Sizes:</span>
+                    <span className="text-foreground">{availableSizes.join(', ')}</span>
                   </div>
-                  <div className="flex">
-                    <span className="font-medium w-24 text-gray-600">Subcategory:</span>
-                    <span className="text-gray-700 capitalize">{product.categoryLevel2 || 'N/A'}</span>
-                  </div>
-                  <div className="flex">
-                    <span className="font-medium w-24 text-gray-600">Type:</span>
-                    <span className="text-gray-700 capitalize">{product.categoryLevel3 || 'N/A'}</span>
-                  </div>
-                  {hasSizes && (
-                    <div className="flex">
-                      <span className="font-medium w-24 text-gray-600">Available Sizes:</span>
-                      <span className="text-gray-700">{availableSizes.join(', ')}</span>
-                    </div>
-                  )}
-                  <div className="flex">
-                    <span className="font-medium w-24 text-gray-600">Service Type:</span>
-                    <span className="text-gray-700 capitalize">{product.serviceType}</span>
-                  </div>
-                  <div className="flex">
-                    <span className="font-medium w-24 text-gray-600">Unit:</span>
-                    <span className="text-gray-700 capitalize">{product.unit}</span>
-                  </div>
+                )}
+                <div className="flex">
+                  <span className="font-medium w-20 text-muted-foreground">Unit:</span>
+                  <span className="text-foreground capitalize">{product.unit}</span>
                 </div>
               </div>
             </div>
