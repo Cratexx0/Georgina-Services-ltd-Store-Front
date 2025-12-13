@@ -16,6 +16,9 @@ import ProductPage from "@/pages/ProductPage";
 import CartPage from "@/pages/CartPage";
 import SearchResults from "@/pages/SearchResults";
 import NotFound from "@/pages/NotFound";
+import AboutPage from "@/pages/AboutPage";
+import ContactPage from "@/pages/ContactPage";
+import CareersPage from "@/pages/CareersPage";
 import Auth from "./auth/Auth";
 import ForgotPassword from "./auth/ForgetPassword";
 import ResetPassword from "./auth/ResetPassword";
@@ -81,6 +84,9 @@ const App = () => (
                       element={<CleaningServicesPage />}
                     />
                     <Route path="/search" element={<SearchResults />} />
+                    <Route path="/about" element={<AboutPage />} />
+                    <Route path="/contact" element={<ContactPage />} />
+                    <Route path="/careers" element={<CareersPage />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
