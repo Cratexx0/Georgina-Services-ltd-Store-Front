@@ -230,8 +230,17 @@ const ProductPage = () => {
         <nav className="flex items-center flex-wrap gap-1 md:gap-2 text-xs md:text-sm text-muted-foreground mb-4 md:mb-6">
           <Link to="/" className="hover:text-foreground transition-colors">Home</Link>
           <span>/</span>
-          <Link to="/products" className="hover:text-foreground transition-colors">Products</Link>
-          <span>/</span>
+          {product.categoryLevel1 && (
+            <>
+              <Link 
+                to={`/category/${product.categoryLevel1.toLowerCase().replace(/\s+/g, '-')}`} 
+                className="hover:text-foreground transition-colors"
+              >
+                {product.categoryLevel1}
+              </Link>
+              <span>/</span>
+            </>
+          )}
           <span className="text-foreground truncate max-w-[150px] md:max-w-none">{product.name}</span>
         </nav>
 

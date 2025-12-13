@@ -29,7 +29,7 @@ const Footer = () => {
 						<ul className="space-y-2">
 							<li>
 								<Link
-									to="/category/clothing"
+									to="/category/clothes"
 									className="text-gray-100 hover:text-primary transition-colors"
 								>
 									Clothing
@@ -37,7 +37,7 @@ const Footer = () => {
 							</li>
 							<li>
 								<Link
-									to="/category/food"
+									to="/category/foodstuffs"
 									className="text-gray-100 hover:text-primary transition-colors"
 								>
 									Food
@@ -45,10 +45,10 @@ const Footer = () => {
 							</li>
 							<li>
 								<Link
-									to="/category/cleaning"
+									to="/category/services"
 									className="text-gray-100 hover:text-primary transition-colors"
 								>
-									Cleaning
+									Services
 								</Link>
 							</li>
 						</ul>
@@ -96,19 +96,25 @@ const Footer = () => {
 					</p>
 					<div className="flex space-x-6">
 						<a
-							href="#"
+							href="https://facebook.com"
+							target="_blank"
+							rel="noopener noreferrer"
 							className="text-gray-100 hover:text-primary transition-colors"
 						>
 							<Facebook />
 						</a>
 						<a
-							href="#"
+							href="https://twitter.com"
+							target="_blank"
+							rel="noopener noreferrer"
 							className="text-gray-100 hover:text-primary transition-colors"
 						>
 							<Twitter />
 						</a>
 						<a
-							href="#"
+							href="https://instagram.com"
+							target="_blank"
+							rel="noopener noreferrer"
 							className="text-gray-100 hover:text-primary transition-colors"
 						>
 							<InstagramIcon />
