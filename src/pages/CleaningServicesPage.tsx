@@ -204,7 +204,7 @@ const CleaningServicesPage = () => {
                 </div>
                 
                 <div className="flex items-start gap-3">
-                  <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                  <div className="p-2 bg-white/60 rounded-lg backdrop-blur-sm">
                     <Sparkles className="h-6 w-6" />
                   </div>
                   <div>
