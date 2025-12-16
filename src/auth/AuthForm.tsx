@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,30 @@ import { LogIn, UserPlus, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import { Separator } from "@/components/ui/separator";
+
+// Declare global types for OAuth SDKs
+declare global {
+  interface Window {
+    google?: {
+      accounts: {
+        id: {
+          initialize: (config: any) => void;
+          prompt: (callback?: (notification: any) => void) => void;
+          renderButton: (element: HTMLElement, config: any) => void;
+        };
+      };
+    };
+    FB?: {
+      init: (config: any) => void;
+      login: (callback: (response: any) => void, config?: any) => void;
+      getLoginStatus: (callback: (response: any) => void) => void;
+    };
+    fbAsyncInit?: () => void;
+  }
+}
+
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
+const FACEBOOK_APP_ID = import.meta.env.VITE_FACEBOOK_APP_ID || "";
 
 const AuthForm = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -21,59 +45,175 @@ const AuthForm = () => {
     fullName: '', 
     confirmpassword: '' 
   });
+  const [googleLoaded, setGoogleLoaded] = useState(false);
+  const [facebookLoaded, setFacebookLoaded] = useState(false);
   const { toast } = useToast();
   const { login, register, loginWithGoogle, loginWithFacebook } = useAuth();
   const navigate = useNavigate();
-  
-  const requestOAuthToken = async (provider: 'google' | 'facebook') => {
-    const presetToken =
-      (window as any)?.ginaSocialToken?.[provider] ||
-      (window as any)?.[`gina_${provider}_accessToken`];
 
-    if (presetToken) return presetToken as string;
-
-    const label =
-      provider === 'google'
-        ? 'Google idToken'
-        : 'Facebook access token';
-
-    const entered = window.prompt(`Paste the ${label}:`);
-    return entered ?? '';
-  };
-
-  const handleSocialLogin = async (provider: 'google' | 'facebook') => {
-    setIsLoading(true);
-    try {
-      const token = await requestOAuthToken(provider);
-
-      if (!token) {
-        toast({
-          title: "Login cancelled",
-          description:
-            provider === 'google'
-              ? "No Google idToken provided."
-              : "No Facebook access token provided.",
-          variant: "destructive"
-        });
+  // Load Google SDK
+  useEffect(() => {
+    if (!GOOGLE_CLIENT_ID) return;
+    
+    const loadGoogleSDK = () => {
+      if (document.getElementById('google-sdk')) {
+        setGoogleLoaded(true);
         return;
       }
 
-      const loginFn = provider === 'google' ? loginWithGoogle : loginWithFacebook;
-      await loginFn(token);
+      const script = document.createElement('script');
+      script.id = 'google-sdk';
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.defer = true;
+      script.onload = () => setGoogleLoaded(true);
+      document.head.appendChild(script);
+    };
 
+    loadGoogleSDK();
+  }, []);
+
+  // Load Facebook SDK
+  useEffect(() => {
+    if (!FACEBOOK_APP_ID) return;
+
+    const loadFacebookSDK = () => {
+      if (document.getElementById('facebook-jssdk')) {
+        setFacebookLoaded(true);
+        return;
+      }
+
+      window.fbAsyncInit = function() {
+        window.FB?.init({
+          appId: FACEBOOK_APP_ID,
+          cookie: true,
+          xfbml: true,
+          version: 'v18.0'
+        });
+        setFacebookLoaded(true);
+      };
+
+      const script = document.createElement('script');
+      script.id = 'facebook-jssdk';
+      script.src = 'https://connect.facebook.net/en_US/sdk.js';
+      script.async = true;
+      script.defer = true;
+      document.head.appendChild(script);
+    };
+
+    loadFacebookSDK();
+  }, []);
+
+  const handleGoogleLogin = async () => {
+    if (!GOOGLE_CLIENT_ID) {
       toast({
-        title: "Login successful",
-        description: `Signed in with ${provider === 'google' ? 'Google' : 'Facebook'}.`,
-      });
-      navigate('/', { replace: true });
-    } catch (error: any) {
-      toast({
-        title: "Social login failed",
-        description: error?.message || `Unable to sign in with ${provider}.`,
+        title: "Configuration needed",
+        description: "Google login is not configured. Please contact support.",
         variant: "destructive"
       });
-    } finally {
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // Initialize Google Sign-In
+      window.google?.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: async (response: any) => {
+          if (response.credential) {
+            try {
+              await loginWithGoogle(response.credential);
+              toast({
+                title: "Login successful",
+                description: "Signed in with Google.",
+              });
+              navigate('/', { replace: true });
+            } catch (error: any) {
+              toast({
+                title: "Google login failed",
+                description: error?.message || "Unable to sign in with Google.",
+                variant: "destructive"
+              });
+            } finally {
+              setIsLoading(false);
+            }
+          } else {
+            setIsLoading(false);
+            toast({
+              title: "Login cancelled",
+              description: "Google sign-in was cancelled.",
+              variant: "destructive"
+            });
+          }
+        },
+      });
+
+      // Trigger Google One Tap
+      window.google?.accounts.id.prompt((notification: any) => {
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          // If One Tap is not available, show a message
+          setIsLoading(false);
+          toast({
+            title: "Google Sign-In",
+            description: "Please allow popups or try again.",
+            variant: "destructive"
+          });
+        }
+      });
+    } catch (error: any) {
       setIsLoading(false);
+      toast({
+        title: "Google login failed",
+        description: error?.message || "Unable to initialize Google sign-in.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleFacebookLogin = async () => {
+    if (!FACEBOOK_APP_ID) {
+      toast({
+        title: "Configuration needed",
+        description: "Facebook login is not configured. Please contact support.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      window.FB?.login(async (response: any) => {
+        if (response.authResponse) {
+          try {
+            await loginWithFacebook(response.authResponse.accessToken);
+            toast({
+              title: "Login successful",
+              description: "Signed in with Facebook.",
+            });
+            navigate('/', { replace: true });
+          } catch (error: any) {
+            toast({
+              title: "Facebook login failed",
+              description: error?.message || "Unable to sign in with Facebook.",
+              variant: "destructive"
+            });
+          }
+        } else {
+          toast({
+            title: "Login cancelled",
+            description: "Facebook sign-in was cancelled.",
+            variant: "destructive"
+          });
+        }
+        setIsLoading(false);
+      }, { scope: 'email,public_profile' });
+    } catch (error: any) {
+      setIsLoading(false);
+      toast({
+        title: "Facebook login failed",
+        description: error?.message || "Unable to initialize Facebook sign-in.",
+        variant: "destructive"
+      });
     }
   };
   
@@ -304,7 +444,7 @@ const AuthForm = () => {
               variant="outline" 
               type="button"
               disabled={isLoading}
-              onClick={() => handleSocialLogin('google')}
+              onClick={handleGoogleLogin}
               className="flex items-center gap-2"
             >
               <svg className="h-4 w-4" viewBox="0 0 24 24">
@@ -331,7 +471,7 @@ const AuthForm = () => {
               variant="outline" 
               type="button"
               disabled={isLoading}
-              onClick={() => handleSocialLogin('facebook')}
+              onClick={handleFacebookLogin}
               className="flex items-center gap-2"
             >
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="#1877F2">
@@ -469,7 +609,7 @@ const AuthForm = () => {
               variant="outline" 
               type="button"
               disabled={isLoading}
-              onClick={() => handleSocialLogin('google')}
+              onClick={handleGoogleLogin}
               className="flex items-center gap-2"
             >
               <svg className="h-4 w-4" viewBox="0 0 24 24">
@@ -496,7 +636,7 @@ const AuthForm = () => {
               variant="outline" 
               type="button"
               disabled={isLoading}
-              onClick={() => handleSocialLogin('facebook')}
+              onClick={handleFacebookLogin}
               className="flex items-center gap-2"
             >
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="#1877F2">
