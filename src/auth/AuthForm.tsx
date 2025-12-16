@@ -18,6 +18,7 @@ declare global {
           initialize: (config: any) => void;
           prompt: (callback?: (notification: any) => void) => void;
           renderButton: (element: HTMLElement, config: any) => void;
+          cancel: () => void;
         };
       };
     };
@@ -30,7 +31,7 @@ declare global {
   }
 }
 
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
+const GOOGLE_CLIENT_ID = "563615665302-oepp432au5ved0jf0asgip6ovulijl49.apps.googleusercontent.com";
 const FACEBOOK_APP_ID = import.meta.env.VITE_FACEBOOK_APP_ID || "";
 
 const AuthForm = () => {
@@ -53,10 +54,11 @@ const AuthForm = () => {
 
   // Load Google SDK
   useEffect(() => {
-    if (!GOOGLE_CLIENT_ID) return;
+    console.log('🔧 [GOOGLE-SDK] Starting to load SDK with client_id:', GOOGLE_CLIENT_ID);
     
     const loadGoogleSDK = () => {
       if (document.getElementById('google-sdk')) {
+        console.log('✅ [GOOGLE-SDK] SDK already loaded');
         setGoogleLoaded(true);
         return;
       }
@@ -66,7 +68,15 @@ const AuthForm = () => {
       script.src = 'https://accounts.google.com/gsi/client';
       script.async = true;
       script.defer = true;
-      script.onload = () => setGoogleLoaded(true);
+      script.onload = () => {
+        console.log('✅ [GOOGLE-SDK] Script loaded successfully');
+        console.log('🔧 [GOOGLE-SDK] window.google exists:', !!window.google);
+        setGoogleLoaded(true);
+      };
+      script.onerror = (error) => {
+        console.error('❌ [GOOGLE-SDK] Failed to load script:', error);
+      };
+      
       document.head.appendChild(script);
     };
 
@@ -105,22 +115,39 @@ const AuthForm = () => {
   }, []);
 
   const handleGoogleLogin = async () => {
-    if (!GOOGLE_CLIENT_ID) {
+    console.log('🔧 [GOOGLE-LOGIN] Starting Google Sign-In');
+
+    // Only check if Google SDK is loaded
+    if (!window.google) {
+      console.error('❌ [GOOGLE-LOGIN] Google SDK not loaded');
       toast({
-        title: "Configuration needed",
-        description: "Google login is not configured. Please contact support.",
+        title: "Google Sign-In Error",
+        description: "Google authentication service not loaded. Please refresh the page.",
         variant: "destructive"
       });
       return;
     }
 
     setIsLoading(true);
+
     try {
-      // Initialize Google Sign-In
-      window.google?.accounts.id.initialize({
+      console.log('🔧 [GOOGLE-LOGIN] Initializing Google...');
+      
+      // Clear any previous sessions
+      if (window.google.accounts.id) {
+        window.google.accounts.id.cancel();
+      }
+
+      window.google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
         callback: async (response: any) => {
-          if (response.credential) {
+          console.log('🔧 [GOOGLE-CALLBACK] Received response:', response);
+          setIsLoading(false);
+          
+          if (response?.credential) {
+            console.log('✅ [GOOGLE-CALLBACK] Got credential, length:', response.credential.length);
+            console.log('🔧 [GOOGLE-CALLBACK] Token preview:', response.credential.substring(0, 50) + '...');
+            
             try {
               await loginWithGoogle(response.credential);
               toast({
@@ -129,16 +156,15 @@ const AuthForm = () => {
               });
               navigate('/', { replace: true });
             } catch (error: any) {
+              console.error('❌ [GOOGLE-CALLBACK] loginWithGoogle failed:', error);
               toast({
                 title: "Google login failed",
                 description: error?.message || "Unable to sign in with Google.",
                 variant: "destructive"
               });
-            } finally {
-              setIsLoading(false);
             }
           } else {
-            setIsLoading(false);
+            console.warn('⚠️ [GOOGLE-CALLBACK] No credential in response:', response);
             toast({
               title: "Login cancelled",
               description: "Google sign-in was cancelled.",
@@ -146,25 +172,27 @@ const AuthForm = () => {
             });
           }
         },
+        use_fedcm_for_prompt: true  // Enable FedCM
       });
 
-      // Trigger Google One Tap
-      window.google?.accounts.id.prompt((notification: any) => {
-        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-          // If One Tap is not available, show a message
+      console.log('🔧 [GOOGLE-LOGIN] Prompting user...');
+      // Trigger Google One Tap WITHOUT callback (FedCM requirement)
+      window.google.accounts.id.prompt();
+      
+      // Set timeout to handle no response
+      setTimeout(() => {
+        if (isLoading) {
+          console.log('⚠️ [GOOGLE-LOGIN] Prompt timeout - user may have dismissed');
           setIsLoading(false);
-          toast({
-            title: "Google Sign-In",
-            description: "Please allow popups or try again.",
-            variant: "destructive"
-          });
         }
-      });
+      }, 30000);
+      
     } catch (error: any) {
+      console.error('❌ [GOOGLE-LOGIN] Error:', error);
       setIsLoading(false);
       toast({
-        title: "Google login failed",
-        description: error?.message || "Unable to initialize Google sign-in.",
+        title: "Google Sign-In Failed",
+        description: error?.message || "Please try again or use email login.",
         variant: "destructive"
       });
     }
@@ -224,18 +252,15 @@ const AuthForm = () => {
     try {
       console.log('🔐 [FORM] Starting login process for:', loginData.email);
       
-      // Call the AuthContext login - this handles ALL the logic
       await login(loginData.email, loginData.password);
       
       console.log('🔐 [FORM] Login successful, showing toast and navigating');
       
-      // Show success toast
       toast({
         title: "Login successful",
         description: "Welcome back to our store!",
       });
       
-      // Navigate to home page
       navigate('/', { replace: true });
       
     } catch (error: any) {
@@ -254,7 +279,6 @@ const AuthForm = () => {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate passwords match
     if (registerData.password !== registerData.confirmpassword) {
       toast({
         title: "Registration failed",
@@ -264,7 +288,6 @@ const AuthForm = () => {
       return;
     }
 
-    // Validate password strength
     if (registerData.password.length < 6) {
       toast({
         title: "Registration failed",
@@ -281,18 +304,15 @@ const AuthForm = () => {
       
       const fullName = registerData.fullName.trim();
       
-      // Call the AuthContext register - this handles login automatically
       await register(fullName, registerData.email, registerData.password);
       
       console.log('👤 [FORM] Registration successful, showing toast and navigating');
       
-      // Show success toast
       toast({
         title: "Registration successful",
         description: "Your account has been created. Welcome!",
       });
       
-      // Navigate to home page
       navigate('/', { replace: true });
       
     } catch (error: any) {
@@ -309,34 +329,7 @@ const AuthForm = () => {
   };
 
   const handleForgotPassword = async () => {
-    // if (!loginData.email) {
-    //   toast({
-    //     title: "Email required",
-    //     description: "Please enter your email address to reset password.",
-    //     variant: "destructive"
-    //   });
-    //   return;
-    // }
-        navigate("/forgot/password")
-
-    // setIsLoading(true);
-    // try {
-    //   // You'll need to implement this in your AuthContext
-    //   // await forgotPassword(loginData.email);
-      
-    //   toast({
-    //     title: "Reset email sent",
-    //     description: "Check your email for password reset instructions.",
-    //   });
-    // } catch (error: any) {
-    //   toast({
-    //     title: "Reset failed",
-    //     description: error.message || "Failed to send reset instructions.",
-    //     variant: "destructive"
-    //   });
-    // } finally {
-    //   setIsLoading(false);
-    // }
+    navigate("/forgot/password")
   };
   
   return (

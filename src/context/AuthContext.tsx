@@ -265,8 +265,84 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const loginWithGoogle = async (accessToken: string) =>
-    handleSocialLogin('google', accessToken);
+  // const loginWithGoogle = async (accessToken: string) =>
+  const loginWithGoogle = async (idToken: string): Promise<void> => {
+  console.log('🔐 [GOOGLE-AUTH] Starting Google login, token length:', idToken?.length);
+  
+  if (!idToken) {
+    throw new Error('Google ID token is required');
+  }
+  
+  try {
+    setLoading(true);
+    setError(null);
+    
+    console.log('🔐 [GOOGLE-AUTH] Clearing old auth data');
+    clearAuthData();
+    
+    // Call the correct API endpoint for Google ID tokens
+    console.log('🔐 [GOOGLE-AUTH] Calling apiService.socialLoginGoogle...');
+    const response = await apiService.socialLoginGoogle(idToken);
+    
+    console.log('🔐 [GOOGLE-AUTH] Response received:', {
+      hasToken: !!response.token,
+      hasData: !!response.data,
+      keys: Object.keys(response)
+    });
+    
+    const authToken = response.token || response.data?.token;
+    const userDataFromBackend = response.user || response.data?.user;
+    
+    if (!authToken) {
+      console.error('🔐 [GOOGLE-AUTH] No auth token in response:', response);
+      throw new Error('Authentication failed: No token received from server');
+    }
+    
+    if (!userDataFromBackend) {
+      console.error('🔐 [GOOGLE-AUTH] No user data in response:', response);
+      throw new Error('Authentication failed: No user data received');
+    }
+    
+    const userData: User = {
+      id: userDataFromBackend.id,
+      email: userDataFromBackend.email,
+      fullname: userDataFromBackend.fullname || userDataFromBackend.name || userDataFromBackend.email,
+      name: userDataFromBackend.name,
+      role: userDataFromBackend.role || 'user',
+      phoneNumber: userDataFromBackend.phoneNumber || userDataFromBackend.contact
+    };
+    
+    console.log('🔐 [GOOGLE-AUTH] Created user object:', userData);
+    
+    // Store in both session and local storage
+    sessionStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('user', JSON.stringify(userData));
+    sessionStorage.setItem('token', authToken);
+    localStorage.setItem('token', authToken);
+    
+    // Verify storage
+    const storedToken = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    console.log('🔐 [GOOGLE-AUTH] Storage verification:', {
+      tokenStored: storedToken === authToken,
+      tokenLength: storedToken?.length,
+      userStored: !!storedUser
+    });
+    
+    setUser(userData);
+    console.log('✅ [GOOGLE-AUTH] Google login successful for:', userData.email);
+    
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : 'Google authentication failed';
+    setError(errorMessage);
+    console.error('❌ [GOOGLE-AUTH] Error:', errorMessage);
+    clearAuthData(); // Clear on error
+    throw err;
+  } finally {
+    setLoading(false);
+  }
+};
+    // handleSocialLogin('google', accessToken);
 
   const loginWithFacebook = async (accessToken: string) =>
     handleSocialLogin('facebook', accessToken);
