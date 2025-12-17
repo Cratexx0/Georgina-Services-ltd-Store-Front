@@ -114,10 +114,92 @@ const AuthForm = () => {
     loadFacebookSDK();
   }, []);
 
-  const handleGoogleLogin = async () => {
-    console.log('🔧 [GOOGLE-LOGIN] Starting Google Sign-In');
+  // const handleGoogleLogin = async () => {
+  //   console.log('🔧 [GOOGLE-LOGIN] Starting Google Sign-In');
 
-    // Only check if Google SDK is loaded
+  //   // Only check if Google SDK is loaded
+  //   if (!window.google) {
+  //     console.error('❌ [GOOGLE-LOGIN] Google SDK not loaded');
+  //     toast({
+  //       title: "Google Sign-In Error",
+  //       description: "Google authentication service not loaded. Please refresh the page.",
+  //       variant: "destructive"
+  //     });
+  //     return;
+  //   }
+
+  //   setIsLoading(true);
+
+  //   try {
+  //     console.log('🔧 [GOOGLE-LOGIN] Initializing Google...');
+      
+  //     // Clear any previous sessions
+  //     if (window.google.accounts.id) {
+  //       window.google.accounts.id.cancel();
+  //     }
+
+  //     window.google.accounts.id.initialize({
+  //       client_id: GOOGLE_CLIENT_ID,
+  //       callback: async (response: any) => {
+  //         console.log('🔧 [GOOGLE-CALLBACK] Received response:', response);
+  //         setIsLoading(false);
+          
+  //         if (response?.credential) {
+  //           console.log('✅ [GOOGLE-CALLBACK] Got credential, length:', response.credential.length);
+  //           console.log('🔧 [GOOGLE-CALLBACK] Token preview:', response.credential.substring(0, 50) + '...');
+            
+  //           try {
+  //             await loginWithGoogle(response.credential);
+  //             toast({
+  //               title: "Login successful",
+  //               description: "Signed in with Google.",
+  //             });
+  //             navigate('/', { replace: true });
+  //           } catch (error: any) {
+  //             console.error('❌ [GOOGLE-CALLBACK] loginWithGoogle failed:', error);
+  //             toast({
+  //               title: "Google login failed",
+  //               description: error?.message || "Unable to sign in with Google.",
+  //               variant: "destructive"
+  //             });
+  //           }
+  //         } else {
+  //           console.warn('⚠️ [GOOGLE-CALLBACK] No credential in response:', response);
+  //           toast({
+  //             title: "Login cancelled",
+  //             description: "Google sign-in was cancelled.",
+  //             variant: "destructive"
+  //           });
+  //         }
+  //       },
+  //       use_fedcm_for_prompt: true  // Enable FedCM
+  //     });
+
+  //     console.log('🔧 [GOOGLE-LOGIN] Prompting user...');
+  //     // Trigger Google One Tap WITHOUT callback (FedCM requirement)
+  //     window.google.accounts.id.prompt();
+      
+  //     // Set timeout to handle no response
+  //     setTimeout(() => {
+  //       if (isLoading) {
+  //         console.log('⚠️ [GOOGLE-LOGIN] Prompt timeout - user may have dismissed');
+  //         setIsLoading(false);
+  //       }
+  //     }, 30000);
+      
+  //   } catch (error: any) {
+  //     console.error('❌ [GOOGLE-LOGIN] Error:', error);
+  //     setIsLoading(false);
+  //     toast({
+  //       title: "Google Sign-In Failed",
+  //       description: error?.message || "Please try again or use email login.",
+  //       variant: "destructive"
+  //     });
+  //   }
+  // };
+const handleGoogleLogin = async () => {
+    console.log('🔧 [GOOGLE-LOGIN] Starting Google Sign-In with account picker');
+    
     if (!window.google) {
       console.error('❌ [GOOGLE-LOGIN] Google SDK not loaded');
       toast({
@@ -132,22 +214,28 @@ const AuthForm = () => {
 
     try {
       console.log('🔧 [GOOGLE-LOGIN] Initializing Google...');
-      
-      // Clear any previous sessions
-      if (window.google.accounts.id) {
-        window.google.accounts.id.cancel();
-      }
+
+      // Create a temporary container for the button
+      const tempContainer = document.createElement('div');
+      tempContainer.style.position = 'absolute';
+      tempContainer.style.top = '-9999px';
+      document.body.appendChild(tempContainer);
 
       window.google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
         callback: async (response: any) => {
           console.log('🔧 [GOOGLE-CALLBACK] Received response:', response);
+          
+          // Clean up the temporary container
+          if (tempContainer && tempContainer.parentNode) {
+            tempContainer.parentNode.removeChild(tempContainer);
+          }
+          
           setIsLoading(false);
           
           if (response?.credential) {
             console.log('✅ [GOOGLE-CALLBACK] Got credential, length:', response.credential.length);
             console.log('🔧 [GOOGLE-CALLBACK] Token preview:', response.credential.substring(0, 50) + '...');
-            
             try {
               await loginWithGoogle(response.credential);
               toast({
@@ -171,22 +259,36 @@ const AuthForm = () => {
               variant: "destructive"
             });
           }
-        },
-        use_fedcm_for_prompt: true  // Enable FedCM
+        }
       });
 
-      console.log('🔧 [GOOGLE-LOGIN] Prompting user...');
-      // Trigger Google One Tap WITHOUT callback (FedCM requirement)
-      window.google.accounts.id.prompt();
+      console.log('🔧 [GOOGLE-LOGIN] Rendering button to trigger popup...');
       
-      // Set timeout to handle no response
+      // Render a hidden button and click it to trigger the popup
+      window.google.accounts.id.renderButton(tempContainer, {
+        type: 'standard',
+        theme: 'outline',
+        size: 'large',
+        text: 'continue_with',
+        width: 250
+      });
+
+      // Trigger the click after a short delay
       setTimeout(() => {
-        if (isLoading) {
-          console.log('⚠️ [GOOGLE-LOGIN] Prompt timeout - user may have dismissed');
+        const button = tempContainer.querySelector('div[role="button"]') as HTMLElement;
+        if (button) {
+          button.click();
+        } else {
+          console.error('❌ [GOOGLE-LOGIN] Could not find rendered button');
           setIsLoading(false);
+          toast({
+            title: "Google Sign-In Failed",
+            description: "Could not initialize Google sign-in.",
+            variant: "destructive"
+          });
         }
-      }, 30000);
-      
+      }, 100);
+
     } catch (error: any) {
       console.error('❌ [GOOGLE-LOGIN] Error:', error);
       setIsLoading(false);
@@ -197,7 +299,7 @@ const AuthForm = () => {
       });
     }
   };
-
+  
   const handleFacebookLogin = async () => {
     if (!FACEBOOK_APP_ID) {
       toast({
@@ -432,7 +534,7 @@ const AuthForm = () => {
             </div>
           </div>
           
-          <div className="grid grid-cols-2 gap-3 animate-fade-in delay-500">
+          <div className="grid grid-cols-1 gap-3 animate-fade-in delay-500">
             <Button 
               variant="outline" 
               type="button"
@@ -460,7 +562,7 @@ const AuthForm = () => {
               </svg>
               Google
             </Button>
-            <Button 
+            {/* <Button 
               variant="outline" 
               type="button"
               disabled={isLoading}
@@ -471,7 +573,7 @@ const AuthForm = () => {
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
               </svg>
               Facebook
-            </Button>
+            </Button> */}
           </div>
         </TabsContent>
         
@@ -597,7 +699,7 @@ const AuthForm = () => {
             </div>
           </div>
           
-          <div className="grid grid-cols-2 gap-3 animate-fade-in delay-700">
+          <div className="grid grid-cols-1 gap-3 animate-fade-in delay-700">
             <Button 
               variant="outline" 
               type="button"
@@ -625,7 +727,7 @@ const AuthForm = () => {
               </svg>
               Google
             </Button>
-            <Button 
+            {/* <Button 
               variant="outline" 
               type="button"
               disabled={isLoading}
@@ -636,7 +738,7 @@ const AuthForm = () => {
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
               </svg>
               Facebook
-            </Button>
+            </Button> */}
           </div>
         </TabsContent>
       </Tabs>
