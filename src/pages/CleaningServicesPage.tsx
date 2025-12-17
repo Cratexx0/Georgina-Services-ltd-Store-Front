@@ -182,7 +182,7 @@ const CleaningServicesPage = () => {
               className="w-full h-full object-cover"
             />
             {/* <div className="absolute inset-0 bg-gradient-to-r from-teal-900/90 to-teal-700/70"></div> */}
-            <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-black/60"></div>
+            <div className="absolute inset-0 bg-black/40"></div>
           </div>
           
           <div className="relative container mx-auto px-4 h-full flex items-center">
