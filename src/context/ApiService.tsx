@@ -1,13 +1,7 @@
-// import { Product } from "@/lib/type";
 
-
-
-
-
-// export const apiService = new ApiService(API_BASE_URL);
 import { Product } from "@/lib/type";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+const API_BASE_URL = import.meta.env.VITE_API_URL ;
 
 interface RequestOptions extends RequestInit {
 	requiresAuth?: boolean;
