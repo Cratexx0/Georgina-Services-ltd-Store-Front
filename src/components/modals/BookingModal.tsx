@@ -318,7 +318,7 @@
 //                         </div>
 //                       </div>
 //                       <Badge className="bg-primary/10 text-primary hover:bg-primary/20 font-bold">
-//                         GH₵{selectedService.serviceData.price}
+//                         £{selectedService.serviceData.price}
 //                       </Badge>
 //                     </div>
                     
@@ -359,7 +359,7 @@
 //                 <div className="border-t border-gray-300 pt-2.5 mt-2.5">
 //                   <div className="flex justify-between items-center">
 //                     <span className="font-bold text-base">Total Amount:</span>
-//                     <span className="font-bold text-xl text-primary">GH₵{calculateTotalPrice()}</span>
+//                     <span className="font-bold text-xl text-primary">£{calculateTotalPrice()}</span>
 //                   </div>
 //                 </div>
 //               </div>
@@ -556,7 +556,7 @@
 //                 ) : (
 //                   <>
 //                     <CheckCircle2 className="h-5 w-5 mr-2" />
-//                     Confirm Booking - GH₵{calculateTotalPrice()}
+//                     Confirm Booking - £{calculateTotalPrice()}
 //                   </>
 //                 )}
 //               </Button>
@@ -899,7 +899,7 @@ const BookingModal = ({ isOpen, onClose, selectedServices, services }: BookingMo
                         </div>
                       </div>
                       <Badge className="bg-primary/10 text-primary hover:bg-primary/20 font-bold">
-                        GH₵{selectedService.serviceData.price}
+                        £{selectedService.serviceData.price}
                       </Badge>
                     </div>
                     
@@ -940,7 +940,7 @@ const BookingModal = ({ isOpen, onClose, selectedServices, services }: BookingMo
                 <div className="border-t border-gray-300 pt-2.5 mt-2.5">
                   <div className="flex justify-between items-center">
                     <span className="font-bold text-base">Total Amount:</span>
-                    <span className="font-bold text-xl text-primary">GH₵{calculateTotalPrice()}</span>
+                    <span className="font-bold text-xl text-primary">£{calculateTotalPrice()}</span>
                   </div>
                 </div>
               </div>
@@ -1137,7 +1137,7 @@ const BookingModal = ({ isOpen, onClose, selectedServices, services }: BookingMo
                 ) : (
                   <>
                     <CheckCircle2 className="h-5 w-5 mr-2" />
-                    Confirm Booking - GH₵{calculateTotalPrice()}
+                    Confirm Booking - £{calculateTotalPrice()}
                   </>
                 )}
               </Button>
