@@ -321,7 +321,7 @@ const CleaningServicesPage = () => {
                       <CardContent>
                         <div className="flex items-center justify-between mb-4">
                           <div className="text-2xl font-bold text-teal-600">
-                            GH₵{service.price}
+                            £{service.price}
                           </div>
                           <div className="flex items-center gap-2 text-sm bg-orange-100 text-orange-700 px-3 py-1 rounded-full">
                             <Clock className="h-4 w-4" />
