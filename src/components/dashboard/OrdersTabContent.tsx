@@ -19,8 +19,7 @@ import {
 	Truck,
 	Loader2,
 	CheckCircle2,
-	DollarSign,
-	XCircle,
+	XCircle, PoundSterling,
 } from "lucide-react";
 
 export interface OrdersTabContentProps {
@@ -122,7 +121,7 @@ const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
 										)}
 									</p>
 								</div>
-								<DollarSign className="h-8 w-8 text-purple-500" />
+								<PoundSterling className="h-8 w-8 text-purple-500"/>
 							</div>
 						</CardContent>
 					</Card>
@@ -191,7 +190,7 @@ const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
 										<div className="flex items-center justify-between">
 											<div className="space-y-1">
 												<h3 className="font-bold text-lg text-gray-900">
-													Order #
+													<span className="text-xs text-slate-500">Order # {" "}</span>
 													{order.orderNumber ||
 														order.id.toString().slice(-6).toUpperCase()}
 												</h3>

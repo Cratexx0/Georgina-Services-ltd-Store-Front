@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
-import { Heart, Share2, Loader2 } from 'lucide-react';
+import { Heart, Share2 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import RelatedProductsCarousel from '@/components/products/RelatedProductsCarousel';
@@ -232,8 +232,8 @@ const ProductPage = () => {
           <span>/</span>
           {product.categoryLevel1 && (
             <>
-              <Link 
-                to={`/category/${product.categoryLevel1.toLowerCase().replace(/\s+/g, '-')}`} 
+              <Link
+                to={`/category/${product.categoryLevel1.toLowerCase().replace(/\s+/g, '-')}`}
                 className="hover:text-foreground transition-colors"
               >
                 {product.categoryLevel1}
@@ -286,16 +286,16 @@ const ProductPage = () => {
             <h1 className="text-base md:text-lg font-semibold text-foreground">
               {product.name}
             </h1>
-            
+
             {/* Price */}
             <div className="py-1">
               {product.discountPrice ? (
                 <div className="flex items-center flex-wrap gap-2">
                   <span className="text-base md:text-lg font-semibold text-foreground">
-                    ${currentPrice.toFixed(2)}
+                    £{currentPrice.toFixed(2)}
                   </span>
                   <span className="text-xs md:text-sm text-muted-foreground line-through">
-                    ${originalPrice?.toFixed(2)}
+                    £{originalPrice?.toFixed(2)}
                   </span>
                   <span className="text-[10px] md:text-xs font-medium text-destructive">
                     {discountPercentage}% OFF
@@ -303,7 +303,7 @@ const ProductPage = () => {
                 </div>
               ) : (
                 <span className="text-base md:text-lg font-semibold text-foreground">
-                  ${currentPrice.toFixed(2)}
+                  £{currentPrice.toFixed(2)}
                 </span>
               )}
             </div>
@@ -413,7 +413,7 @@ const ProductPage = () => {
                 </span>
               </Button>
               <Button 
-                variant="ghost" 
+                variant="ghost"
                 size="sm" 
                 className="flex items-center justify-start gap-2 text-xs h-8 text-muted-foreground hover:text-foreground"
                 onClick={handleShare}

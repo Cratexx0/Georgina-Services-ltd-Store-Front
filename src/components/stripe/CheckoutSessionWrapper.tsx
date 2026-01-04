@@ -23,12 +23,12 @@ export function CheckoutSessionWrapper({
 	productId,
 	userId,
 	quantity,
-	countryCode = "US",
+	countryCode = "GB",
 	onSuccess,
 	onError,
 	productName = "Product",
 	totalAmount = 0,
-	currency = "USD",
+	currency = "GBP",
 }: CheckoutSessionWrapperProps) {
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
