@@ -8,7 +8,6 @@ import { useOrder } from '@/context/OrderContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
@@ -293,7 +292,7 @@ const AccountPage = () => {
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <CreditCard className="h-4 w-4" />
-                                  <span className="font-semibold text-gray-900">GH₵{order.totalAmount.toFixed(2)}</span>
+                                  <span className="font-semibold text-gray-900">£{order.totalAmount.toFixed(2)}</span>
                                 </div>
                               </div>
                               <div className="mt-3">
@@ -366,15 +365,15 @@ const AccountPage = () => {
                                 {product.discountPrice ? (
                                   <>
                                     <span className="text-base md:text-lg font-medium text-foreground">
-                                      ${parseFloat(product.discountPrice.toString()).toFixed(2)}
+                                      £{parseFloat(product.discountPrice.toString()).toFixed(2)}
                                     </span>
                                     <span className="text-xs md:text-sm text-muted-foreground line-through">
-                                      ${parseFloat(product.price.toString()).toFixed(2)}
+                                      £{parseFloat(product.price.toString()).toFixed(2)}
                                     </span>
                                   </>
                                 ) : (
                                   <span className="text-base md:text-lg font-medium text-foreground">
-                                    ${parseFloat(product.price.toString()).toFixed(2)}
+                                    £{parseFloat(product.price.toString()).toFixed(2)}
                                   </span>
                                 )}
                               </div>

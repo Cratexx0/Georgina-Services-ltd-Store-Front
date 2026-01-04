@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Elements } from "@stripe/react-stripe-js";
 import {
 	loadStripe,
@@ -28,9 +28,17 @@ export function PaymentIntentWrapper({
 	const [clientSecret, setClientSecret] = useState<string>("");
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
+	const isCreatingRef = useRef(false); // Prevent duplicate API calls
 
 	useEffect(() => {
 		const createPaymentIntent = async () => {
+			// Prevent duplicate calls
+			if (isCreatingRef.current) {
+				return;
+			}
+
+			isCreatingRef.current = true;
+
 			try {
 				setLoading(true);
 				setError(null);
@@ -70,6 +78,7 @@ export function PaymentIntentWrapper({
 				}
 			} finally {
 				setLoading(false);
+				// Don't reset isCreatingRef to allow re-creation if needed
 			}
 		};
 

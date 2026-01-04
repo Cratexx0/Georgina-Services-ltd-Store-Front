@@ -17,9 +17,10 @@ const CheckoutPage: React.FC = () => {
 	const { user } = useAuth();
 	const { addOrder } = useOrder();
 	const navigate = useNavigate();
-	const [countryCode, setCountryCode] = useState<string>("US"); // Default to US
+	const [countryCode, setCountryCode] = useState<string>("GB"); // Default to GB (United Kingdom)
 	const [clientSecret, setClientSecret] = useState<string>("");
 	const [isLoadingPayment, setIsLoadingPayment] = useState(false);
+	const [orderProcessed, setOrderProcessed] = useState(false); // Track if order has been processed
 
 	const shippingCost = 10;
 	const taxRate = 0.15; // 15% tax
@@ -41,28 +42,28 @@ const CheckoutPage: React.FC = () => {
 				const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 				// Simple mapping of common timezones to countries
-				if (
+				if (timezone.includes("Europe/London")) {
+					setCountryCode("GB");
+				} else if (
 					timezone.includes("America/New_York") ||
 					timezone.includes("America/Chicago") ||
 					timezone.includes("America/Denver") ||
 					timezone.includes("America/Los_Angeles")
 				) {
 					setCountryCode("US");
-				} else if (timezone.includes("Europe/London")) {
-					setCountryCode("GB");
 				} else if (timezone.includes("Europe/")) {
-					setCountryCode("DE"); // Default EU country
+					setCountryCode("GB"); // Default EU country to GB
 				} else if (timezone.includes("Africa/Accra")) {
 					setCountryCode("GH");
 				} else if (navigator.geolocation) {
 					// Fallback to geolocation API if available
-					setCountryCode("US"); // Keep US as default
+					setCountryCode("GB"); // Default to GB
 				} else {
-					setCountryCode("US"); // Final fallback
+					setCountryCode("GB"); // Final fallback to GB
 				}
 			} catch (error) {
 				// Country detection failed, log error and use default
-				setCountryCode("US");
+				setCountryCode("GB");
 			}
 		};
 
@@ -93,7 +94,8 @@ const CheckoutPage: React.FC = () => {
 	const getCurrency = (code: string): string => {
 		if (code === "GB") return "gbp";
 		if (code === "GH") return "ghs";
-		return "usd";
+		if (code === "US") return "usd";
+		return "gbp"; // Default to GBP
 	};
 
 	// Helper function for error messages
@@ -107,6 +109,8 @@ const CheckoutPage: React.FC = () => {
 	};
 
 	// Create PaymentIntent when component mounts and user/cart is ready
+	// IMPORTANT: Backend should ONLY create PaymentIntent, NOT create orders
+	// Orders are created in handlePaymentSuccess after payment is confirmed
 	useEffect(() => {
 		const createPaymentIntent = async () => {
 			if (!isValidCheckout || clientSecret) return;
@@ -115,6 +119,8 @@ const CheckoutPage: React.FC = () => {
 				setIsLoadingPayment(true);
 
 				// Create PaymentIntent using the backend endpoint
+				// NOTE: We send complete cart data for the PaymentIntent metadata
+				// but the backend should NOT create an order at this stage
 				const response = await fetch(
 					`${
 						import.meta.env.VITE_API_URL ||
@@ -132,6 +138,24 @@ const CheckoutPage: React.FC = () => {
 							countryCode,
 							// Flag to indicate we want PaymentIntent instead of CheckoutSession
 							paymentIntentMode: true,
+							// Send complete order information to prevent backend from creating incomplete orders
+							amount: Math.round(total * 100), // Amount in cents
+							currency: getCurrency(countryCode),
+							items: cart.map((item) => ({
+								productId: item.product.id.toString(),
+								name: item.product.name,
+								price: Number.parseFloat(
+									item.product.discountPrice || item.product.price
+								),
+								quantity: item.quantity,
+								image: item.product.images[0],
+							})),
+							subtotal: subtotal,
+							shipping: shippingCost,
+							tax: tax,
+							total: total,
+							// Tell backend not to create order yet, just return PaymentIntent
+							createOrderOnSuccess: false,
 						}),
 					}
 				);
@@ -148,7 +172,7 @@ const CheckoutPage: React.FC = () => {
 
 					// Handle specific error cases
 					if (response.status === 500) {
-						toast.error("Payment initialization failed. Please try again.");
+						// toast.error("Payment initialization failed. Please try again.");
 						throw new Error(`Backend error: ${response.status}`);
 					}
 
@@ -192,7 +216,7 @@ const CheckoutPage: React.FC = () => {
 				}
 
 				setClientSecret(secret);
-				toast.success("Payment initialized successfully!");
+				// toast.success("Payment initialized successfully!");
 			} catch (error) {
 				toast.error("Failed to initialize payment. Please try again.");
 				setClientSecret(""); // Reset on error
@@ -202,18 +226,19 @@ const CheckoutPage: React.FC = () => {
 		};
 
 		createPaymentIntent();
-	}, [
-		isValidCheckout,
-		total,
-		countryCode,
-		productId,
-		userId,
-		quantity,
-		clientSecret,
-	]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []); // Empty dependency array - only create PaymentIntent once on mount
 
 	const handlePaymentSuccess = async (paymentIntent: PaymentIntent) => {
+		// Prevent duplicate order processing
+		if (orderProcessed) {
+			console.log("Order already processed, skipping duplicate");
+			return;
+		}
+
 		try {
+			setOrderProcessed(true); // Mark order as processed immediately
+
 			// Create order data for tracking
 			const orderItems = cart.map((item) => ({
 				productId: item.product.id.toString(),
@@ -233,7 +258,7 @@ const CheckoutPage: React.FC = () => {
 				paymentMethod: "stripe",
 				customerNotes: `PaymentIntent ID: ${
 					paymentIntent.id
-				} | Amount: $${total.toFixed(2)} ${getCurrency(
+				} | Amount: £${total.toFixed(2)} ${getCurrency(
 					countryCode
 				).toUpperCase()}`,
 			});
@@ -254,6 +279,7 @@ const CheckoutPage: React.FC = () => {
 				},
 			});
 		} catch (error) {
+			setOrderProcessed(false); // Reset if there was an error
 			toast.error(
 				"Payment succeeded but there was an error processing your order. Please contact support."
 			);
@@ -378,10 +404,10 @@ const CheckoutPage: React.FC = () => {
 															{item.product.name}
 														</p>
 														<p className="text-xs md:text-sm text-muted-foreground">
-															Qty: {item.quantity} × ${itemPrice.toFixed(2)}
+															Qty: {item.quantity} × £{itemPrice.toFixed(2)}
 														</p>
 														<p className="text-sm md:text-base font-semibold mt-1">
-															${itemTotal.toFixed(2)}
+															£{itemTotal.toFixed(2)}
 														</p>
 													</div>
 												</div>
@@ -394,22 +420,22 @@ const CheckoutPage: React.FC = () => {
 										<div className="flex justify-between text-sm md:text-base">
 											<span className="text-muted-foreground">Subtotal</span>
 											<span className="font-medium">
-												${subtotal.toFixed(2)}
+												£{subtotal.toFixed(2)}
 											</span>
 										</div>
 										<div className="flex justify-between text-sm md:text-base">
 											<span className="text-muted-foreground">Shipping</span>
 											<span className="font-medium">
-												${shippingCost.toFixed(2)}
+												£{shippingCost.toFixed(2)}
 											</span>
 										</div>
 										<div className="flex justify-between text-sm md:text-base">
 											<span className="text-muted-foreground">Tax (15%)</span>
-											<span className="font-medium">${tax.toFixed(2)}</span>
+											<span className="font-medium">£{tax.toFixed(2)}</span>
 										</div>
 										<div className="flex justify-between text-lg md:text-xl font-bold pt-3 border-t">
 											<span>Total</span>
-											<span>${total.toFixed(2)}</span>
+											<span>£{total.toFixed(2)}</span>
 										</div>
 									</div>
 								</CardContent>

@@ -126,11 +126,11 @@ const WishlistPage: React.FC = () => {
                 </Link>
                 <div className="flex items-center justify-between mb-4">
                   <p className="text-xl font-bold text-primary">
-                    ${getDisplayPrice(product)}
+                    £{getDisplayPrice(product)}
                   </p>
                   {product.discountPrice && product.price && (
                     <span className="text-sm text-muted-foreground line-through">
-                      ${getOriginalPrice(product)}
+                      £{getOriginalPrice(product)}
                     </span>
                   )}
                 </div>

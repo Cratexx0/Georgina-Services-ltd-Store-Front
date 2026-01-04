@@ -100,7 +100,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
 
   const clearCart = () => {
     setCart([]);
-    toast.success("Cart cleared");
+    // toast.success("Cart cleared");
   };
 
   const getTotalPrice = () => {

@@ -259,11 +259,11 @@ const SearchBar: React.FC<SearchBarProps> = ({ onClose, className = '' }) => {
                       <p className="text-sm font-medium text-foreground truncate">{product.name}</p>
                       <div className="flex items-center gap-2 mt-0.5">
                         <span className="text-sm font-medium text-foreground">
-                          ${currentPrice.toFixed(2)}
+                          £{currentPrice.toFixed(2)}
                         </span>
                         {originalPrice && (
                           <span className="text-xs text-muted-foreground line-through">
-                            ${originalPrice.toFixed(2)}
+                            £{originalPrice.toFixed(2)}
                           </span>
                         )}
                       </div>

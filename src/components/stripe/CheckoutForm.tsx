@@ -34,11 +34,12 @@ export function CheckoutForm({
 	const [isProcessing, setIsProcessing] = useState(false);
 	const [message, setMessage] = useState<string | null>(null);
 	const [isAddressComplete, setIsAddressComplete] = useState(false);
+	const [paymentCompleted, setPaymentCompleted] = useState(false); // Add flag to prevent duplicate submissions
 
 	const handleSubmit = async (event: React.FormEvent) => {
 		event.preventDefault();
 
-		if (!stripe || !elements) {
+		if (!stripe || !elements || paymentCompleted) {
 			return;
 		}
 
@@ -66,6 +67,7 @@ export function CheckoutForm({
 				toast.error(error.message || "Payment failed");
 			} else if (paymentIntent) {
 				if (paymentIntent.status === "succeeded") {
+					setPaymentCompleted(true); // Mark payment as completed to prevent duplicate submissions
 					setMessage("Payment succeeded!");
 					toast.success("Payment completed successfully!");
 					onSuccess?.(paymentIntent);
@@ -82,7 +84,7 @@ export function CheckoutForm({
 		}
 	};
 
-	const isSubmitDisabled = !stripe || !elements || isProcessing;
+	const isSubmitDisabled = !stripe || !elements || isProcessing || paymentCompleted;
 
 	return (
 		<form onSubmit={handleSubmit} className={`space-y-6 ${className}`}>
@@ -114,7 +116,7 @@ export function CheckoutForm({
 					<AddressElement
 						options={{
 							mode: "billing",
-							allowedCountries: ["US", "CA", "GB", "AU"],
+							allowedCountries: ["GB", "US", "CA", "AU"],
 						}}
 						onChange={(event) => {
 							setIsAddressComplete(event.complete);
@@ -134,9 +136,9 @@ export function CheckoutForm({
 			<div className="flex justify-between items-center pt-4 border-t">
 				<div className="text-lg font-semibold">
 					Total:{" "}
-					{new Intl.NumberFormat("en-US", {
+					{new Intl.NumberFormat("en-GB", {
 						style: "currency",
-						currency: currency.toUpperCase(),
+						currency: currency?.toUpperCase() || "GBP",
 					}).format(amount / 100)}
 				</div>
 

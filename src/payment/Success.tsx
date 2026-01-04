@@ -7,7 +7,6 @@ import {
 	Package,
 	Mail,
 	ArrowRight,
-	Home,
 	ShoppingBag,
 } from "lucide-react";
 import Layout from "@/components/layout/Layout";
@@ -27,7 +26,7 @@ const Success = () => {
 		paymentIntentId,
 		amount,
 		orderItems,
-		currency = "USD",
+		currency = "GBP",
 		paymentMethod,
 	} = location.state || {};
 	const [showConfetti, setShowConfetti] = useState(true);
@@ -113,7 +112,7 @@ const Success = () => {
 												Total Amount
 											</span>
 											<span className="text-lg font-bold text-emerald-600">
-												${amount.toFixed(2)} {currency?.toUpperCase()}
+												£{amount.toFixed(2)} {currency?.toUpperCase()}
 											</span>
 										</div>
 									)}
@@ -236,11 +235,11 @@ const Success = () => {
 											<div className="flex-1">
 												<p className="font-medium text-gray-900">{item.name}</p>
 												<p className="text-sm text-gray-600">
-													Quantity: {item.quantity} × ${item.price?.toFixed(2)}
+													Quantity: {item.quantity} × £{item.price?.toFixed(2)}
 												</p>
 											</div>
 											<p className="font-semibold text-emerald-600">
-												${(item.quantity * item.price).toFixed(2)}
+												£{(item.quantity * item.price).toFixed(2)}
 											</p>
 										</div>
 									))}

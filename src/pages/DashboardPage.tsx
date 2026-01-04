@@ -94,7 +94,7 @@ const DashboardPage: React.FC = () => {
 	};
 
 	const formatCurrency = (amount: number) => {
-		return `GH₵${amount.toFixed(2)}`;
+		return `£${amount.toFixed(2)}`;
 	};
 
 	const formatDate = (date: Date | string) => {

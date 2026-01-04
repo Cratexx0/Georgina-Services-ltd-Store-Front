@@ -11,7 +11,7 @@ const CartPage = () => {
   const { cart, removeFromCart, updateQuantity, clearCart, getTotalPrice } = useCart();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const stripe_url = "https://buy.stripe.com/test_4gM5kF1NAd2vfF83KU4Rq00";
+  // const stripe_url = "https://buy.stripe.com/test_4gM5kF1NAd2vfF83KU4Rq00";
 
   const handleCheckout = () => {
     if (!isAuthenticated) {
@@ -22,9 +22,9 @@ const CartPage = () => {
       return;
     }
 
-    toast.success('Redirecting to checkout...', {
-      description: 'This would normally connect to Stripe',
-    });
+    // toast.success('Redirecting to checkout...', {
+    //   description: 'This would normally connect to Stripe',
+    // });
     navigate("/checkout");
   };
   
@@ -91,12 +91,12 @@ const CartPage = () => {
                             {item.product.name}
                           </Link>
                           <div className="font-semibold ml-4">
-                            ${itemTotal.toFixed(2)}
+                            £{itemTotal.toFixed(2)}
                           </div>
                         </div>
                         
                         <p className="text-sm text-gray-500 mb-4">
-                          ${itemPrice.toFixed(2)} each
+                          £{itemPrice.toFixed(2)} each
                         </p>
                         
                         <div className="flex justify-between items-center">
@@ -140,7 +140,7 @@ const CartPage = () => {
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between text-gray-600">
                   <span>Subtotal</span>
-                  <span>${getTotalPrice().toFixed(2)}</span>
+                  <span>£{getTotalPrice().toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-gray-600">
                   <span>Shipping</span>
@@ -152,7 +152,7 @@ const CartPage = () => {
                 </div>
                 <div className="border-t border-gray-200 pt-3 flex justify-between font-semibold text-lg">
                   <span>Total</span>
-                  <span>${getTotalPrice().toFixed(2)}</span>
+                  <span>£{getTotalPrice().toFixed(2)}</span>
                 </div>
               </div>
               
