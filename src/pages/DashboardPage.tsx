@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/context/AuthContext";
 import { useBooking } from "@/context/BookingContext";
 import { useOrder } from "@/context/OrderContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
 	Calendar,
 	ShoppingBag,
@@ -25,6 +25,7 @@ const DashboardPage: React.FC = () => {
 	const { bookings } = useBooking();
 	const { orders } = useOrder();
 	const navigate = useNavigate();
+	const [searchParams] = useSearchParams();
 	const [activeTab, setActiveTab] = useState("orders");
 
 	useEffect(() => {
@@ -37,6 +38,14 @@ const DashboardPage: React.FC = () => {
 			return;
 		}
 	}, [isAuthenticated, authLoading, navigate]);
+
+	// Set active tab from URL query parameter
+	useEffect(() => {
+		const tabParam = searchParams.get("tab");
+		if (tabParam && ["orders", "bookings", "profile"].includes(tabParam)) {
+			setActiveTab(tabParam);
+		}
+	}, [searchParams]);
 
 	const getStatusColor = (
 		status: string

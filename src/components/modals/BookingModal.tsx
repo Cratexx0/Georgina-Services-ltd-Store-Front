@@ -1,6 +1,7 @@
 
 
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,6 +43,7 @@ interface BookingModalProps {
 
 const BookingModal = ({ isOpen, onClose, selectedServices, services }: BookingModalProps) => {
   const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
@@ -74,6 +76,7 @@ const BookingModal = ({ isOpen, onClose, selectedServices, services }: BookingMo
       setFetchingSlots(true);
       const dateString = format(date, 'yyyy-MM-dd');
       console.log('📅 Fetching time slots for date:', dateString);
+      console.log('📍 Full API URL will be: /api/bookings/available-slots/' + dateString);
       
       const response = await apiService.getAvailableTimeSlots(dateString);
       
@@ -206,64 +209,40 @@ const BookingModal = ({ isOpen, onClose, selectedServices, services }: BookingMo
       return;
     }
 
-    setLoading(true);
+    // Store booking data in sessionStorage and redirect to checkout
+    const bookingData = {
+      selectedServices: selectedServices.map(service => ({
+        serviceId: service.serviceId,
+        serviceName: service.serviceData.displayName,
+        features: service.features,
+        price: service.serviceData.price,
+        duration: service.serviceData.duration
+      })),
+      customerInfo: {
+        customerName: formData.customerName.trim(),
+        customerEmail: formData.customerEmail.trim(),
+        customerPhone: formData.customerPhone.trim(),
+        address: formData.address.trim(),
+        specialInstructions: formData.specialInstructions.trim()
+      },
+      appointment: {
+        date: format(selectedDate!, 'yyyy-MM-dd'),
+        time: selectedTime
+      },
+      userId: user.id
+    };
+
+    sessionStorage.setItem('pendingBookingCheckout', JSON.stringify(bookingData));
     
-    // Show immediate feedback
-    const loadingToast = toast.loading('Processing your booking...', {
-      description: 'Please wait while we confirm your appointment'
+    toast.success('Proceeding to payment...', {
+      description: 'Redirecting to secure checkout',
+      duration: 1500
     });
 
-    try {
-      const bookingPromises = selectedServices.map(selectedService => {
-        const bookingData = {
-          customerName: formData.customerName.trim(),
-          customerEmail: formData.customerEmail.trim(),
-          customerPhone: formData.customerPhone.trim(),
-          serviceType: selectedService.serviceData.displayName,
-          selectedFeatures: selectedService.features,
-          address: formData.address.trim(),
-          date: format(selectedDate!, 'yyyy-MM-dd'),
-          time: selectedTime,
-          duration: selectedService.serviceData.duration,
-          price: selectedService.serviceData.price,
-          specialInstructions: formData.specialInstructions.trim(),
-          userId: user.id
-        };
-
-        console.log('Sending booking data:', bookingData);
-        return apiService.createBooking(bookingData);
-      });
-
-      const results = await Promise.all(bookingPromises);
-      
-      // Dismiss loading toast
-      toast.dismiss(loadingToast);
-      
-      const allSuccessful = results.every(result => result.success);
-      
-      if (allSuccessful) {
-        toast.success(`Booking Confirmed! 🎉`, {
-          description: `Successfully booked ${selectedServices.length} service${selectedServices.length !== 1 ? 's' : ''}. You'll receive a confirmation email shortly.`,
-          duration: 5000
-        });
-        
-        // Close modal immediately after success
-        handleClose();
-      } else {
-        const failedCount = results.filter(r => !r.success).length;
-        toast.error("Booking Failed", {
-          description: `${failedCount} of ${selectedServices.length} booking${failedCount !== 1 ? 's' : ''} failed. Please try again.`
-        });
-      }
-    } catch (error: any) {
-      console.error('Booking error:', error);
-      toast.dismiss(loadingToast);
-      toast.error("Booking Error", {
-        description: error.message || "Unable to complete your booking. Please try again."
-      });
-    } finally {
-      setLoading(false);
-    }
+    // Redirect to booking checkout page (similar to product checkout)
+    setTimeout(() => {
+      window.location.href = '/booking-checkout';
+    }, 1000);
   };
 
   const handleClose = () => {
@@ -377,7 +356,7 @@ const BookingModal = ({ isOpen, onClose, selectedServices, services }: BookingMo
           </div>
 
           <div className="md:col-span-3">
-            <div className="space-y-4" onSubmit={handleSubmit}>
+            <form className="space-y-4" onSubmit={handleSubmit}>
               <div className="bg-white rounded-lg p-4 border border-gray-200">
                 <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
                   <User className="h-5 w-5 text-primary" />
@@ -548,7 +527,6 @@ const BookingModal = ({ isOpen, onClose, selectedServices, services }: BookingMo
 
               <Button 
                 type="submit" 
-                onClick={handleSubmit}
                 className="w-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all" 
                 size="lg"
                 disabled={loading || !selectedDate || !selectedTime || fetchingSlots || !isAuthenticated}
@@ -561,16 +539,16 @@ const BookingModal = ({ isOpen, onClose, selectedServices, services }: BookingMo
                 ) : loading ? (
                   <>
                     <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                    Processing Booking...
+                    Redirecting to Payment...
                   </>
                 ) : (
                   <>
                     <CheckCircle2 className="h-5 w-5 mr-2" />
-                    Confirm Booking - £{calculateTotalPrice()}
+                    Proceed to Payment - £{calculateTotalPrice()}
                   </>
                 )}
               </Button>
-            </div>
+            </form>
           </div>
         </div>
       </DialogContent>

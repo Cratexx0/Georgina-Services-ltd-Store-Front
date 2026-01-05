@@ -9,6 +9,7 @@ import {
 	Heart,
 	LogOut,
 	LayoutDashboard,
+	Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,11 +24,13 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
+import { useBooking } from "@/context/BookingContext";
 import SearchBar from "@/components/ui/SearchBar";
 
 const Header = () => {
 	const { cart } = useCart();
 	const { wishlist } = useWishlist();
+	const { bookings } = useBooking();
 	const { isAuthenticated, user, logout } = useAuth();
 	const navigate = useNavigate();
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -102,14 +105,14 @@ const Header = () => {
 							)}
 						</Link>
 
-						<Link to="/cart" className="relative">
-							<ShoppingCart className="h-4 w-4 text-muted-foreground" />
-							{cart.length > 0 && (
-								<span className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs">
-									{cart.length}
-								</span>
-							)}
-						</Link>
+					<Link to="/cart" className="relative">
+						<ShoppingCart className="h-4 w-4 text-muted-foreground" />
+						{cart.length > 0 && (
+							<span className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs">
+								{cart.length}
+							</span>
+						)}
+					</Link>
 
 						<div className="flex items-center space-x-4">
 						{isAuthenticated ? (

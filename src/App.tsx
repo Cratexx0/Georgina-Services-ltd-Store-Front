@@ -31,6 +31,8 @@ import CleaningServicesPage from "./pages/CleaningServicesPage";
 import WishlistPage from "./pages/WishlistPage";
 import Success from "./payment/Success";
 import Failure from "./payment/Failure";
+import BookingCheckoutPage from "./pages/BookingCheckoutPage";
+import BookingSuccess from "./pages/BookingSuccess";
 import ScrollToTop from "./components/ScrollToTop";
 
 const queryClient = new QueryClient();
@@ -65,6 +67,8 @@ const App = () => (
                     />
                     <Route path="/payment/success" element={<Success />} />
                     <Route path="/payment/failure" element={<Failure />} />
+                    <Route path="/booking-checkout" element={<BookingCheckoutPage />} />
+                    <Route path="/booking-success" element={<BookingSuccess />} />
                     <Route
                       path="/category/:categorySlug"
                       element={<CategoryPage />}
@@ -79,6 +83,7 @@ const App = () => (
                     />
                     <Route path="/cart" element={<CartPage />} />
                     <Route path="/checkout" element={<CheckoutPage />} />
+                    <Route path="/cleaning-services" element={<CleaningServicesPage />} />
                     <Route
                       path="/category/services"
                       element={<CleaningServicesPage />}

@@ -894,6 +894,37 @@ class ApiService {
 	// =============================================
 
 	/**
+	 * Initiate payment for booking (new Stripe checkout flow)
+	 */
+	async initiateBookingPayment(paymentData: {
+		customerName: string;
+		customerEmail: string;
+		customerPhone: string;
+		serviceType: string;
+		selectedFeatures?: string[];
+		address: string;
+		date: string;
+		time: string;
+		duration: number;
+		price: number;
+		specialInstructions?: string;
+		userId: string | number;
+		countryCode?: string;
+	}): Promise<{ sessionId: string; url: string; bookingReference: string }> {
+		const response = await this.request("/api/bookings/initiate-payment", {
+			method: "POST",
+			body: JSON.stringify(paymentData),
+			requiresAuth: true,
+		});
+		
+		if (!response.sessionId || !response.url) {
+			throw new Error(response.message || 'Failed to initiate payment');
+		}
+		
+		return response;
+	}
+
+	/**
 	 * Create a new booking
 	 */
 	async createBooking(bookingData: {
@@ -921,7 +952,7 @@ class ApiService {
 	 */
 	async getAvailableTimeSlots(date: string): Promise<{
 		success: boolean;
-		data?: string[];
+		data?: { availableTimeSlots?: string[] };
 		availableSlots?: string[];
 		timeSlots?: string[];
 	}> {

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Star, Send, Loader2, ThumbsUp } from 'lucide-react';
+import { Star, Send, Loader2, ThumbsUp, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/components/ui/sonner';
@@ -10,6 +10,7 @@ import {
   ReviewStats,
 } from '@/context/ApiService';
 import { useAuth } from '@/context/AuthContext';
+import { useOrder } from '@/context/OrderContext';
 
 interface ProductReviewProps {
   productId: string | number;
@@ -19,6 +20,7 @@ const ProductReview: React.FC<ProductReviewProps> = ({
   productId,
 }) => {
   const { user, isAuthenticated } = useAuth();
+  const { orders } = useOrder();
   const [userRating, setUserRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [comment, setComment] = useState('');
@@ -27,6 +29,7 @@ const ProductReview: React.FC<ProductReviewProps> = ({
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [hasPurchased, setHasPurchased] = useState(false);
 
   const averageRating = useMemo(() => {
     if (stats?.averageRating) return parseFloat(stats.averageRating) || 0;
@@ -56,7 +59,45 @@ const ProductReview: React.FC<ProductReviewProps> = ({
     fetchReviews();
   }, [productId]);
 
+  // Check if user has purchased this product
+  useEffect(() => {
+    if (!isAuthenticated || !user || !orders.length) {
+      setHasPurchased(false);
+      return;
+    }
+
+    // Check if user has any order with this product that is delivered or completed
+    const purchased = orders.some(order => {
+      // Only count delivered orders or paid orders
+      const isValidOrder = 
+        order.status === 'delivered' || 
+        (order.paymentStatus === 'paid' && order.status !== 'cancelled');
+      
+      if (!isValidOrder) return false;
+
+      // Check if this product is in the order items
+      return order.items.some(item => 
+        String(item.productId) === String(productId)
+      );
+    });
+
+    setHasPurchased(purchased);
+  }, [orders, productId, isAuthenticated, user]);
+
   const handleStarClick = (rating: number) => {
+    if (!isAuthenticated) {
+      toast.error('Please sign in to leave a review.');
+      return;
+    }
+
+    if (!hasPurchased) {
+      toast.error('You can only review products you have purchased.', {
+        description: 'Purchase this product to leave a review.',
+        icon: <ShoppingBag className="h-4 w-4" />,
+      });
+      return;
+    }
+
     setUserRating(rating);
     setShowReviewForm(true);
   };
@@ -69,6 +110,13 @@ const ProductReview: React.FC<ProductReviewProps> = ({
 
     if (!isAuthenticated || !user) {
       toast.error('Please sign in to leave a review.');
+      return;
+    }
+
+    if (!hasPurchased) {
+      toast.error('You can only review products you have purchased.');
+      setShowReviewForm(false);
+      setUserRating(0);
       return;
     }
 
