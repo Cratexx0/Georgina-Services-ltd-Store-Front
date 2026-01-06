@@ -319,6 +319,7 @@ interface OrderContextType {
     totalAmount?: number;
     paymentMethod?: string;
     customerNotes?: string;
+    paymentIntentId?: string;
   }) => Promise<void>;
   updateOrderStatus: (id: string, status: Order['status']) => void;
   cancelOrder: (id: string) => Promise<void>;
@@ -465,6 +466,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
     totalAmount?: number;
     paymentMethod?: string;
     customerNotes?: string;
+    paymentIntentId?: string;
   }) => {
     try {
       setIsLoading(true);
@@ -477,7 +479,8 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
         orderData.shippingAddress,
         total,
         orderData.paymentMethod,
-        orderData.customerNotes
+        orderData.customerNotes,
+        orderData.paymentIntentId
       );
 
       if (response.success) {

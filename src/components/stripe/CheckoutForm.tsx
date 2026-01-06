@@ -35,6 +35,7 @@ export function CheckoutForm({
 	const [message, setMessage] = useState<string | null>(null);
 	const [isAddressComplete, setIsAddressComplete] = useState(false);
 	const [paymentCompleted, setPaymentCompleted] = useState(false); // Add flag to prevent duplicate submissions
+	const [billingAddress, setBillingAddress] = useState<any>(null); // Store billing address
 
 	const handleSubmit = async (event: React.FormEvent) => {
 		event.preventDefault();
@@ -70,6 +71,8 @@ export function CheckoutForm({
 					setPaymentCompleted(true); // Mark payment as completed to prevent duplicate submissions
 					setMessage("Payment succeeded!");
 					toast.success("Payment completed successfully!");
+					// Pass paymentIntent with billing address attached
+					(paymentIntent as any).billingAddress = billingAddress;
 					onSuccess?.(paymentIntent);
 				} else {
 					setMessage(`Payment ${paymentIntent.status}`);
@@ -120,6 +123,10 @@ export function CheckoutForm({
 						}}
 						onChange={(event) => {
 							setIsAddressComplete(event.complete);
+							if (event.complete && event.value.address) {
+								// Store the billing address when complete
+								setBillingAddress(event.value.address);
+							}
 						}}
 					/>
 				</CardContent>

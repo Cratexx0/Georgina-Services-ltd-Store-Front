@@ -11,16 +11,18 @@ import { toast } from "@/components/ui/sonner";
 import StripeProvider from "@/providers/CheckoutProvider";
 import CheckoutForm from "@/components/stripe/CheckoutForm";
 import type { PaymentIntent } from "@stripe/stripe-js";
+import { apiService } from "@/context/ApiService";
 
 const CheckoutPage: React.FC = () => {
 	const { cart, getTotalPrice, clearCart } = useCart();
 	const { user } = useAuth();
-	const { addOrder } = useOrder();
+	const { addOrder, refreshOrders } = useOrder();
 	const navigate = useNavigate();
 	const [countryCode, setCountryCode] = useState<string>("GB"); // Default to GB (United Kingdom)
 	const [clientSecret, setClientSecret] = useState<string>("");
 	const [isLoadingPayment, setIsLoadingPayment] = useState(false);
 	const [orderProcessed, setOrderProcessed] = useState(false); // Track if order has been processed
+	const [createdOrderId, setCreatedOrderId] = useState<string | null>(null); // Store orderId for payment linking
 
 	const shippingCost = 10;
 	const taxRate = 0.15; // 15% tax
@@ -108,19 +110,49 @@ const CheckoutPage: React.FC = () => {
 		return "Unable to process checkout. Please try again.";
 	};
 
-	// Create PaymentIntent when component mounts and user/cart is ready
-	// IMPORTANT: Backend should ONLY create PaymentIntent, NOT create orders
-	// Orders are created in handlePaymentSuccess after payment is confirmed
+	// Create order first, then PaymentIntent when component mounts and user/cart is ready
+	// FLOW: Create Order → Get OrderId → Create PaymentIntent with OrderId → Payment Success → Update Order
 	useEffect(() => {
-		const createPaymentIntent = async () => {
-			if (!isValidCheckout || clientSecret) return;
+		const createOrderAndPaymentIntent = async () => {
+			if (!isValidCheckout || clientSecret || createdOrderId) return;
 
 			try {
 				setIsLoadingPayment(true);
 
-				// Create PaymentIntent using the backend endpoint
-				// NOTE: We send complete cart data for the PaymentIntent metadata
-				// but the backend should NOT create an order at this stage
+				// STEP 1: Create the order first
+				const orderItems = cart.map((item) => ({
+					productId: item.product.id.toString(),
+					name: item.product.name,
+					price: Number.parseFloat(
+						item.product.discountPrice || item.product.price
+					),
+					quantity: item.quantity,
+					image: item.product.images[0],
+				}));
+
+				// Create order with temporary shipping address (will be updated after payment)
+				const orderResponse = await apiService.createOrder(
+					orderItems,
+					user?.email || "To be confirmed", // Temporary address
+					total,
+					"stripe",
+					"Order created for payment processing",
+					undefined // No paymentIntentId yet
+				);
+
+				if (!orderResponse.success || !orderResponse.data) {
+					throw new Error("Failed to create order");
+				}
+
+				const orderId = orderResponse.data.id || orderResponse.data._id;
+				if (!orderId) {
+					throw new Error("Order created but no ID returned");
+				}
+
+				setCreatedOrderId(orderId);
+				console.log("✅ Order created:", orderId);
+
+				// STEP 2: Create PaymentIntent with orderId
 				const response = await fetch(
 					`${
 						import.meta.env.VITE_API_URL ||
@@ -132,47 +164,34 @@ const CheckoutPage: React.FC = () => {
 							"Content-Type": "application/json",
 						},
 						body: JSON.stringify({
+							orderId, // Pass orderId to backend
 							productId,
 							userId,
 							quantity,
 							countryCode,
-							// Flag to indicate we want PaymentIntent instead of CheckoutSession
 							paymentIntentMode: true,
-							// Send complete order information to prevent backend from creating incomplete orders
 							amount: Math.round(total * 100), // Amount in cents
 							currency: getCurrency(countryCode),
-							items: cart.map((item) => ({
-								productId: item.product.id.toString(),
-								name: item.product.name,
-								price: Number.parseFloat(
-									item.product.discountPrice || item.product.price
-								),
-								quantity: item.quantity,
-								image: item.product.images[0],
-							})),
+							items: orderItems,
 							subtotal: subtotal,
 							shipping: shippingCost,
 							tax: tax,
 							total: total,
-							// Tell backend not to create order yet, just return PaymentIntent
-							createOrderOnSuccess: false,
 						}),
 					}
 				);
 
 				if (!response.ok) {
-					let errorDetails;
+					let errorMessage = `PaymentIntent creation failed: ${response.status} ${response.statusText}`;
 					try {
-						const errorJson = await response.json();
-						errorDetails = errorJson;
+						const errorData = await response.json();
+						errorMessage = errorData.message || errorData.error || errorMessage;
 					} catch {
-						const errorText = await response.text();
-						errorDetails = errorText;
+						// If JSON parsing fails, use default error message
 					}
 
 					// Handle specific error cases
 					if (response.status === 500) {
-						// toast.error("Payment initialization failed. Please try again.");
 						throw new Error(`Backend error: ${response.status}`);
 					}
 
@@ -181,9 +200,7 @@ const CheckoutPage: React.FC = () => {
 						throw new Error(`Endpoint not found: ${response.status}`);
 					}
 
-					throw new Error(
-						`PaymentIntent creation failed: ${response.status} ${response.statusText}`
-					);
+					throw new Error(errorMessage);
 				}
 
 				const responseData = await response.json();
@@ -193,9 +210,6 @@ const CheckoutPage: React.FC = () => {
 				if (!secret) {
 					throw new Error("No client secret received from PaymentIntent API");
 				}
-
-				// Decode the client secret in case it's URL-encoded
-				// const decodedSecret = decodeURIComponent(secret);
 
 				// Check if this is a CheckoutSession secret instead of PaymentIntent
 				if (secret.startsWith("cs_")) {
@@ -216,16 +230,19 @@ const CheckoutPage: React.FC = () => {
 				}
 
 				setClientSecret(secret);
+				console.log("✅ PaymentIntent created:", paymentIntentId);
 				// toast.success("Payment initialized successfully!");
 			} catch (error) {
+				console.error("Payment initialization error:", error);
 				toast.error("Failed to initialize payment. Please try again.");
 				setClientSecret(""); // Reset on error
+				setCreatedOrderId(null); // Reset orderId on error
 			} finally {
 				setIsLoadingPayment(false);
 			}
 		};
 
-		createPaymentIntent();
+		createOrderAndPaymentIntent();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []); // Empty dependency array - only create PaymentIntent once on mount
 
@@ -239,7 +256,32 @@ const CheckoutPage: React.FC = () => {
 		try {
 			setOrderProcessed(true); // Mark order as processed immediately
 
-			// Create order data for tracking
+			// Extract billing address from paymentIntent
+			const billingAddress = (paymentIntent as any).billingAddress;
+			let shippingAddressString = user?.email || "To be confirmed";
+			
+			if (billingAddress) {
+				// Format the address properly
+				const addressParts = [
+					billingAddress.line1,
+					billingAddress.line2,
+					billingAddress.city,
+					billingAddress.state,
+					billingAddress.postal_code,
+					billingAddress.country,
+				].filter(Boolean);
+				
+				if (addressParts.length > 0) {
+					shippingAddressString = addressParts.join(", ");
+				}
+			}
+
+			// Order already exists (created before payment), just refresh orders to get updated status
+			// Backend should have updated the order with paymentIntentId
+			console.log("✅ Payment successful for order:", createdOrderId);
+			console.log("📦 Shipping address:", shippingAddressString);
+
+			// Create order items for success page
 			const orderItems = cart.map((item) => ({
 				productId: item.product.id.toString(),
 				name: item.product.name,
@@ -250,18 +292,11 @@ const CheckoutPage: React.FC = () => {
 				image: item.product.images[0],
 			}));
 
-			// Add order to local context for tracking
-			addOrder({
-				items: orderItems,
-				shippingAddress: user?.email || "To be confirmed",
-				totalAmount: total,
-				paymentMethod: "stripe",
-				customerNotes: `PaymentIntent ID: ${
-					paymentIntent.id
-				} | Amount: £${total.toFixed(2)} ${getCurrency(
-					countryCode
-				).toUpperCase()}`,
-			});
+			// TODO: Optionally update the order with the billing address if backend supports it
+			// await apiService.updateOrder(createdOrderId, { shippingAddress: shippingAddressString });
+
+			// Refresh orders to get latest status
+			await refreshOrders();
 
 			// Clear the cart after successful payment
 			clearCart();
@@ -279,6 +314,7 @@ const CheckoutPage: React.FC = () => {
 				},
 			});
 		} catch (error) {
+			console.error("Post-payment error:", error);
 			setOrderProcessed(false); // Reset if there was an error
 			toast.error(
 				"Payment succeeded but there was an error processing your order. Please contact support."
@@ -467,7 +503,7 @@ const CheckoutPage: React.FC = () => {
 							>
 								<path
 									fillRule="evenodd"
-									d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 616 0z"
+									d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 0 1 6 0z"
 									clipRule="evenodd"
 								/>
 							</svg>

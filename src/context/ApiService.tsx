@@ -1150,7 +1150,7 @@ class ApiService {
 				...(status && { status }),
 			});
 
-			console.log(`📅 [getUserDashboardBookings] Fetching bookings for: ${userEmail} (ID: ${userId})`);
+			console.log(` [getUserDashboardBookings] Fetching bookings for: ${userEmail} (ID: ${userId})`);
 
 			const response = await this.request(`/api/user/bookings?${queryParams}`, {
 				method: "GET",
@@ -1363,7 +1363,8 @@ class ApiService {
 		shippingAddress: any, // Address object or string
 		totalAmount?: number,
 		paymentMethod?: string,
-		customerNotes?: string
+		customerNotes?: string,
+		paymentIntentId?: string
 	): Promise<{
 		success: boolean;
 		data?: any;
@@ -1387,6 +1388,7 @@ class ApiService {
 			shippingAddress,
 			paymentMethod: paymentMethod || "card",
 			...(customerNotes && { customerNotes }),
+			...(paymentIntentId && { paymentIntentId }),
 		};
 
 		return this.request("/api/orders", {
