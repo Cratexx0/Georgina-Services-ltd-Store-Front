@@ -293,7 +293,7 @@ export interface Order {
   orderNumber: string;
   items: OrderItem[];
   totalAmount: number;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  status: 'pending' | 'confirmed'| 'processing' | 'shipped' | 'delivered' | 'cancelled'| 'returned'| 'failed';
   paymentStatus: 'pending' | 'paid' | 'failed';
   shippingAddress: string;
   trackingNumber?: string;
