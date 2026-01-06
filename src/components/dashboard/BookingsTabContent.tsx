@@ -33,8 +33,12 @@ const BookingsTabContent: React.FC<BookingsTabContentProps> = ({
 	formatCurrency,
 	formatDate,
 }) => {
-	const { bookings, cancelBooking, isLoading } = useBooking();
+	const { bookings, cancelBooking, isLoading, refreshBookings } = useBooking();
 	const navigate = useNavigate();
+
+	console.log('🎯 [BookingsTabContent] Current bookings:', bookings);
+	console.log('🎯 [BookingsTabContent] IsLoading:', isLoading);
+	console.log('🎯 [BookingsTabContent] Bookings length:', bookings?.length);
 
 	return (
 		<>
@@ -52,9 +56,14 @@ const BookingsTabContent: React.FC<BookingsTabContentProps> = ({
 						<p className="text-muted-foreground text-center mb-4">
 							Book a service to see your bookings here
 						</p>
-						<Button onClick={() => navigate("/services")}>
-							Browse Services
-						</Button>
+						<div className="flex gap-3">
+							<Button onClick={() => navigate("/services")}>
+								Browse Services
+							</Button>
+							<Button variant="outline" onClick={refreshBookings}>
+								Refresh
+							</Button>
+						</div>
 					</CardContent>
 				</Card>
 			) : (

@@ -193,6 +193,38 @@ class ApiService {
 		return null;
 	}
 
+	// Get user ID - Check both sessionStorage and localStorage
+	private getUserId(): string | null {
+		try {
+			// Check sessionStorage first (current session)
+			const sessionUserString = sessionStorage.getItem("user");
+			if (sessionUserString) {
+				const userData = JSON.parse(sessionUserString);
+				const userId = userData?.id || userData?.userId || userData?._id;
+				if (userId) {
+					console.log("✅ Found userId in sessionStorage:", userId);
+					return userId;
+				}
+			}
+
+			// Fallback to localStorage
+			const localUserString = localStorage.getItem("user");
+			if (localUserString) {
+				const userData = JSON.parse(localUserString);
+				const userId = userData?.id || userData?.userId || userData?._id;
+				if (userId) {
+					console.log("✅ Found userId in localStorage:", userId);
+					return userId;
+				}
+			}
+		} catch (error) {
+			console.error("❌ Error reading userId from storage:", error);
+		}
+
+		console.log("❌ No userId found in storage");
+		return null;
+	}
+
 	// Get user data from cookies
 	private getUserFromCookies(): any {
 		try {
@@ -1095,12 +1127,13 @@ class ApiService {
 	}> {
 		try {
 			const userEmail = this.getUserEmail();
+			const userId = this.getUserId();
 
-			if (!userEmail) {
-				console.warn("⚠️ No user email found for bookings request");
+			if (!userEmail || !userId) {
+				console.warn("⚠️ No user email or ID found for bookings request");
 				return {
 					success: false,
-					message: "No user email found. Please ensure you are logged in.",
+					message: "User information not found. Please ensure you are logged in.",
 					data: [],
 					bookings: [],
 					total: 0,
@@ -1113,10 +1146,11 @@ class ApiService {
 				page: page.toString(),
 				limit: limit.toString(),
 				email: userEmail,
+				id: userId, // Backend expects 'id' not 'userId'
 				...(status && { status }),
 			});
 
-			console.log(`📅 [getUserDashboardBookings] Fetching bookings for: ${userEmail}`);
+			console.log(`📅 [getUserDashboardBookings] Fetching bookings for: ${userEmail} (ID: ${userId})`);
 
 			const response = await this.request(`/api/user/bookings?${queryParams}`, {
 				method: "GET",

@@ -384,10 +384,13 @@ export const BookingProvider: React.FC<BookingProviderProps> = ({ children }) =>
     // Double-check user is authenticated
     if (!user || !user.email) {
       console.log('⏭️ Skipping bookings fetch - no authenticated user');
+      console.log('🔍 User object:', user);
       setBookings([]);
       setIsLoading(false);
       return;
     }
+
+    console.log('📅 [refreshBookings] Starting fetch for user:', user.email);
 
     try {
       setIsLoading(true);
@@ -396,7 +399,7 @@ export const BookingProvider: React.FC<BookingProviderProps> = ({ children }) =>
       console.log('📅 Bookings API Response:', response);
       
       // Handle error responses
-      if (!response.success) {
+      if (response.success === false) {
         console.warn('Bookings API returned success: false', response);
         
         // Check if it's a "not implemented" error
@@ -412,29 +415,34 @@ export const BookingProvider: React.FC<BookingProviderProps> = ({ children }) =>
         return;
       }
       
-      if (response.success) {
-        let apiBookings: any[] = [];
-        
-        if (Array.isArray(response.data)) {
-          apiBookings = response.data;
-        } else if (Array.isArray(response.bookings)) {
-          apiBookings = response.bookings;
-        } else if (Array.isArray(response)) {
-          apiBookings = response;
-        } else if (response.data && Array.isArray(response.data.bookings)) {
-          apiBookings = response.data.bookings;
-        } else if (response.data && typeof response.data === 'object') {
-          for (const key in response.data) {
-            if (Array.isArray(response.data[key])) {
-              apiBookings = response.data[key];
-              break;
-            }
+      // Extract bookings array from response
+      let apiBookings: any[] = [];
+      
+      if (Array.isArray(response.data)) {
+        apiBookings = response.data;
+      } else if (Array.isArray(response.bookings)) {
+        apiBookings = response.bookings;
+      } else if (Array.isArray(response)) {
+        apiBookings = response;
+      } else if (response.data && Array.isArray(response.data.bookings)) {
+        apiBookings = response.data.bookings;
+      } else if (response.data && typeof response.data === 'object') {
+        // Try to find any array property in data
+        for (const key in response.data) {
+          if (Array.isArray(response.data[key])) {
+            apiBookings = response.data[key];
+            break;
           }
         }
-        
-        console.log('📅 Extracted bookings array:', apiBookings);
-        
-        const transformedBookings: Booking[] = apiBookings.map((apiBooking: any) => ({
+      }
+      
+      console.log('📅 Extracted bookings array:', apiBookings);
+      console.log('📅 Number of bookings:', apiBookings.length);
+      
+      // Transform API bookings to local Booking type
+      const transformedBookings: Booking[] = apiBookings.map((apiBooking: any) => {
+        console.log('📅 Transforming booking:', apiBooking);
+        return {
           id: apiBooking._id || apiBooking.id || Math.random().toString(),
           service: apiBooking.serviceType || apiBooking.service || 'Cleaning Service',
           date: new Date(apiBooking.date || apiBooking.bookingDate || new Date()),
@@ -450,13 +458,11 @@ export const BookingProvider: React.FC<BookingProviderProps> = ({ children }) =>
           duration: apiBooking.duration,
           selectedFeatures: apiBooking.selectedFeatures,
           specialInstructions: apiBooking.specialInstructions
-        }));
+        };
+      });
 
-        setBookings(transformedBookings);
-      } else {
-        console.warn('Bookings API returned success: false', response);
-        setBookings([]);
-      }
+      console.log('📅 Transformed bookings:', transformedBookings);
+      setBookings(transformedBookings);
     } catch (error) {
       console.error('Failed to load bookings:', error);
       
