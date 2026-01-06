@@ -175,6 +175,13 @@ const BookingCheckoutPage: React.FC = () => {
     setBookingProcessed(true);
 
     try {
+      console.log('✅ Payment successful, creating bookings...', paymentIntent);
+
+      // Verify payment was actually successful
+      if (paymentIntent.status !== 'succeeded') {
+        throw new Error(`Payment status is ${paymentIntent.status}, not succeeded`);
+      }
+
       // Create bookings after successful payment
       const bookingPromises = bookingData.selectedServices.map(async (service) => {
         const bookingPayload = {
@@ -186,9 +193,12 @@ const BookingCheckoutPage: React.FC = () => {
           duration: service.duration,
           price: service.price,
           userId: bookingData.userId,
-          sessionId: paymentIntent.id,
-          requirePayment: true,
+          paymentIntentId: paymentIntent.id, // Use paymentIntentId instead of sessionId
+          paymentStatus: paymentIntent.status, // Include payment status
+          requirePayment: false, // Payment is already completed!
         };
+
+        console.log('📤 Creating booking with payload:', bookingPayload);
 
         const response = await fetch(
           `${import.meta.env.VITE_API_URL || "https://georgina-server-code.onrender.com"}/api/bookings`,
@@ -202,11 +212,15 @@ const BookingCheckoutPage: React.FC = () => {
           }
         );
 
+        const responseData = await response.json();
+
         if (!response.ok) {
-          throw new Error(`Failed to create booking: ${response.status}`);
+          console.error('❌ Booking creation failed:', responseData);
+          throw new Error(responseData.message || `Failed to create booking: ${response.status}`);
         }
 
-        return response.json();
+        console.log('✅ Booking created successfully:', responseData);
+        return responseData;
       });
 
       const results = await Promise.all(bookingPromises);
@@ -230,7 +244,7 @@ const BookingCheckoutPage: React.FC = () => {
     } catch (error: any) {
       console.error("Booking creation error:", error);
       toast.error("Booking creation failed", {
-        description: "Payment was successful but booking failed. Please contact support."
+        description: error.message || "Payment was successful but booking failed. Please contact support."
       });
     }
   };

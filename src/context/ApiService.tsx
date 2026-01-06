@@ -964,24 +964,10 @@ class ApiService {
 
 	/**
 	 * Get user's bookings for dashboard - AUTO email detection
+	 * @deprecated Use getUserDashboardBookings instead for better typing
 	 */
 	async getMyBookings(page: number = 1, limit: number = 10, status?: string) {
-		const userEmail = this.getUserEmail();
-
-		if (!userEmail) {
-			throw new Error("No user email found. Please ensure you are logged in.");
-		}
-
-		const queryParams = new URLSearchParams({
-			page: page.toString(),
-			limit: limit.toString(),
-			...(status && { status }),
-			email: userEmail,
-		});
-
-		return this.request(`/api/user/bookings?${queryParams}`, {
-			requiresAuth: true,
-		});
+		return this.getUserDashboardBookings(page, limit, status);
 	}
 
 	/**
@@ -1105,24 +1091,78 @@ class ApiService {
 		total?: number;
 		page?: number;
 		totalPages?: number;
+		message?: string;
 	}> {
-		const userEmail = this.getUserEmail();
+		try {
+			const userEmail = this.getUserEmail();
 
-		if (!userEmail) {
-			throw new Error("No user email found. Please ensure you are logged in.");
+			if (!userEmail) {
+				console.warn("⚠️ No user email found for bookings request");
+				return {
+					success: false,
+					message: "No user email found. Please ensure you are logged in.",
+					data: [],
+					bookings: [],
+					total: 0,
+					page: 1,
+					totalPages: 0,
+				};
+			}
+
+			const queryParams = new URLSearchParams({
+				page: page.toString(),
+				limit: limit.toString(),
+				email: userEmail,
+				...(status && { status }),
+			});
+
+			console.log(`📅 [getUserDashboardBookings] Fetching bookings for: ${userEmail}`);
+
+			const response = await this.request(`/api/user/bookings?${queryParams}`, {
+				method: "GET",
+				requiresAuth: true,
+			});
+
+			console.log("📅 [getUserDashboardBookings] Response:", response);
+
+			// Ensure consistent response structure
+			return {
+				success: response.success !== false,
+				data: response.data || response.bookings || [],
+				bookings: response.bookings || response.data || [],
+				total: response.total || response.totalCount || 0,
+				page: response.page || response.currentPage || page,
+				totalPages: response.totalPages || Math.ceil((response.total || 0) / limit),
+				message: response.message,
+			};
+		} catch (error) {
+			console.error("❌ [getUserDashboardBookings] Error:", error);
+			
+			// Check if error is due to endpoint not implemented
+			const errorMessage = error instanceof Error ? error.message : String(error);
+			if (errorMessage.includes("not implemented") || errorMessage.includes("404")) {
+				console.error("❌ Backend endpoint /api/user/bookings is not implemented!");
+				return {
+					success: false,
+					message: "Booking endpoint is not yet implemented on the server. Please contact support.",
+					data: [],
+					bookings: [],
+					total: 0,
+					page: 1,
+					totalPages: 0,
+				};
+			}
+
+			return {
+				success: false,
+				message: errorMessage,
+				data: [],
+				bookings: [],
+				total: 0,
+				page: 1,
+				totalPages: 0,
+			};
 		}
-
-		const queryParams = new URLSearchParams({
-			page: page.toString(),
-			limit: limit.toString(),
-			email: userEmail,
-			...(status && { status }),
-		});
-
-		return this.request(`/api/user/bookings?${queryParams}`, {
-			method: "GET",
-			requiresAuth: true,
-		});
 	}
 
 	/**

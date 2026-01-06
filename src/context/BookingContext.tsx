@@ -395,6 +395,23 @@ export const BookingProvider: React.FC<BookingProviderProps> = ({ children }) =>
       
       console.log('📅 Bookings API Response:', response);
       
+      // Handle error responses
+      if (!response.success) {
+        console.warn('Bookings API returned success: false', response);
+        
+        // Check if it's a "not implemented" error
+        if (response.message && response.message.includes('not implemented')) {
+          console.error('❌ Backend booking endpoint is not implemented!');
+          toast.error('Booking feature is not available', {
+            description: 'The booking system needs to be set up on the server. Please contact support.',
+            duration: 5000,
+          });
+        }
+        
+        setBookings([]);
+        return;
+      }
+      
       if (response.success) {
         let apiBookings: any[] = [];
         
@@ -442,9 +459,21 @@ export const BookingProvider: React.FC<BookingProviderProps> = ({ children }) =>
       }
     } catch (error) {
       console.error('Failed to load bookings:', error);
-      // Only show error toast if user is still authenticated
+      
+      // Check if error message indicates endpoint not implemented
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      
       if (user && user.email) {
-        toast.error('Failed to load bookings');
+        if (errorMessage.includes('not implemented') || errorMessage.includes('404')) {
+          toast.error('Booking system not available', {
+            description: 'The server endpoint needs to be implemented. Contact your backend developer.',
+            duration: 5000,
+          });
+        } else {
+          toast.error('Failed to load bookings', {
+            description: errorMessage,
+          });
+        }
       }
       setBookings([]);
     } finally {
