@@ -1146,7 +1146,7 @@ class ApiService {
 				page: page.toString(),
 				limit: limit.toString(),
 				email: userEmail,
-				id: userId, // Backend expects 'id' not 'userId'
+				id: userId,
 				...(status && { status }),
 			});
 
