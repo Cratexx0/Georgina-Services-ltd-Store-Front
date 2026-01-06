@@ -68,21 +68,18 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     }
     
     addToCart(toApiProduct(product), 1);
-    toast.success(`${product.name} added to cart`);
   };
 
   const productId = typeof product.id === 'string' ? parseInt(product.id, 10) || 0 : product.id;
 
-  const handleWishlistToggle = (e: React.MouseEvent) => {
+  const handleWishlistToggle = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
     if (isInWishlist(productId)) {
-      removeFromWishlist(productId);
-      toast.success('Removed from wishlist');
+      await removeFromWishlist(productId);
     } else {
-      addToWishlist(toApiProduct(product));
-      toast.success('Added to wishlist');
+      await addToWishlist(toApiProduct(product));
     }
   };
 
@@ -118,13 +115,18 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <div className="absolute top-1.5 right-1.5 md:top-2 md:right-2 flex flex-col gap-1.5 md:gap-2">
             <button
               onClick={handleWishlistToggle}
-              className="bg-background/80 hover:bg-background p-1.5 md:p-2 rounded-full transition-colors shadow-sm"
+              className={`p-1.5 md:p-2 rounded-full transition-all shadow-sm ${
+                isInWishlist(productId)
+                  ? 'bg-red-50 hover:bg-red-100'
+                  : 'bg-background/80 hover:bg-background'
+              }`}
+              title={isInWishlist(productId) ? 'Remove from wishlist' : 'Add to wishlist'}
             >
               <Heart
-                className={`h-3.5 w-3.5 md:h-4 md:w-4 ${
+                className={`h-3.5 w-3.5 md:h-4 md:w-4 transition-all ${
                   isInWishlist(productId)
-                    ? 'text-destructive fill-destructive'
-                    : 'text-muted-foreground'
+                    ? 'text-red-500 fill-red-500'
+                    : 'text-muted-foreground hover:text-red-500'
                 }`}
               />
             </button>
@@ -132,7 +134,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             <button
               onClick={handleAddToCart}
               disabled={product.stock === 0}
-              className="bg-primary text-primary-foreground p-1.5 md:p-2 rounded-full transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-primary text-primary-foreground p-1.5 md:p-2 rounded-full transition-colors shadow-sm hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
               title="Add to Cart"
             >
               <ShoppingCart className="h-3.5 w-3.5 md:h-4 md:w-4" />

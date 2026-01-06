@@ -109,15 +109,13 @@ const ProductPage = () => {
     });
   };
 
-  const handleWishlistToggle = () => {
+  const handleWishlistToggle = async () => {
     if (!product) return;
     
     if (isInWishlist(product.id)) {
-      removeFromWishlist(product.id);
-      toast.success('Removed from wishlist');
+      await removeFromWishlist(product.id);
     } else {
-      addToWishlist(product);
-      toast.success('Added to wishlist');
+      await addToWishlist(product);
     }
   };
 
@@ -398,13 +396,17 @@ const ProductPage = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="flex items-center justify-start gap-2 text-xs h-8"
+                className={`flex items-center justify-start gap-2 text-xs h-8 ${
+                  isInWishlist(product.id) 
+                    ? 'border-red-500 bg-red-50 hover:bg-red-100' 
+                    : ''
+                }`}
                 onClick={handleWishlistToggle}
               >
                 <Heart 
                   className={`h-3.5 w-3.5 ${
                     isInWishlist(product.id) 
-                      ? 'text-destructive fill-destructive' 
+                      ? 'text-red-500 fill-red-500' 
                       : 'text-muted-foreground'
                   }`}
                 />
