@@ -89,38 +89,50 @@ export const WishlistProvider: React.FC<WishlistProviderProps> = ({ children }) 
 
   // Add to wishlist
   const addToWishlist = async (product: Product) => {
-    try {
-      setIsLoading(true);
+    // Optimistically update UI first for immediate visual feedback
+    setWishlist(current => {
+      // Check if already exists before adding
+      const alreadyExists = current.find(item => compareProductIds(item.id, product.id));
+      if (alreadyExists) {
+        return current; // No change needed
+      }
+      return [...current, product];
+    });
 
+    try {
       if (isAuthenticated && user) {
         // Call backend API
+        setIsLoading(true);
         const response = await apiService.addToWishlist(product.id.toString());
         
+        console.log('💝 Add to wishlist response:', response);
+
         if (response.success) {
-          // Check if already in local state before adding
-          setWishlist(current => {
-            if (current.find(item => compareProductIds(item.id, product.id))) {
-              return current;
-            }
-            return [...current, product];
-          });
-          toast.success('Added to wishlist');
+          toast.success(response.message || 'Added to wishlist');
         } else {
-          throw new Error(response.message || 'Failed to add to wishlist');
+          // Rollback on failure
+          setWishlist(current => current.filter(item => !compareProductIds(item.id, product.id)));
+
+          if (response.message && response.message.toLowerCase().includes('already')) {
+            toast.info(response.message);
+            // Re-add to state since it exists on backend
+            setWishlist(current => {
+              const exists = current.find(item => compareProductIds(item.id, product.id));
+              if (exists) return current;
+              return [...current, product];
+            });
+          } else {
+            toast.error(response.message || 'Failed to add to wishlist');
+          }
         }
       } else {
-        // Add to local wishlist when not authenticated
-        setWishlist(current => {
-          if (current.find(item => compareProductIds(item.id, product.id))) {
-            toast.info('Product is already in your wishlist');
-            return current;
-          }
-          toast.success('Added to wishlist');
-          return [...current, product];
-        });
+        // For non-authenticated users, just show success
+        toast.success('Added to wishlist');
       }
     } catch (error) {
       console.error('Error adding to wishlist:', error);
+      // Rollback on error
+      setWishlist(current => current.filter(item => !compareProductIds(item.id, product.id)));
       toast.error(error instanceof Error ? error.message : 'Failed to add to wishlist');
     } finally {
       setIsLoading(false);
@@ -129,30 +141,41 @@ export const WishlistProvider: React.FC<WishlistProviderProps> = ({ children }) 
 
   // Remove from wishlist
   const removeFromWishlist = async (productId: string | number) => {
-    try {
-      setIsLoading(true);
+    // Store the product in case we need to rollback
+    const productToRemove = wishlist.find(item => compareProductIds(item.id, productId));
 
+    // Optimistically update UI first for immediate feedback
+    setWishlist(current =>
+      current.filter(item => !compareProductIds(item.id, productId))
+    );
+
+    try {
       if (isAuthenticated && user) {
         // Call backend API
+        setIsLoading(true);
         const response = await apiService.removeFromWishlist(productId.toString());
         
+        console.log('💝 Remove from wishlist response:', response);
+
         if (response.success) {
-          setWishlist(current => 
-            current.filter(item => !compareProductIds(item.id, productId))
-          );
-          toast.success('Removed from wishlist');
+          toast.success(response.message || 'Removed from wishlist');
         } else {
-          throw new Error(response.message || 'Failed to remove from wishlist');
+          // Rollback on failure
+          if (productToRemove) {
+            setWishlist(current => [...current, productToRemove]);
+          }
+          toast.error(response.message || 'Failed to remove from wishlist');
         }
       } else {
-        // Remove from local wishlist when not authenticated
-        setWishlist(current => 
-          current.filter(item => !compareProductIds(item.id, productId))
-        );
+        // For non-authenticated users, just show success
         toast.success('Removed from wishlist');
       }
     } catch (error) {
       console.error('Error removing from wishlist:', error);
+      // Rollback on error
+      if (productToRemove) {
+        setWishlist(current => [...current, productToRemove]);
+      }
       toast.error(error instanceof Error ? error.message : 'Failed to remove from wishlist');
     } finally {
       setIsLoading(false);

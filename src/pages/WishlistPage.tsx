@@ -11,9 +11,9 @@ const WishlistPage: React.FC = () => {
   const { wishlist, removeFromWishlist, clearWishlist } = useWishlist();
   const { addToCart } = useCart();
 
-  const handleAddToCart = (product: any) => {
+  const handleAddToCart = async (product: any) => {
     addToCart(product, 1);
-    removeFromWishlist(product.id);
+    await removeFromWishlist(product.id);
   };
 
   // Helper function to safely format price
