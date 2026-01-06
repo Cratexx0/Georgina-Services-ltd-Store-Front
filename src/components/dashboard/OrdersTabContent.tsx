@@ -372,6 +372,7 @@ const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
 											)}
 
 											{(order.status === "pending" ||
+												order.status === "confirmed" ||
 												order.status === "processing") && (
 												<>
 													<Button
