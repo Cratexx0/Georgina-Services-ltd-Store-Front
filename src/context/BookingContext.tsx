@@ -339,6 +339,7 @@ interface BookingContextType {
   }) => Promise<void>;
   updateBookingStatus: (id: string, status: Booking['status']) => void;
   cancelBooking: (id: string, cancellationReason?: string) => Promise<void>;
+  deleteBooking: (id: string) => Promise<void>;
   refreshBookings: () => Promise<void>;
   getUpcomingBookings: () => Booking[];
   getRecentBookings: () => Booking[];
@@ -552,6 +553,27 @@ export const BookingProvider: React.FC<BookingProviderProps> = ({ children }) =>
     }
   };
 
+  const deleteBooking = async (id: string) => {
+    try {
+      setIsLoading(true);
+      const response = await apiService.deleteBooking(id);
+
+      if (response.success) {
+        // Remove the booking from the list
+        setBookings(prev => prev.filter(booking => booking.id !== id));
+        toast.success('Booking deleted successfully');
+      } else {
+        throw new Error(response.message || 'Failed to delete booking');
+      }
+    } catch (error: any) {
+      console.error('Delete booking error:', error);
+      toast.error(error.message || 'Failed to delete booking');
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const getAvailableBookingSlots = async (date: string): Promise<{
     success: boolean;
     data?: string[];
@@ -627,6 +649,7 @@ export const BookingProvider: React.FC<BookingProviderProps> = ({ children }) =>
         addBooking,
         updateBookingStatus,
         cancelBooking,
+        deleteBooking,
         refreshBookings,
         getUpcomingBookings,
         getRecentBookings,

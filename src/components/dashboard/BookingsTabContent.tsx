@@ -33,8 +33,9 @@ const BookingsTabContent: React.FC<BookingsTabContentProps> = ({
 	formatCurrency,
 	formatDate,
 }) => {
-	const { bookings, cancelBooking, isLoading, refreshBookings } = useBooking();
+	const { bookings, cancelBooking, deleteBooking, isLoading, refreshBookings } = useBooking();
 	const navigate = useNavigate();
+	const [deletingId, setDeletingId] = React.useState<string | null>(null);
 
 	console.log('🎯 [BookingsTabContent] Current bookings:', bookings);
 	console.log('🎯 [BookingsTabContent] IsLoading:', isLoading);

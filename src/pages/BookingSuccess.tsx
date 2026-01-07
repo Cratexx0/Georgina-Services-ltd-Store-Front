@@ -1,17 +1,23 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Link, useSearchParams, useNavigate } from "react-router-dom";
+import { Link, useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { Check, Calendar, Mail, ArrowRight, Home, CheckCircle2, Clock, MapPin } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import { toast } from "sonner";
+import { useBooking } from "@/context/BookingContext";
 
 const BookingSuccess = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { refreshBookings } = useBooking();
   const sessionId = searchParams.get('session_id');
+  const paymentIntentId = location.state?.paymentIntentId;
   const [showConfetti, setShowConfetti] = useState(true);
   const [bookingDetails, setBookingDetails] = useState<any>(null);
+  const hasShownToast = useRef(false); // Track if toast has been shown
+  const hasRefreshed = useRef(false); // Track if bookings have been refreshed
 
   useEffect(() => {
     // Scroll to top when component mounts
@@ -20,31 +26,51 @@ const BookingSuccess = () => {
     // Hide confetti animation after 3 seconds
     const timer = setTimeout(() => setShowConfetti(false), 3000);
 
-    // If no session ID, redirect to home after 5 seconds
-    if (!sessionId) {
-      toast.error("No booking session found");
-      setTimeout(() => navigate("/"), 5000);
-    } else {
-      // Show success message
-      toast.success("Booking Confirmed!", {
-        description: "Your payment was successful. Check your email for confirmation.",
-        duration: 5000
+    // Refresh bookings immediately to show the new booking (only once)
+    if (!hasRefreshed.current) {
+      hasRefreshed.current = true;
+      refreshBookings().then(() => {
+        console.log('✅ Bookings refreshed after successful payment');
+      }).catch(error => {
+        console.error('❌ Failed to refresh bookings:', error);
       });
     }
 
-    // Process any pending payments from localStorage
-    const pendingPayments = localStorage.getItem('pendingBookingPayments');
-    if (pendingPayments) {
-      const payments = JSON.parse(pendingPayments);
-      if (payments.length > 0) {
-        toast.info("Multiple Bookings Pending", {
-          description: `You have ${payments.length} more booking${payments.length !== 1 ? 's' : ''} to complete payment for.`
+    // Check if we have either session_id or paymentIntentId
+    const hasValidSession = sessionId || paymentIntentId;
+    
+    // Only show toasts once
+    if (!hasShownToast.current) {
+      hasShownToast.current = true;
+      
+      if (!hasValidSession) {
+        console.warn('⚠️ No session_id or paymentIntentId found');
+        toast.error("No booking session found");
+        setTimeout(() => navigate("/"), 5000);
+      } else {
+        // Show success message
+        console.log('✅ Valid booking session:', sessionId || paymentIntentId);
+        toast.success("Booking Confirmed!", {
+          description: "Your payment was successful. Check your email for confirmation.",
+          duration: 5000
         });
+      }
+
+      // Process any pending payments from localStorage
+      const pendingPayments = localStorage.getItem('pendingBookingPayments');
+      if (pendingPayments) {
+        const payments = JSON.parse(pendingPayments);
+        if (payments.length > 0) {
+          toast.info("Multiple Bookings Pending", {
+            description: `You have ${payments.length} more booking${payments.length !== 1 ? 's' : ''} to complete payment for.`
+          });
+        }
       }
     }
 
     return () => clearTimeout(timer);
-  }, [sessionId, navigate]);
+  }, [sessionId, paymentIntentId, navigate]);
+  // Removed refreshBookings from dependencies to prevent re-renders
 
   return (
     <Layout>
@@ -95,11 +121,11 @@ const BookingSuccess = () => {
                 </div>
 
                 <div className="space-y-4">
-                  {sessionId && (
+                  {(sessionId || paymentIntentId) && (
                     <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                      <span className="text-sm text-gray-600">Session ID:</span>
+                      <span className="text-sm text-gray-600">{sessionId ? 'Session ID:' : 'Payment ID:'}</span>
                       <span className="text-sm font-mono text-gray-900 truncate ml-2 max-w-[200px]">
-                        {sessionId.slice(0, 20)}...
+                        {(sessionId || paymentIntentId || '').slice(0, 20)}...
                       </span>
                     </div>
                   )}
@@ -190,7 +216,7 @@ const BookingSuccess = () => {
                   asChild
                   className="w-full h-12 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all"
                 >
-                  <Link to="/dashboard" className="flex items-center justify-center gap-2">
+                  <Link to="/dashboard?tab=bookings" className="flex items-center justify-center gap-2">
                     <Calendar className="h-5 w-5" />
                     View My Bookings
                     <ArrowRight className="h-4 w-4" />

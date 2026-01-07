@@ -44,6 +44,9 @@ const BookingCheckoutPage: React.FC = () => {
   const [bookingData, setBookingData] = useState<BookingCheckoutData | null>(null);
   const [bookingProcessed, setBookingProcessed] = useState(false);
 
+  // Add a global flag to prevent any duplicate processing across re-renders
+  const isProcessingRef = React.useRef(false);
+
   // Load booking data from sessionStorage
   useEffect(() => {
     const storedData = sessionStorage.getItem('pendingBookingCheckout');
@@ -55,6 +58,9 @@ const BookingCheckoutPage: React.FC = () => {
 
     try {
       const data = JSON.parse(storedData) as BookingCheckoutData;
+      console.log('📦 Loaded booking data from sessionStorage:', data);
+      console.log('📊 Number of services selected:', data.selectedServices.length);
+      console.log('📋 Services:', data.selectedServices.map(s => s.serviceName));
       setBookingData(data);
     } catch (error) {
       toast.error("Invalid booking data");
@@ -170,9 +176,26 @@ const BookingCheckoutPage: React.FC = () => {
 
   // Handle successful payment
   const handlePaymentSuccess = async (paymentIntent: PaymentIntent) => {
-    if (bookingProcessed || !bookingData) return;
+    // ABSOLUTE guard against duplicate processing using ref
+    if (isProcessingRef.current) {
+      console.log('🛑 BLOCKED: Payment already being processed (ref check)');
+      return;
+    }
 
+    // Prevent duplicate processing
+    if (bookingProcessed || !bookingData) {
+      console.log('⏭️ Skipping payment processing - already processed or no booking data');
+      console.log('bookingProcessed:', bookingProcessed, 'bookingData:', !!bookingData);
+      return;
+    }
+
+    // Set both guards immediately
+    isProcessingRef.current = true;
     setBookingProcessed(true);
+
+    console.log('🔒 Setting bookingProcessed to true to prevent duplicates');
+    console.log('📊 Number of services to book:', bookingData.selectedServices.length);
+    console.log('📋 Services:', bookingData.selectedServices.map(s => s.serviceName));
 
     try {
       console.log('✅ Payment successful, creating bookings...', paymentIntent);
@@ -183,7 +206,7 @@ const BookingCheckoutPage: React.FC = () => {
       }
 
       // Create bookings after successful payment
-      const bookingPromises = bookingData.selectedServices.map(async (service) => {
+      const bookingPromises = bookingData.selectedServices.map(async (service, index) => {
         const bookingPayload = {
           ...bookingData.customerInfo,
           serviceType: service.serviceName,
@@ -198,7 +221,7 @@ const BookingCheckoutPage: React.FC = () => {
           requirePayment: false, // Payment is already completed!
         };
 
-        console.log('📤 Creating booking with payload:', bookingPayload);
+        console.log(`📤 Creating booking ${index + 1} of ${bookingData.selectedServices.length} with payload:`, bookingPayload);
 
         const response = await fetch(
           `${import.meta.env.VITE_API_URL || "https://georgina-server-code.onrender.com"}/api/bookings`,
@@ -215,11 +238,11 @@ const BookingCheckoutPage: React.FC = () => {
         const responseData = await response.json();
 
         if (!response.ok) {
-          console.error('❌ Booking creation failed:', responseData);
+          console.error(`❌ Booking ${index + 1} creation failed:`, responseData);
           throw new Error(responseData.message || `Failed to create booking: ${response.status}`);
         }
 
-        console.log('✅ Booking created successfully:', responseData);
+        console.log(`✅ Booking ${index + 1} created successfully:`, responseData);
         return responseData;
       });
 
@@ -228,8 +251,9 @@ const BookingCheckoutPage: React.FC = () => {
       // Clear session storage
       sessionStorage.removeItem('pendingBookingCheckout');
 
-      // Navigate to success page
+      // Navigate to success page with replace to prevent back navigation
       navigate("/booking-success", {
+        replace: true, // Prevent going back to payment page
         state: {
           bookings: results,
           paymentIntentId: paymentIntent.id,
@@ -243,6 +267,9 @@ const BookingCheckoutPage: React.FC = () => {
       });
     } catch (error: any) {
       console.error("Booking creation error:", error);
+      // Reset flags to allow retry if booking creation failed
+      isProcessingRef.current = false;
+      setBookingProcessed(false);
       toast.error("Booking creation failed", {
         description: error.message || "Payment was successful but booking failed. Please contact support."
       });
@@ -250,6 +277,9 @@ const BookingCheckoutPage: React.FC = () => {
   };
 
   const handlePaymentError = (error: string) => {
+    // Reset flags on payment error to allow retry
+    isProcessingRef.current = false;
+    setBookingProcessed(false);
     toast.error("Payment failed", {
       description: error
     });
