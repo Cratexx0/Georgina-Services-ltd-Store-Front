@@ -52,8 +52,6 @@ const CleaningServicesPage = () => {
         setLoading(true);
         const response = await apiService.getActiveServices();
         
-        console.log('API Response:', response); // Debug log
-        
         if (response.success && Array.isArray(response.data)) {
           // Transform API data to match our Service interface
           const transformedServices = response.data.map((service: any) => ({
@@ -68,7 +66,6 @@ const CleaningServicesPage = () => {
             category: service.category,
             subcategory: service.category // Use category as subcategory for filtering
           }));
-          console.log('Transformed Services:', transformedServices); // Debug log
           setServices(transformedServices);
         } else {
           console.warn('Unexpected response format:', response);
@@ -393,3 +390,4 @@ const CleaningServicesPage = () => {
 };
 
 export default CleaningServicesPage;
+

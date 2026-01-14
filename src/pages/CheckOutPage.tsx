@@ -150,7 +150,6 @@ const CheckoutPage: React.FC = () => {
 				}
 
 				setCreatedOrderId(orderId);
-				console.log("✅ Order created:", orderId);
 
 				// STEP 2: Create PaymentIntent with orderId
 				const response = await fetch(
@@ -230,10 +229,7 @@ const CheckoutPage: React.FC = () => {
 				}
 
 				setClientSecret(secret);
-				console.log("✅ PaymentIntent created:", paymentIntentId);
-				// toast.success("Payment initialized successfully!");
 			} catch (error) {
-				console.error("Payment initialization error:", error);
 				toast.error("Failed to initialize payment. Please try again.");
 				setClientSecret(""); // Reset on error
 				setCreatedOrderId(null); // Reset orderId on error
@@ -249,7 +245,6 @@ const CheckoutPage: React.FC = () => {
 	const handlePaymentSuccess = async (paymentIntent: PaymentIntent) => {
 		// Prevent duplicate order processing
 		if (orderProcessed) {
-			console.log("Order already processed, skipping duplicate");
 			return;
 		}
 
@@ -278,8 +273,6 @@ const CheckoutPage: React.FC = () => {
 
 			// Order already exists (created before payment), just refresh orders to get updated status
 			// Backend should have updated the order with paymentIntentId
-			console.log("✅ Payment successful for order:", createdOrderId);
-			console.log("📦 Shipping address:", shippingAddressString);
 
 			// Create order items for success page
 			const orderItems = cart.map((item) => ({
@@ -314,7 +307,6 @@ const CheckoutPage: React.FC = () => {
 				},
 			});
 		} catch (error) {
-			console.error("Post-payment error:", error);
 			setOrderProcessed(false); // Reset if there was an error
 			toast.error(
 				"Payment succeeded but there was an error processing your order. Please contact support."

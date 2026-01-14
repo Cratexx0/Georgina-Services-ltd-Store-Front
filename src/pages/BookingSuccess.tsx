@@ -30,9 +30,9 @@ const BookingSuccess = () => {
     if (!hasRefreshed.current) {
       hasRefreshed.current = true;
       refreshBookings().then(() => {
-        console.log('✅ Bookings refreshed after successful payment');
+        // Bookings refreshed
       }).catch(error => {
-        console.error('❌ Failed to refresh bookings:', error);
+        // Error handling
       });
     }
 
@@ -49,7 +49,6 @@ const BookingSuccess = () => {
         setTimeout(() => navigate("/"), 5000);
       } else {
         // Show success message
-        console.log('✅ Valid booking session:', sessionId || paymentIntentId);
         toast.success("Booking Confirmed!", {
           description: "Your payment was successful. Check your email for confirmation.",
           duration: 5000

@@ -69,7 +69,6 @@ const ProductPage = () => {
             const related = await apiService.getProductsByCategory(productData.categoryLevel1);
             setRelatedProducts(related.filter((p: Product) => p.id !== productData.id).slice(0, 4));
           } catch (relatedError) {
-            console.error('Error fetching related products:', relatedError);
             const allProductsResponse = await apiService.getProducts();
             setRelatedProducts(allProductsResponse.products.filter((p: Product) => p.id !== productData.id).slice(0, 4));
           }
@@ -77,7 +76,6 @@ const ProductPage = () => {
           setError('Product not found');
         }
       } catch (err) {
-        console.error('Error fetching product:', err);
         setError('Failed to load product');
       } finally {
         setLoading(false);
@@ -132,14 +130,13 @@ const ProductPage = () => {
       try {
         await navigator.share(shareData);
       } catch (err) {
-        console.log('Error sharing:', err);
+        // Error handling for share failure
       }
     } else {
       try {
         await navigator.clipboard.writeText(window.location.href);
         toast.success('Link copied to clipboard');
       } catch (err) {
-        console.log('Error copying to clipboard:', err);
         toast.error('Failed to share product');
       }
     }
@@ -503,3 +500,4 @@ const ProductPage = () => {
 };
 
 export default ProductPage;
+

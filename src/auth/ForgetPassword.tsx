@@ -30,7 +30,6 @@ const ForgotPassword = () => {
 		setIsLoading(true);
 
 		try {
-			console.log("📧 Sending forgot password request for:", email);
 
 			// Check if the method exists
 			if (!apiService.forgotPassword) {
@@ -39,8 +38,6 @@ const ForgotPassword = () => {
 			}
 
 			const response = await apiService.forgotPassword(email);
-
-			console.log("✅ Forgot password response:", response);
 
 			if (response.success) {
 				setEmailSent(true);

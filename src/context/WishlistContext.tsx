@@ -58,8 +58,6 @@ export const WishlistProvider: React.FC<WishlistProviderProps> = ({ children }) 
       setIsLoading(true);
       const response = await apiService.getWishlist();
       
-      console.log('💝 Wishlist API Response:', response);
-      
       if (response.success && response.data) {
         let wishlistItems: any[] = [];
         
@@ -69,7 +67,6 @@ export const WishlistProvider: React.FC<WishlistProviderProps> = ({ children }) 
           wishlistItems = response.wishlist;
         }
         
-        console.log('💝 Loaded wishlist items:', wishlistItems);
         setWishlist(wishlistItems);
       }
     } catch (error) {
@@ -104,8 +101,6 @@ export const WishlistProvider: React.FC<WishlistProviderProps> = ({ children }) 
         // Call backend API
         setIsLoading(true);
         const response = await apiService.addToWishlist(product.id.toString());
-        
-        console.log('💝 Add to wishlist response:', response);
 
         if (response.success) {
           toast.success(response.message || 'Added to wishlist');
@@ -154,8 +149,6 @@ export const WishlistProvider: React.FC<WishlistProviderProps> = ({ children }) 
         // Call backend API
         setIsLoading(true);
         const response = await apiService.removeFromWishlist(productId.toString());
-        
-        console.log('💝 Remove from wishlist response:', response);
 
         if (response.success) {
           toast.success(response.message || 'Removed from wishlist');
