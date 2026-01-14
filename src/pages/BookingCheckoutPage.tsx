@@ -58,9 +58,6 @@ const BookingCheckoutPage: React.FC = () => {
 
     try {
       const data = JSON.parse(storedData) as BookingCheckoutData;
-      console.log('📦 Loaded booking data from sessionStorage:', data);
-      console.log('📊 Number of services selected:', data.selectedServices.length);
-      console.log('📋 Services:', data.selectedServices.map(s => s.serviceName));
       setBookingData(data);
     } catch (error) {
       toast.error("Invalid booking data");
@@ -123,11 +120,6 @@ const BookingCheckoutPage: React.FC = () => {
           createBookingOnSuccess: false, // Don't create booking until payment succeeds
         };
 
-        console.log('💳 Payment Intent Request:', paymentData);
-        console.log('✅ Has customerEmail?', !!bookingData.customerInfo?.customerEmail);
-        console.log('✅ Has userId?', !!user.id);
-        console.log('✅ Has amount?', !!paymentData.amount);
-
         const response = await fetch(
           `${import.meta.env.VITE_API_URL || "https://georgina-server-code.onrender.com"}/api/bookings/payment-intent`,
           {
@@ -178,14 +170,11 @@ const BookingCheckoutPage: React.FC = () => {
   const handlePaymentSuccess = async (paymentIntent: PaymentIntent) => {
     // ABSOLUTE guard against duplicate processing using ref
     if (isProcessingRef.current) {
-      console.log('🛑 BLOCKED: Payment already being processed (ref check)');
       return;
     }
 
     // Prevent duplicate processing
     if (bookingProcessed || !bookingData) {
-      console.log('⏭️ Skipping payment processing - already processed or no booking data');
-      console.log('bookingProcessed:', bookingProcessed, 'bookingData:', !!bookingData);
       return;
     }
 
@@ -193,13 +182,7 @@ const BookingCheckoutPage: React.FC = () => {
     isProcessingRef.current = true;
     setBookingProcessed(true);
 
-    console.log('🔒 Setting bookingProcessed to true to prevent duplicates');
-    console.log('📊 Number of services to book:', bookingData.selectedServices.length);
-    console.log('📋 Services:', bookingData.selectedServices.map(s => s.serviceName));
-
     try {
-      console.log('✅ Payment successful, creating bookings...', paymentIntent);
-
       // Verify payment was actually successful
       if (paymentIntent.status !== 'succeeded') {
         throw new Error(`Payment status is ${paymentIntent.status}, not succeeded`);
@@ -221,8 +204,6 @@ const BookingCheckoutPage: React.FC = () => {
           requirePayment: false, // Payment is already completed!
         };
 
-        console.log(`📤 Creating booking ${index + 1} of ${bookingData.selectedServices.length} with payload:`, bookingPayload);
-
         const response = await fetch(
           `${import.meta.env.VITE_API_URL || "https://georgina-server-code.onrender.com"}/api/bookings`,
           {
@@ -238,11 +219,10 @@ const BookingCheckoutPage: React.FC = () => {
         const responseData = await response.json();
 
         if (!response.ok) {
-          console.error(`❌ Booking ${index + 1} creation failed:`, responseData);
+          console.error(`Booking ${index + 1} creation failed:`, responseData);
           throw new Error(responseData.message || `Failed to create booking: ${response.status}`);
         }
 
-        console.log(`✅ Booking ${index + 1} created successfully:`, responseData);
         return responseData;
       });
 

@@ -1,4 +1,3 @@
-
 import { Product } from "@/lib/type";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ;
@@ -171,7 +170,6 @@ class ApiService {
 			if (sessionUserString) {
 				const userData = JSON.parse(sessionUserString);
 				if (userData?.email) {
-					console.log("✅ Found email in sessionStorage:", userData.email);
 					return userData.email;
 				}
 			}
@@ -181,15 +179,12 @@ class ApiService {
 			if (localUserString) {
 				const userData = JSON.parse(localUserString);
 				if (userData?.email) {
-					console.log("✅ Found email in localStorage:", userData.email);
 					return userData.email;
 				}
 			}
 		} catch (error) {
-			console.error("❌ Error reading user from storage:", error);
 		}
 
-		console.log("❌ No email found in storage");
 		return null;
 	}
 
@@ -202,7 +197,6 @@ class ApiService {
 				const userData = JSON.parse(sessionUserString);
 				const userId = userData?.id || userData?.userId || userData?._id;
 				if (userId) {
-					console.log("✅ Found userId in sessionStorage:", userId);
 					return userId;
 				}
 			}
@@ -213,15 +207,12 @@ class ApiService {
 				const userData = JSON.parse(localUserString);
 				const userId = userData?.id || userData?.userId || userData?._id;
 				if (userId) {
-					console.log("✅ Found userId in localStorage:", userId);
 					return userId;
 				}
 			}
 		} catch (error) {
-			console.error("❌ Error reading userId from storage:", error);
 		}
 
-		console.log("❌ No userId found in storage");
 		return null;
 	}
 
@@ -805,14 +796,10 @@ class ApiService {
 				endpoint = `/api/products/category/${categoryLevel1}`;
 			}
 
-			console.log("📦 [GET_PRODUCTS_BY_CATEGORY] Fetching from:", endpoint);
-
 			const response = await this.request(endpoint, {
 				method: "GET",
 				requiresAuth: false,
 			});
-
-			console.log("📦 [GET_PRODUCTS_BY_CATEGORY] Raw response:", response);
 
 			// Handle the response structure
 			if (response && Array.isArray(response.products)) {
@@ -825,10 +812,6 @@ class ApiService {
 				return this.normalizeProducts(response.data);
 			}
 
-			console.warn(
-				"📦 [GET_PRODUCTS_BY_CATEGORY] Unexpected response structure:",
-				response
-			);
 			return [];
 		} catch (error) {
 			console.error("📦 [GET_PRODUCTS_BY_CATEGORY] Error:", error);
@@ -841,14 +824,11 @@ class ApiService {
 	 */
 	async getProductById(id: string) {
 		try {
-			console.log("📦 [GET_PRODUCT_BY_ID] Fetching product:", id);
-
 			const response = await this.request(`/api/products/${id}`, {
 				method: "GET",
 				requiresAuth: false, // Product details are public
 			});
 
-			console.log("📦 [GET_PRODUCT_BY_ID] Raw response:", response);
 
 			// Handle different response structures
 			let productData = null;
@@ -888,10 +868,6 @@ class ApiService {
 
 			// Normalize the product data
 			const normalizedProduct = this.normalizeProducts([productData])[0];
-			console.log(
-				"📦 [GET_PRODUCT_BY_ID] Normalized product:",
-				normalizedProduct
-			);
 
 			return normalizedProduct;
 		} catch (error) {
@@ -1130,7 +1106,6 @@ class ApiService {
 			const userId = this.getUserId();
 
 			if (!userEmail || !userId) {
-				console.warn("⚠️ No user email or ID found for bookings request");
 				return {
 					success: false,
 					message: "User information not found. Please ensure you are logged in.",
@@ -1150,16 +1125,12 @@ class ApiService {
 				...(status && { status }),
 			});
 
-			console.log(` [getUserDashboardBookings] Fetching bookings for: ${userEmail} (ID: ${userId})`);
+		const response = await this.request(`/api/user/bookings?${queryParams}`, {
+			method: "GET",
+			requiresAuth: true,
+		});
 
-			const response = await this.request(`/api/user/bookings?${queryParams}`, {
-				method: "GET",
-				requiresAuth: true,
-			});
-
-			console.log("📅 [getUserDashboardBookings] Response:", response);
-
-			// Ensure consistent response structure
+		// Ensure consistent response structure
 			return {
 				success: response.success !== false,
 				data: response.data || response.bookings || [],
@@ -1175,7 +1146,6 @@ class ApiService {
 			// Check if error is due to endpoint not implemented
 			const errorMessage = error instanceof Error ? error.message : String(error);
 			if (errorMessage.includes("not implemented") || errorMessage.includes("404")) {
-				console.error("❌ Backend endpoint /api/user/bookings is not implemented!");
 				return {
 					success: false,
 					message: "Booking endpoint is not yet implemented on the server. Please contact support.",
@@ -1495,20 +1465,6 @@ class ApiService {
 	}> {
 		return this.request(`/api/orders/${orderId}/cancel`, {
 			method: "PUT",
-			requiresAuth: true,
-		});
-	}
-
-	/**
-	 * Delete an order (for unpaid orders)
-	 */
-	async deleteOrder(orderId: string): Promise<{
-		success: boolean;
-		message?: string;
-		data?: any;
-	}> {
-		return this.request(`/api/orders/${orderId}`, {
-			method: "DELETE",
 			requiresAuth: true,
 		});
 	}
@@ -2093,3 +2049,4 @@ class ApiService {
 }
 
 export const apiService = new ApiService(API_BASE_URL);
+

@@ -75,13 +75,8 @@ const BookingModal = ({ isOpen, onClose, selectedServices, services }: BookingMo
     try {
       setFetchingSlots(true);
       const dateString = format(date, 'yyyy-MM-dd');
-      console.log('📅 Fetching time slots for date:', dateString);
-      console.log('📍 Full API URL will be: /api/bookings/available-slots/' + dateString);
-      
+
       const response = await apiService.getAvailableTimeSlots(dateString);
-      
-      console.log('🕒 Time slots response:', response);
-      console.log('🕒 Response data:', response.data);
       
       if (response.success) {
         let slotsArray: string[] = [];
@@ -99,7 +94,6 @@ const BookingModal = ({ isOpen, onClose, selectedServices, services }: BookingMo
           slotsArray = response.timeSlots;
         }
         
-        console.log('🕒 Extracted slots array:', slotsArray);
         setAvailableTimeSlots(slotsArray);
         
         if (slotsArray.length === 0) {

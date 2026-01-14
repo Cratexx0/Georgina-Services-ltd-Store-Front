@@ -37,9 +37,6 @@ const BookingsTabContent: React.FC<BookingsTabContentProps> = ({
 	const navigate = useNavigate();
 	const [deletingId, setDeletingId] = React.useState<string | null>(null);
 
-	console.log('🎯 [BookingsTabContent] Current bookings:', bookings);
-	console.log('🎯 [BookingsTabContent] IsLoading:', isLoading);
-	console.log('🎯 [BookingsTabContent] Bookings length:', bookings?.length);
 
 	return (
 		<>

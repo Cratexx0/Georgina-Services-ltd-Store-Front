@@ -54,11 +54,9 @@ const AuthForm = () => {
 
   // Load Google SDK
   useEffect(() => {
-    console.log('🔧 [GOOGLE-SDK] Starting to load SDK with client_id:', GOOGLE_CLIENT_ID);
     
     const loadGoogleSDK = () => {
       if (document.getElementById('google-sdk')) {
-        console.log('✅ [GOOGLE-SDK] SDK already loaded');
         setGoogleLoaded(true);
         return;
       }
@@ -69,12 +67,9 @@ const AuthForm = () => {
       script.async = true;
       script.defer = true;
       script.onload = () => {
-        console.log('✅ [GOOGLE-SDK] Script loaded successfully');
-        console.log('🔧 [GOOGLE-SDK] window.google exists:', !!window.google);
         setGoogleLoaded(true);
       };
       script.onerror = (error) => {
-        console.error('❌ [GOOGLE-SDK] Failed to load script:', error);
       };
       
       document.head.appendChild(script);
@@ -198,10 +193,8 @@ const AuthForm = () => {
   //   }
   // };
 const handleGoogleLogin = async () => {
-    console.log('🔧 [GOOGLE-LOGIN] Starting Google Sign-In with account picker');
     
     if (!window.google) {
-      console.error('❌ [GOOGLE-LOGIN] Google SDK not loaded');
       toast({
         title: "Google Sign-In Error",
         description: "Google authentication service not loaded. Please refresh the page.",
@@ -213,8 +206,6 @@ const handleGoogleLogin = async () => {
     setIsLoading(true);
 
     try {
-      console.log('🔧 [GOOGLE-LOGIN] Initializing Google...');
-
       // Create a temporary container for the button
       const tempContainer = document.createElement('div');
       tempContainer.style.position = 'absolute';
@@ -224,8 +215,6 @@ const handleGoogleLogin = async () => {
       window.google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
         callback: async (response: any) => {
-          console.log('🔧 [GOOGLE-CALLBACK] Received response:', response);
-          
           // Clean up the temporary container
           if (tempContainer && tempContainer.parentNode) {
             tempContainer.parentNode.removeChild(tempContainer);
@@ -234,8 +223,6 @@ const handleGoogleLogin = async () => {
           setIsLoading(false);
           
           if (response?.credential) {
-            console.log('✅ [GOOGLE-CALLBACK] Got credential, length:', response.credential.length);
-            console.log('🔧 [GOOGLE-CALLBACK] Token preview:', response.credential.substring(0, 50) + '...');
             try {
               await loginWithGoogle(response.credential);
               toast({
@@ -261,8 +248,6 @@ const handleGoogleLogin = async () => {
           }
         }
       });
-
-      console.log('🔧 [GOOGLE-LOGIN] Rendering button to trigger popup...');
       
       // Render a hidden button and click it to trigger the popup
       window.google.accounts.id.renderButton(tempContainer, {
@@ -352,11 +337,8 @@ const handleGoogleLogin = async () => {
     setIsLoading(true);
     
     try {
-      console.log('🔐 [FORM] Starting login process for:', loginData.email);
       
       await login(loginData.email, loginData.password);
-      
-      console.log('🔐 [FORM] Login successful, showing toast and navigating');
       
       toast({
         title: "Login successful",
@@ -366,7 +348,6 @@ const handleGoogleLogin = async () => {
       navigate('/', { replace: true });
       
     } catch (error: any) {
-      console.error('🔐 [FORM] Login error:', error);
       
       toast({
         title: "Login failed",
@@ -402,13 +383,9 @@ const handleGoogleLogin = async () => {
     setIsLoading(true);
     
     try {
-      console.log('👤 [FORM] Starting registration for:', registerData.email);
-      
       const fullName = registerData.fullName.trim();
       
       await register(fullName, registerData.email, registerData.password);
-      
-      console.log('👤 [FORM] Registration successful, showing toast and navigating');
       
       toast({
         title: "Registration successful",

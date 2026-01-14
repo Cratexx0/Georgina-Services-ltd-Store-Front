@@ -1,5 +1,3 @@
-
-
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { toast } from '@/components/ui/sonner';
 import { apiService } from './ApiService';
@@ -89,7 +87,6 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
   const refreshOrders = async () => {
     // Double-check user is authenticated
     if (!user || !user.email) {
-      console.log('⏭️ Skipping orders fetch - no authenticated user');
       setOrders([]);
       setIsLoading(false);
       return;
@@ -98,8 +95,6 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
     try {
       setIsLoading(true);
       const response = await apiService.getMyOrders();
-      
-      console.log('🛒 Orders API Response:', response);
       
       if (response && response.success) {
         let apiOrders: any[] = [];
@@ -133,8 +128,6 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
           }
         }
         
-        console.log('🛒 Extracted orders array:', apiOrders);
-        
         const transformedOrders: Order[] = apiOrders.map((apiOrder: any) => ({
           id: apiOrder._id || apiOrder.id || Math.random().toString(),
           orderNumber: apiOrder.orderNumber || apiOrder.orderNo || `ORD-${apiOrder._id?.slice(-6) || 'XXXXX'}`,
@@ -166,7 +159,6 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
 
         setOrders(transformedOrders);
       } else {
-        console.warn('Orders API returned success: false or invalid response', response);
         setOrders([]);
       }
     } catch (error) {

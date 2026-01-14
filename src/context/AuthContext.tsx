@@ -1,5 +1,3 @@
-
-
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { apiService } from './ApiService';
 
@@ -61,15 +59,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const token = sessionStorage.getItem('token') || localStorage.getItem('token');
       const savedUser = sessionStorage.getItem('user') || localStorage.getItem('user');
       
-      console.log('🔄 Checking auth status:', { 
-        hasToken: !!token, 
-        tokenLength: token?.length,
-        tokenPreview: token ? `${token.substring(0, 20)}...` : 'none',
-        hasSavedUser: !!savedUser 
-      });
-
       if (!token || token === 'null' || token === 'undefined') {
-        console.log('❌ No valid token found');
         clearAuthData();
         return false;
       }
@@ -78,7 +68,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         try {
           const parsedUser = JSON.parse(savedUser);
           setUser(parsedUser);
-          console.log('✅ Restored user from storage:', parsedUser.email);
           return true;
         } catch (err) {
           console.error('❌ Failed to parse saved user:', err);
@@ -87,15 +76,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       }
 
-      console.log('🔐 Verifying token and fetching user data...');
-      
       try {
         const verifyResponse = await apiService.verifyToken();
-        console.log('✅ Token verified:', verifyResponse);
-        
+
         const currentUserResponse = await apiService.getCurrentUser();
-        console.log('✅ User data fetched:', currentUserResponse);
-        
+
         if (currentUserResponse.success && currentUserResponse.data) {
           const userDataFromBackend = currentUserResponse.data.user || currentUserResponse.data;
           const userData: User = {
@@ -111,7 +96,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           sessionStorage.setItem('user', JSON.stringify(userData));
           localStorage.setItem('user', JSON.stringify(userData));
           
-          console.log('✅ User authenticated successfully:', userData.email);
           return true;
         } else {
           throw new Error('Failed to get user data from response');
@@ -120,12 +104,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         console.error('❌ Failed to verify token or get user data:', userError);
         
         if (userError.message?.includes('401') || userError.message?.includes('Invalid token')) {
-          console.log('❌ Token invalid - clearing auth data');
           clearAuthData();
           return false;
         }
         
-        console.log('⚠️ Token might be valid but user data fetch failed');
         return false;
       }
     } catch (err) {
@@ -143,19 +125,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setLoading(true);
       setError(null);
       
-      console.log('🔐 [AUTH-1] Starting login in AuthContext for:', email);
       clearAuthData();
       
-      console.log('🔐 [AUTH-2] Calling apiService.login...');
       const response = await apiService.login(email, password);
-      console.log('🔐 [AUTH-3] API service response received:', response);
-      
+
       const token = response.token || response.accessToken || response.data?.token;
-      console.log('🔐 [AUTH-4] Extracted token:', {
-        exists: !!token,
-        length: token?.length,
-        preview: token ? `${token.substring(0, 10)}...` : 'none'
-      });
 
       if (!token) {
         console.error('🔐 [AUTH-5] NO TOKEN AFTER EXTRACTION. Full response:', response);
@@ -179,8 +153,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         phoneNumber: userDataFromBackend.phoneNumber || userDataFromBackend.contact
       };
 
-      console.log('🔐 [AUTH-8] Created user object:', userData);
-
       sessionStorage.setItem('user', JSON.stringify(userData));
       localStorage.setItem('user', JSON.stringify(userData));
       sessionStorage.setItem('token', token);
@@ -188,14 +160,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       const storedToken = localStorage.getItem('token');
       const storedUser = localStorage.getItem('user');
-      console.log('🔐 [AUTH-10] Storage verification:', {
-        tokenStored: storedToken === token,
-        tokenLength: storedToken?.length,
-        userStored: !!storedUser
-      });
 
       setUser(userData);
-      console.log('🔐 [AUTH-11] Login completed successfully for:', userData.email);
 
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Login failed';
@@ -223,7 +189,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         );
       }
 
-      console.log(`🔐 [SOCIAL-${provider}] Starting social login`);
       clearAuthData();
 
       const response =
@@ -253,7 +218,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       localStorage.setItem('token', authToken);
 
       setUser(userData);
-      console.log(`🔐 [SOCIAL-${provider}] Login success for ${userData.email}`);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Social login failed. Please try again.';
@@ -267,8 +231,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // const loginWithGoogle = async (accessToken: string) =>
   const loginWithGoogle = async (idToken: string): Promise<void> => {
-  console.log('🔐 [GOOGLE-AUTH] Starting Google login, token length:', idToken?.length);
-  
+
   if (!idToken) {
     throw new Error('Google ID token is required');
   }
@@ -277,18 +240,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setLoading(true);
     setError(null);
     
-    console.log('🔐 [GOOGLE-AUTH] Clearing old auth data');
     clearAuthData();
     
     // Call the correct API endpoint for Google ID tokens
-    console.log('🔐 [GOOGLE-AUTH] Calling apiService.socialLoginGoogle...');
     const response = await apiService.socialLoginGoogle(idToken);
-    
-    console.log('🔐 [GOOGLE-AUTH] Response received:', {
-      hasToken: !!response.token,
-      hasData: !!response.data,
-      keys: Object.keys(response)
-    });
     
     const authToken = response.token || response.data?.token;
     const userDataFromBackend = response.user || response.data?.user;
@@ -312,8 +267,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       phoneNumber: userDataFromBackend.phoneNumber || userDataFromBackend.contact
     };
     
-    console.log('🔐 [GOOGLE-AUTH] Created user object:', userData);
-    
     // Store in both session and local storage
     sessionStorage.setItem('user', JSON.stringify(userData));
     localStorage.setItem('user', JSON.stringify(userData));
@@ -323,15 +276,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Verify storage
     const storedToken = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
-    console.log('🔐 [GOOGLE-AUTH] Storage verification:', {
-      tokenStored: storedToken === authToken,
-      tokenLength: storedToken?.length,
-      userStored: !!storedUser
-    });
-    
+
     setUser(userData);
-    console.log('✅ [GOOGLE-AUTH] Google login successful for:', userData.email);
-    
+
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Google authentication failed';
     setError(errorMessage);
@@ -369,7 +316,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         password
       });
       
-      console.log('✅ Registration response:', response);
 
       if (response.success || response.message?.includes('success') || response.data) {
         console.log('✅ Registration successful, attempting login...');
@@ -391,7 +337,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Remove const from method declaration
   const logout = (): void => {
-    console.log('🚪 Logging out user:', user?.email);
     clearAuthData();
   };
 
@@ -404,8 +349,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     sessionStorage.removeItem('token');
     localStorage.removeItem('user');
     localStorage.removeItem('token');
-    
-    console.log('🧹 Cleared all auth data from storage');
   };
 
   // Remove const from method declaration
@@ -460,7 +403,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (user) {
         const isValid = await refreshToken();
         if (!isValid) {
-          console.log('🔐 Token expired, auto-logout');
           logout();
         }
       }

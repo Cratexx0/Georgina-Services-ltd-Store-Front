@@ -140,7 +140,6 @@ const ChatBot: React.FC = () => {
         
         // Handle response - could be direct object or wrapped
         // The API returns { unreadCount: number } directly or wrapped in data
-        console.log('Unread count response:', response);
         
         let unreadCountValue = 0;
         
@@ -177,17 +176,13 @@ const ChatBot: React.FC = () => {
       messages: [] as Message[] 
     };
     
-    console.log('🔍 Extracting bot response from:', response);
-    
     // Structure 1: Check for botMessage in data property
     if (response.success && response.data?.botMessage) {
-      console.log('✅ Found botMessage in response.data');
       result.text = response.data.botMessage.message;
       result.messages = [convertToLocalMessage(response.data.botMessage)];
     }
     // Structure 2: Check for messages array in data property
     else if (response.success && response.data?.messages) {
-      console.log('✅ Found messages array in response.data');
       const botMessages = response.data.messages
         .filter(msg => msg.sender === 'bot')
         .map(convertToLocalMessage);
@@ -198,13 +193,11 @@ const ChatBot: React.FC = () => {
     }
     // Structure 3: Direct botMessage property
     else if (response.botMessage) {
-      console.log('✅ Found botMessage directly on response');
       result.text = response.botMessage.message;
       result.messages = [convertToLocalMessage(response.botMessage)];
     }
     // Structure 4: Direct messages array property
     else if (response.messages) {
-      console.log('✅ Found messages array directly on response');
       const botMessages = response.messages
         .filter(msg => msg.sender === 'bot')
         .map(convertToLocalMessage);
@@ -215,21 +208,17 @@ const ChatBot: React.FC = () => {
     }
     // Structure 5: Simple message property
     else if (response.message) {
-      console.log('✅ Found message property');
       result.text = response.message;
     }
     // Structure 6: success with no data (empty response)
     else if (response.success) {
-      console.log('✅ Success response with no data');
       result.text = "Thank you for your message! How else can I help you?";
     }
     // Fallback
     else {
-      console.log('⚠️ No bot response found, using fallback');
       result.text = "I've received your message. How can I assist you further?";
     }
-    
-    console.log('📤 Extracted result:', result);
+
     return result;
   };
 
@@ -260,14 +249,10 @@ const ChatBot: React.FC = () => {
           platform: 'web',
         }
       };
-
-      console.log('📤 Sending message to API:', messageData);
       
       // Send message to API
       const response: SendMessageResponse = await apiService.sendChatMessage(messageData);
-      
-      console.log('📥 Received API response:', response);
-      
+
       // Extract bot response from the API response
       const { text: botResponseText, messages: newBotMessages } = extractBotResponse(response);
       
@@ -341,28 +326,14 @@ const ChatBot: React.FC = () => {
     }
   };
 
-  // Debug function to log current state
-  const debugState = () => {
-    console.log('🤖 ChatBot State:', {
-      isOpen,
-      sessionId,
-      unreadCount,
-      messagesCount: messages.length,
-      isLoading,
-      lastMessages: messages.slice(-2),
-      hasToken: !!localStorage.getItem('token') || !!sessionStorage.getItem('token')
-    });
-  };
+
 
   // Test API connection
   const testApiConnection = async () => {
     try {
-      console.log('🔌 Testing API connection...');
       const session = await apiService.getChatSession('test');
-      console.log('✅ API Connection successful:', session);
       return true;
     } catch (error) {
-      console.error('❌ API Connection failed:', error);
       return false;
     }
   };
