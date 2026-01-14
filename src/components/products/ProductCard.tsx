@@ -52,7 +52,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       trendingOrder: 0,
       newArrivalOrder: 0,
       wishList: false,
-      size: (p as LocalProduct).sizes?.join(',') || null,
+      size: (p as LocalProduct).sizes || [],
+
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };

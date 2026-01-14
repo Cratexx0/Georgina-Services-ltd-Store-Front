@@ -41,7 +41,7 @@ export interface Product {
   wishList: boolean;
   
   // Size
-  size: string | null;
+  size:string[];
   
   // Timestamps
   createdAt: string;
