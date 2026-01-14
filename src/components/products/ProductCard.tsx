@@ -58,6 +58,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       updatedAt: new Date().toISOString(),
     };
   };
+  // handle add to cart
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
