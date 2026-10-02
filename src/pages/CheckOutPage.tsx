@@ -23,6 +23,7 @@ const CheckoutPage: React.FC = () => {
 	const [isLoadingPayment, setIsLoadingPayment] = useState(false);
 	const [orderProcessed, setOrderProcessed] = useState(false); // Track if order has been processed
 	const [createdOrderId, setCreatedOrderId] = useState<string | null>(null); // Store orderId for payment linking
+	const [cartHash, setCartHash] = useState<string>(""); // Track cart changes
 
 	const shippingCost = 10;
 	const taxRate = 0.15; // 15% tax
@@ -30,11 +31,59 @@ const CheckoutPage: React.FC = () => {
 	const tax = subtotal * taxRate;
 	const total = subtotal + shippingCost + tax;
 
+	// Helper function to generate a hash of the cart for comparison
+	const generateCartHash = (cartItems: CartItem[]): string => {
+		const cartData = cartItems
+			.map((item) => `${item.product.id}-${item.quantity}-${item.size}`)
+			.sort()
+			.join("|");
+		return btoa(cartData); // Simple base64 encoding as hash
+	};
+
+	// Helper functions to manage pending order in sessionStorage
+	const getPendingOrder = (): { orderId: string; cartHash: string; clientSecret: string } | null => {
+		const pending = sessionStorage.getItem("pendingOrder");
+		if (pending) {
+			try {
+				return JSON.parse(pending);
+			} catch {
+				return null;
+			}
+		}
+		return null;
+	};
+
+	const setPendingOrder = (orderId: string, cartHash: string, clientSecret: string) => {
+		sessionStorage.setItem(
+			"pendingOrder",
+			JSON.stringify({ orderId, cartHash, clientSecret })
+		);
+	};
+
+	const clearPendingOrder = () => {
+		sessionStorage.removeItem("pendingOrder");
+	};
+
 	useEffect(() => {
 		if (cart.length === 0) {
 			navigate("/cart");
 		}
 	}, [cart, navigate]);
+
+	// Monitor cart changes - if cart changes after a pending order exists, clear it
+	useEffect(() => {
+		const currentCartHash = generateCartHash(cart);
+		const pendingOrder = getPendingOrder();
+
+		// If we have a pending order and cart has changed, clear it
+		if (pendingOrder && pendingOrder.cartHash !== currentCartHash && cart.length > 0) {
+			clearPendingOrder();
+			setClientSecret("");
+			setCreatedOrderId(null);
+			setOrderProcessed(false);
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [cart]);
 
 	// Detect user's country for currency and payment processing
 	useEffect(() => {
@@ -114,10 +163,30 @@ const CheckoutPage: React.FC = () => {
 	// FLOW: Create Order → Get OrderId → Create PaymentIntent with OrderId → Payment Success → Update Order
 	useEffect(() => {
 		const createOrderAndPaymentIntent = async () => {
-			if (!isValidCheckout || clientSecret || createdOrderId) return;
+			if (!isValidCheckout) return;
 
 			try {
 				setIsLoadingPayment(true);
+
+				// Generate current cart hash
+				const currentCartHash = generateCartHash(cart);
+
+				// Check if we have a pending order
+				const pendingOrder = getPendingOrder();
+
+				// If we have a pending order and cart hasn't changed, reuse it
+				if (pendingOrder && pendingOrder.cartHash === currentCartHash && pendingOrder.clientSecret && pendingOrder.orderId) {
+					setCreatedOrderId(pendingOrder.orderId);
+					setClientSecret(pendingOrder.clientSecret);
+					setCartHash(currentCartHash);
+					setIsLoadingPayment(false);
+					return;
+				}
+
+				// If cart changed or no pending order, clear old pending order
+				if (pendingOrder) {
+					clearPendingOrder();
+				}
 
 				// STEP 1: Create the order first
 				const orderItems = cart.map((item) => ({
@@ -229,10 +298,16 @@ const CheckoutPage: React.FC = () => {
 				}
 
 				setClientSecret(secret);
+				setCartHash(currentCartHash);
+
+				// Save pending order to sessionStorage
+				setPendingOrder(orderId, currentCartHash, secret);
+
 			} catch (error) {
 				toast.error("Failed to initialize payment. Please try again.");
 				setClientSecret(""); // Reset on error
 				setCreatedOrderId(null); // Reset orderId on error
+				clearPendingOrder(); // Clear pending order on error
 			} finally {
 				setIsLoadingPayment(false);
 			}
@@ -293,6 +368,9 @@ const CheckoutPage: React.FC = () => {
 
 			// Clear the cart after successful payment
 			clearCart();
+
+			// Clear pending order from sessionStorage
+			clearPendingOrder();
 
 			toast.success("Payment completed successfully!");
 
