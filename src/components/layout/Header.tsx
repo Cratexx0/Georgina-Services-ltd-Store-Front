@@ -1,287 +1,249 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-	ShoppingCart,
-	Menu,
-	X,
-	LogIn,
-	User,
-	Heart,
-	LogOut,
-	LayoutDashboard,
-	Calendar,
+  Heart,
+  LayoutDashboard,
+  LogIn,
+  LogOut,
+  Menu,
+  ShoppingBag,
+  User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuLabel,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
-import { useBooking } from "@/context/BookingContext";
 import SearchBar from "@/components/ui/SearchBar";
+import MiniCart from "@/components/cart/MiniCart";
+import { cn } from "@/lib/utils";
+
+const clothingLinks = [
+  { label: "Clothing", to: "/category/clothes" },
+  { label: "Men", to: "/category/clothes/men" },
+  { label: "Women", to: "/category/clothes/women" },
+  { label: "Kids", to: "/category/clothes/kids" },
+];
 
 const Header = () => {
-	const { cart } = useCart();
-	const { wishlist } = useWishlist();
-	const { bookings } = useBooking();
-	const { isAuthenticated, user, logout } = useAuth();
-	const navigate = useNavigate();
-	const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { cart, getTotalItems } = useCart();
+  const { wishlist } = useWishlist();
+  const { isAuthenticated, user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
-	const toggleMenu = () => {
-		setIsMenuOpen(!isMenuOpen);
-	};
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 12);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
-	const handleLogout = () => {
-		logout();
-		setIsMenuOpen(false);
-		navigate("/");
-	};
+  const handleLogout = () => {
+    logout();
+    setIsMenuOpen(false);
+    navigate("/");
+  };
 
-	const getUserInitials = () => {
-		const name = user?.name || user?.fullname || user?.email || "U";
-		return name.charAt(0).toUpperCase();
-	};
+  const getUserInitials = () => {
+    const name = user?.name || user?.fullname || user?.email || "U";
+    return name.charAt(0).toUpperCase();
+  };
 
-	return (
-		<header className="bg-background/80 backdrop-blur-md border-b border-border/50 sticky top-0 z-50 shadow-lg">
-			<div className="container mx-auto px-4 py-4">
-				<div className="flex items-center justify-between">
-					{/* Logo */}
-					<Link to="/">
-						<img
-							src="/gina_logo.png"
-							alt="georgina services limited logo"
-							width={150}
-							height={50}
-						/>
-					</Link>
+  const cartCount = getTotalItems();
 
-					{/* Desktop Navigation */}
-					<nav className="hidden md:flex space-x-6">
-						<Link
-							to="/"
-							className="text-muted-foreground hover:text-primary transition-colors"
-						>
-							Home
-						</Link>
-						<Link
-							to="/category/clothes"
-							className="text-muted-foreground hover:text-primary transition-colors"
-						>
-							Clothes
-						</Link>
-						<Link
-							to="/category/foodstuffs"
-							className="text-muted-foreground hover:text-primary transition-colors"
-						>
-							Food & Spices
-						</Link>
-						<Link
-							to="/category/services"
-							className="text-muted-foreground hover:text-primary transition-colors"
-						>
-							Cleaning Services
-						</Link>
-					</nav>
+  return (
+    <>
+      <header
+        className={cn(
+          "sticky top-0 z-50 border-b transition-all duration-300",
+          scrolled
+            ? "bg-background/95 backdrop-blur-md shadow-sm border-border"
+            : "bg-background/80 backdrop-blur-md border-transparent"
+        )}
+      >
+        <div className="container mx-auto px-4">
+          <div className="flex h-16 md:h-[4.5rem] items-center justify-between gap-4">
+            <Link to="/" className="flex-shrink-0">
+              <img
+                src="/gina_logo.png"
+                alt="Georgina Services Limited"
+                width={140}
+                height={44}
+                className="h-9 w-auto md:h-10"
+              />
+            </Link>
 
-					{/* Search and Cart */}
-					<div className="hidden md:flex items-center space-x-4">
-						<SearchBar className="w-[200px] lg:w-[300px]" />
+            <nav className="hidden lg:flex items-center gap-7 text-sm">
+              {clothingLinks.map((link) => (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  className="text-foreground/80 hover:text-foreground transition-colors tracking-wide"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
 
-						<Link to="/wishlist" className="relative">
-							<Heart className="h-4 w-4 text-muted-foreground" />
-							{wishlist.length > 0 && (
-								<span className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs">
-									{wishlist.length}
-								</span>
-							)}
-						</Link>
+            <div className="hidden md:flex items-center gap-3 flex-1 justify-end max-w-xl">
+              <SearchBar className="w-[220px] lg:w-[280px]" />
 
-					<Link to="/cart" className="relative">
-						<ShoppingCart className="h-4 w-4 text-muted-foreground" />
-						{cart.length > 0 && (
-							<span className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs">
-								{cart.length}
-							</span>
-						)}
-					</Link>
+              <Link to="/wishlist" className="relative p-2" aria-label="Wishlist">
+                <Heart className="h-5 w-5" />
+                {wishlist.length > 0 && (
+                  <span className="absolute top-0.5 right-0.5 bg-foreground text-background rounded-full min-w-4 h-4 px-1 flex items-center justify-center text-[10px]">
+                    {wishlist.length}
+                  </span>
+                )}
+              </Link>
 
-						<div className="flex items-center space-x-4">
-						{isAuthenticated ? (
-								<DropdownMenu>
-									<DropdownMenuTrigger asChild>
-										<Button
-											variant="ghost"
-											size="sm"
-											className="flex items-center gap-2 hover:bg-accent"
-										>
-											<Avatar className="h-8 w-8">
-												<AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
-													{getUserInitials()}
-												</AvatarFallback>
-											</Avatar>
-										</Button>
-									</DropdownMenuTrigger>
-									<DropdownMenuContent 
-										align="end" 
-										className="w-56 bg-background border border-border shadow-lg"
-									>
-										<DropdownMenuLabel className="font-normal">
-											<div className="flex flex-col space-y-1">
-												<p className="text-sm font-medium leading-none">
-													{user?.name || user?.fullname || "User"}
-												</p>
-												<p className="text-xs text-muted-foreground truncate">
-													{user?.email}
-												</p>
-											</div>
-										</DropdownMenuLabel>
-										<DropdownMenuSeparator />
-										<DropdownMenuItem
-											onClick={() => navigate("/dashboard")}
-											className="cursor-pointer"
-										>
-											<LayoutDashboard className="mr-2 h-4 w-4" />
-											<span>Dashboard</span>
-										</DropdownMenuItem>
-										<DropdownMenuSeparator />
-										<DropdownMenuItem
-											onClick={handleLogout}
-											className="cursor-pointer text-destructive focus:text-destructive"
-										>
-											<LogOut className="mr-2 h-4 w-4" />
-											<span>Logout</span>
-										</DropdownMenuItem>
-									</DropdownMenuContent>
-								</DropdownMenu>
-							) : (
-								<Link to="/auth">
-									<Button
-										variant="default"
-										size="sm"
-										className="flex items-center gap-2"
-									>
-										<LogIn className="h-4 w-4" />
-										Sign In
-									</Button>
-								</Link>
-							)}
-						</div>
-					</div>
+              <button
+                type="button"
+                className="relative p-2"
+                aria-label="Open shopping bag"
+                onClick={() => setCartOpen(true)}
+              >
+                <ShoppingBag className="h-5 w-5" />
+                {cartCount > 0 && (
+                  <span className="absolute top-0.5 right-0.5 bg-foreground text-background rounded-full min-w-4 h-4 px-1 flex items-center justify-center text-[10px]">
+                    {cartCount}
+                  </span>
+                )}
+              </button>
 
-					{/* Mobile menu button */}
-					<button
-						className="md:hidden text-muted-foreground"
-						onClick={toggleMenu}
-						aria-label="Toggle menu"
-					>
-						{isMenuOpen ? (
-							<X className="h-6 w-6" />
-						) : (
-							<Menu className="h-6 w-6" />
-						)}
-					</button>
-				</div>
+              {isAuthenticated ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="rounded-full px-1" aria-label="Account">
+                      <Avatar className="h-8 w-8">
+                        <AvatarFallback className="bg-foreground text-background text-sm">
+                          {getUserInitials()}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel>
+                      <p className="text-sm font-medium">{user?.name || user?.fullname || "Account"}</p>
+                      <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => navigate("/dashboard")}>
+                      <LayoutDashboard className="mr-2 h-4 w-4" />
+                      Dashboard
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleLogout} className="text-destructive">
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Logout
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Link to="/auth">
+                  <Button size="sm" variant="outline" className="gap-2">
+                    <LogIn className="h-4 w-4" />
+                    Sign in
+                  </Button>
+                </Link>
+              )}
+            </div>
 
-				{/* Mobile menu */}
-				{isMenuOpen && (
-					<div className="md:hidden py-4 animate-slide-down">
-						<nav className="flex flex-col space-y-3">
-							<Link
-								to="/"
-								className="text-muted-foreground hover:text-primary transition-colors"
-								onClick={toggleMenu}
-							>
-								Home
-							</Link>
-							<Link
-								to="/category/clothes"
-								className="text-muted-foreground hover:text-primary transition-colors"
-								onClick={toggleMenu}
-							>
-								Clothes
-							</Link>
-							<Link
-								to="/category/foodstuffs"
-								className="text-muted-foreground hover:text-primary transition-colors"
-								onClick={toggleMenu}
-							>
-								Food & Spices
-							</Link>
-							<Link
-								to="/category/services"
-								className="text-muted-foreground hover:text-primary transition-colors"
-								onClick={toggleMenu}
-							>
-								Cleaning Services
-							</Link>
+            <div className="flex md:hidden items-center gap-1">
+              <Link to="/wishlist" className="relative p-2" aria-label="Wishlist">
+                <Heart className="h-5 w-5" />
+                {wishlist.length > 0 && (
+                  <span className="absolute top-0.5 right-0.5 bg-foreground text-background rounded-full min-w-4 h-4 text-[10px] flex items-center justify-center">
+                    {wishlist.length}
+                  </span>
+                )}
+              </Link>
+              <button type="button" className="relative p-2" aria-label="Open shopping bag" onClick={() => setCartOpen(true)}>
+                <ShoppingBag className="h-5 w-5" />
+                {cart.length > 0 && (
+                  <span className="absolute top-0.5 right-0.5 bg-foreground text-background rounded-full min-w-4 h-4 text-[10px] flex items-center justify-center">
+                    {cartCount}
+                  </span>
+                )}
+              </button>
+              <button
+                type="button"
+                className="p-2"
+                onClick={() => setIsMenuOpen(true)}
+                aria-label="Open menu"
+              >
+                <Menu className="h-6 w-6" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
 
-							<div className="flex items-center space-x-4">
-								{isAuthenticated ? (
-									<div className="flex flex-col space-y-2 w-full">
-										<Link
-											to="/dashboard"
-											onClick={toggleMenu}
-											className="w-full"
-										>
-											<Button
-												variant="ghost"
-												size="sm"
-												className="flex items-center gap-2 w-full justify-start"
-											>
-												<User className="h-4 w-4" />
-												{user?.name || user?.fullname || "Account"}
-											</Button>
-										</Link>
-										<Button
-											variant="outline"
-											size="sm"
-											onClick={handleLogout}
-											className="w-full justify-start text-xs"
-										>
-											<LogOut className="h-4 w-4 mr-2" />
-											Logout
-										</Button>
-									</div>
-								) : (
-									<Link to="/auth" onClick={toggleMenu} className="w-full">
-										<Button
-											variant="default"
-											size="sm"
-											className="flex items-center gap-2 w-full"
-										>
-											<LogIn className="h-4 w-4" />
-											Sign In
-										</Button>
-									</Link>
-								)}
-							</div>
-						</nav>
-						<div className="mt-4 flex items-center space-x-4">
-							<SearchBar className="flex-1" onClose={toggleMenu} />
+      <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+        <SheetContent side="left" className="w-[86vw] sm:max-w-sm">
+          <SheetHeader>
+            <SheetTitle className="font-serif text-left text-2xl">Menu</SheetTitle>
+          </SheetHeader>
+          <div className="mt-6">
+            <SearchBar className="mb-6" onClose={() => setIsMenuOpen(false)} />
+            <nav className="flex flex-col gap-1">
+              {clothingLinks.map((link) => (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  onClick={() => setIsMenuOpen(false)}
+                  className="py-2.5 text-lg border-b border-border"
+                >
+                  {link.label}
+                </Link>
+              ))}
+              <Link to="/category/foodstuffs" onClick={() => setIsMenuOpen(false)} className="py-2.5 text-sm text-muted-foreground">
+                Food & Spices
+              </Link>
+              <Link to="/category/services" onClick={() => setIsMenuOpen(false)} className="py-2.5 text-sm text-muted-foreground">
+                Cleaning Services
+              </Link>
+            </nav>
+            <div className="mt-6">
+              {isAuthenticated ? (
+                <div className="space-y-2">
+                  <Button variant="outline" className="w-full justify-start" onClick={() => { setIsMenuOpen(false); navigate("/dashboard"); }}>
+                    <User className="h-4 w-4 mr-2" />
+                    {user?.name || "Account"}
+                  </Button>
+                  <Button variant="ghost" className="w-full justify-start" onClick={handleLogout}>
+                    <LogOut className="h-4 w-4 mr-2" /> Logout
+                  </Button>
+                </div>
+              ) : (
+                <Button className="w-full" asChild>
+                  <Link to="/auth" onClick={() => setIsMenuOpen(false)}>Sign in</Link>
+                </Button>
+              )}
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
 
-							<Link to="/cart" className="relative" onClick={toggleMenu}>
-								<ShoppingCart className="h-6 w-6 text-muted-foreground" />
-								{cart.length > 0 && (
-									<span className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs">
-										{cart.length}
-									</span>
-								)}
-							</Link>
-						</div>
-					</div>
-				)}
-			</div>
-		</header>
-	);
+      <MiniCart open={cartOpen} onOpenChange={setCartOpen} />
+    </>
+  );
 };
 
 export default Header;

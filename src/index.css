@@ -14,7 +14,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 220 91% 54%;
+    --primary: 24 10% 10%;
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
@@ -228,4 +228,31 @@
 
 .social-button:hover {
   transform: translateY(-2px);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+.clothing-shimmer {
+  background: linear-gradient(90deg, hsl(var(--muted)) 25%, hsl(var(--muted-foreground) / 0.08) 50%, hsl(var(--muted)) 75%);
+  background-size: 200% 100%;
+  animation: clothing-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes clothing-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .clothing-shimmer,
+  .animate-fade-in,
+  .animate-slide-in,
+  .animate-pulse {
+    animation: none !important;
+  }
 }

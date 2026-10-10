@@ -1,7 +1,17 @@
-// src/hooks/useProducts.ts
-import { useState, useEffect } from 'react';
-import { apiService } from '@/lib/api';
-import { Product } from '@/lib/type';
+import { useState, useEffect } from "react";
+import { apiService } from "@/lib/api";
+import { Product } from "@/lib/type";
+import {
+  getLocalClothingProducts,
+  isClothingProduct,
+  localToApiProduct,
+} from "@/lib/productUtils";
+import {
+  getFeaturedProducts,
+  getNewArrivalProducts,
+  getTrendingProducts,
+  products as localProducts,
+} from "@/data/products";
 
 interface UseProductsResult {
   products: Product[];
@@ -12,7 +22,11 @@ interface UseProductsResult {
   limit: number;
 }
 
-// All hooks now simply use the normalized Product[] from ApiService
+const asApiList = (list: ReturnType<typeof getFeaturedProducts>): Product[] =>
+  list.map(localToApiProduct);
+
+const clothingOnly = (list: Product[]) => list.filter(isClothingProduct);
+
 export const useTrendingProducts = (page = 1, limit = 10): UseProductsResult => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -20,27 +34,38 @@ export const useTrendingProducts = (page = 1, limit = 10): UseProductsResult => 
   const [total, setTotal] = useState(0);
 
   useEffect(() => {
-    const fetchTrendingProducts = async () => {
+    let cancelled = false;
+    const run = async () => {
       try {
         setLoading(true);
         setError(null);
-        
-        // ApiService returns normalized Product[] directly
-        const productsData = await apiService.getTrendingProducts();
-        
-        setProducts(productsData.products);
-        setTotal(productsData.total);
-      } catch (err) {
-        console.error("Failed to load trending products:", err);
-        setError("Failed to load trending products.");
-        setProducts([]);
-        setTotal(0);
+        const data = await apiService.getTrendingProducts(page, limit);
+        const list = clothingOnly(data.products || []);
+        if (!cancelled) {
+          if (list.length) {
+            setProducts(list);
+            setTotal(data.total || list.length);
+          } else {
+            const fallback = clothingOnly(asApiList(getTrendingProducts()));
+            setProducts(fallback);
+            setTotal(fallback.length);
+          }
+        }
+      } catch {
+        if (!cancelled) {
+          const fallback = clothingOnly(asApiList(getTrendingProducts()));
+          setProducts(fallback);
+          setTotal(fallback.length);
+          setError(null);
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
-
-    fetchTrendingProducts();
+    run();
+    return () => {
+      cancelled = true;
+    };
   }, [page, limit]);
 
   return { products, loading, error, total, page, limit };
@@ -53,27 +78,37 @@ export const useNewArrivalProducts = (page = 1, limit = 10): UseProductsResult =
   const [total, setTotal] = useState(0);
 
   useEffect(() => {
-    const fetchNewArrivalProducts = async () => {
+    let cancelled = false;
+    const run = async () => {
       try {
         setLoading(true);
         setError(null);
-        
-        // ApiService returns normalized Product[] directly
-        const productsData = await apiService.getNewArrivalProducts();
-        
-        setProducts(productsData.products);
-        setTotal(productsData.total);
-      } catch (err) {
-        console.error("Failed to load new arrival products:", err);
-        setError("Failed to load new arrival products.");
-        setProducts([]);
-        setTotal(0);
+        const data = await apiService.getNewArrivalProducts(page, limit);
+        const list = clothingOnly(data.products || []);
+        if (!cancelled) {
+          if (list.length) {
+            setProducts(list);
+            setTotal(data.total || list.length);
+          } else {
+            const fallback = clothingOnly(asApiList(getNewArrivalProducts()));
+            setProducts(fallback);
+            setTotal(fallback.length);
+          }
+        }
+      } catch {
+        if (!cancelled) {
+          const fallback = clothingOnly(asApiList(getNewArrivalProducts()));
+          setProducts(fallback);
+          setTotal(fallback.length);
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
-
-    fetchNewArrivalProducts();
+    run();
+    return () => {
+      cancelled = true;
+    };
   }, [page, limit]);
 
   return { products, loading, error, total, page, limit };
@@ -86,73 +121,100 @@ export const useFeaturedProducts = (page = 1, limit = 10): UseProductsResult => 
   const [total, setTotal] = useState(0);
 
   useEffect(() => {
-    const fetchFeaturedProducts = async () => {
+    let cancelled = false;
+    const run = async () => {
       try {
         setLoading(true);
         setError(null);
-        
-        // ApiService returns normalized Product[] directly
-        const productsData = await apiService.getFeaturedProducts();
-        
-        setProducts(productsData.products);
-        setTotal(productsData.total); // FIXED: Changed .limit to .length
-      } catch (err) {
-        console.error("Failed to load featured products:", err);
-        setError("Failed to load featured products.");
-        setProducts([]);
-        setTotal(0);
+        const data = await apiService.getFeaturedProducts(page, limit);
+        const list = clothingOnly(data.products || []);
+        if (!cancelled) {
+          if (list.length) {
+            setProducts(list);
+            setTotal(data.total || list.length);
+          } else {
+            const fallback = clothingOnly(asApiList(getFeaturedProducts()));
+            setProducts(fallback);
+            setTotal(fallback.length);
+          }
+        }
+      } catch {
+        if (!cancelled) {
+          const fallback = clothingOnly(asApiList(getFeaturedProducts()));
+          setProducts(fallback);
+          setTotal(fallback.length);
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
-
-    fetchFeaturedProducts();
+    run();
+    return () => {
+      cancelled = true;
+    };
   }, [page, limit]);
 
   return { products, loading, error, total, page, limit };
 };
 
-export const useProducts = (page = 1, limit = 10, category?: string, search?: string): UseProductsResult => {
+export const useProducts = (
+  page = 1,
+  limit = 12,
+  category?: string,
+  search?: string
+): UseProductsResult => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    let cancelled = false;
+    const run = async () => {
       try {
         setLoading(true);
         setError(null);
-        
-        const params: any = {
-          page,
-          limit,
-        };
-        
-        if (category) {
-          params.category = category;
+        const data = await apiService.getProducts(page, limit, category, undefined, search);
+        if (!cancelled) {
+          if (data.products?.length) {
+            setProducts(data.products);
+            setTotal(data.total);
+          } else {
+            const fallback = search
+              ? localProducts
+                  .filter((p) =>
+                    `${p.name} ${p.description}`.toLowerCase().includes(search.toLowerCase())
+                  )
+                  .map(localToApiProduct)
+              : category
+                ? localProducts
+                    .filter((p) => p.categoryId === category || p.subcategoryId === category)
+                    .map(localToApiProduct)
+                : getLocalClothingProducts();
+            setProducts(fallback);
+            setTotal(fallback.length);
+          }
         }
-        
-        if (search) {
-          params.search = search;
+      } catch {
+        if (!cancelled) {
+          const fallback = search
+            ? localProducts
+                .filter((p) =>
+                  `${p.name} ${p.description}`.toLowerCase().includes(search.toLowerCase())
+                )
+                .map(localToApiProduct)
+            : getLocalClothingProducts();
+          setProducts(fallback);
+          setTotal(fallback.length);
         }
-        
-        // ApiService returns normalized Product[] directly
-        const productsData = await apiService.getProducts(params);
-        
-        setProducts(productsData.products);
-        setTotal(productsData.total);
-      } catch (err) {
-        console.error("Failed to load products:", err);
-        setError("Failed to load products.");
-        setProducts([]);
-        setTotal(0);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
-
-    fetchProducts();
+    run();
+    return () => {
+      cancelled = true;
+    };
   }, [page, limit, category, search]);
 
   return { products, loading, error, total, page, limit };

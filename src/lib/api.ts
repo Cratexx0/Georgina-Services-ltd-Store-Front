@@ -411,11 +411,13 @@ class ApiService {
 		page = 1,
 		limit = 10,
 		category?: string,
-		subcategory?: string
+		subcategory?: string,
+		search?: string
 	): Promise<{ products: Product[]; total: number }> {
 		let endpoint = `/api/products?page=${page}&limit=${limit}`;
-		if (category) endpoint += `&category=${category}`;
-		if (subcategory) endpoint += `&subcategory=${subcategory}`;
+		if (category) endpoint += `&category=${encodeURIComponent(category)}`;
+		if (subcategory) endpoint += `&subcategory=${encodeURIComponent(subcategory)}`;
+		if (search) endpoint += `&search=${encodeURIComponent(search)}`;
 		return this.request<{ products: Product[]; total: number }>(endpoint);
 	}
 

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import ProductCard from './ProductCard';
-import { ProductGridSkeleton } from '@/components/Loader/SkeletonLoader';
+import React, { useEffect, useState } from "react";
+import ProductCard from "./ProductCard";
+import { ProductGridSkeleton } from "@/components/Loader/SkeletonLoader";
 import {
   Pagination,
   PaginationContent,
@@ -8,11 +8,10 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from '@/components/ui/pagination';
-import { Product as ApiProduct } from '@/lib/type';
-import { Product as LocalProduct } from '@/data/products';
-
-type FlexibleProduct = ApiProduct | LocalProduct;
+} from "@/components/ui/pagination";
+import { FlexibleProduct } from "@/lib/productTypes";
+import EmptyState from "@/components/common/EmptyState";
+import { ShoppingBag } from "lucide-react";
 
 interface PaginatedProductGridProps {
   products: FlexibleProduct[];
@@ -21,86 +20,97 @@ interface PaginatedProductGridProps {
   isLoading?: boolean;
 }
 
-const PaginatedProductGrid: React.FC<PaginatedProductGridProps> = ({ 
-  products, 
-  title, 
-  itemsPerPage = 10,
-  isLoading = false
+const PaginatedProductGrid: React.FC<PaginatedProductGridProps> = ({
+  products,
+  title,
+  itemsPerPage = 12,
+  isLoading = false,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
-  
-  const totalPages = Math.ceil(products.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentProducts = products.slice(startIndex, endIndex);
+  const totalPages = Math.max(1, Math.ceil(products.length / itemsPerPage));
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [products]);
+
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentProducts = products.slice(startIndex, startIndex + itemsPerPage);
+
+  const goTo = (page: number) => {
+    const next = Math.min(totalPages, Math.max(1, page));
+    setCurrentPage(next);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   if (isLoading) {
     return (
-      <div className="mb-8 md:mb-12">
-        {title && (
-          <h2 className="text-xl md:text-2xl font-semibold mb-4 md:mb-6">{title}</h2>
-        )}
+      <div className="mb-8">
+        {title && <h2 className="font-serif text-2xl mb-6">{title}</h2>}
         <ProductGridSkeleton count={itemsPerPage} />
       </div>
     );
   }
 
+  if (products.length === 0) {
+    return (
+      <EmptyState
+        icon={<ShoppingBag className="h-7 w-7" />}
+        title="No products found"
+        description="Try adjusting your filters or exploring another category."
+      />
+    );
+  }
+
+  const pages = Array.from({ length: totalPages }, (_, i) => i + 1).filter((page) => {
+    if (totalPages <= 7) return true;
+    return page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1;
+  });
+
   return (
-    <div className="mb-8 md:mb-12">
-      {title && (
-        <h2 className="text-xl md:text-2xl font-semibold mb-4 md:mb-6">{title}</h2>
-      )}
-      
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4 lg:gap-6 mb-6 md:mb-8">
-        {currentProducts?.map((product) => (
+    <div className="mb-8">
+      {title && <h2 className="font-serif text-2xl mb-6">{title}</h2>}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5 mb-8">
+        {currentProducts.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}
       </div>
-      
-      {products.length === 0 && (
-        <div className="text-center py-8 md:py-12">
-          <p className="text-base md:text-lg text-muted-foreground">No products found</p>
-        </div>
-      )}
-      
+
       {totalPages > 1 && (
         <Pagination className="justify-center">
           <PaginationContent className="flex-wrap gap-1">
             <PaginationItem>
-              <PaginationPrevious 
-                onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-                className={`text-xs md:text-sm ${currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}`}
+              <PaginationPrevious
+                onClick={() => goTo(currentPage - 1)}
+                className={`cursor-pointer text-xs md:text-sm ${currentPage === 1 ? "pointer-events-none opacity-50" : ""}`}
               />
             </PaginationItem>
-            
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <PaginationItem key={page} className="hidden sm:block">
-                <PaginationLink
-                  onClick={() => handlePageChange(page)}
-                  isActive={currentPage === page}
-                  className="cursor-pointer text-xs md:text-sm h-8 w-8 md:h-9 md:w-9"
-                >
-                  {page}
-                </PaginationLink>
-              </PaginationItem>
+            {pages.map((page, i) => (
+              <React.Fragment key={page}>
+                {i > 0 && pages[i - 1] !== page - 1 && (
+                  <PaginationItem className="hidden sm:flex">
+                    <span className="px-2 text-muted-foreground">…</span>
+                  </PaginationItem>
+                )}
+                <PaginationItem className="hidden sm:block">
+                  <PaginationLink
+                    onClick={() => goTo(page)}
+                    isActive={currentPage === page}
+                    className="cursor-pointer"
+                  >
+                    {page}
+                  </PaginationLink>
+                </PaginationItem>
+              </React.Fragment>
             ))}
-            
-            {/* Mobile page indicator */}
             <PaginationItem className="sm:hidden">
               <span className="text-xs px-2">
                 {currentPage} / {totalPages}
               </span>
             </PaginationItem>
-            
             <PaginationItem>
-              <PaginationNext 
-                onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-                className={`text-xs md:text-sm ${currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}`}
+              <PaginationNext
+                onClick={() => goTo(currentPage + 1)}
+                className={`cursor-pointer text-xs md:text-sm ${currentPage === totalPages ? "pointer-events-none opacity-50" : ""}`}
               />
             </PaginationItem>
           </PaginationContent>

@@ -3,7 +3,7 @@ import Layout from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/context/AuthContext";
-import { useBooking } from "@/context/BookingContext";
+// import { useBooking } from "@/context/BookingContext";
 import { useOrder } from "@/context/OrderContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
@@ -17,12 +17,12 @@ import {
 	Clock,
 } from "lucide-react";
 import OrdersTabContent from "@/components/dashboard/OrdersTabContent";
-import BookingsTabContent from "@/components/dashboard/BookingsTabContent";
+// import BookingsTabContent from "@/components/dashboard/BookingsTabContent";
 import ProfileTabContent from "@/components/dashboard/ProfileTabContent";
 
 const DashboardPage: React.FC = () => {
 	const { user, isAuthenticated, loading: authLoading } = useAuth();
-	const { bookings } = useBooking();
+	// const { bookings } = useBooking();
 	const { orders } = useOrder();
 	const navigate = useNavigate();
 	const [searchParams] = useSearchParams();
@@ -95,11 +95,9 @@ const DashboardPage: React.FC = () => {
 			(acc, order) => acc + (order.totalAmount || 0),
 			0
 		);
-		const bookingTotal = bookings.reduce(
-			(acc, booking) => acc + (booking.price || 0),
-			0
-		);
-		return orderTotal + bookingTotal;
+		//const bookingTotal = bookings.reduce(
+	
+		return orderTotal ;
 	};
 
 	const formatCurrency = (amount: number) => {
@@ -157,24 +155,7 @@ const DashboardPage: React.FC = () => {
 							</CardContent>
 						</Card>
 
-						<Card className="hover:shadow-lg transition-shadow">
-							<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-								<CardTitle className="text-sm font-medium">
-									Total Bookings
-								</CardTitle>
-								<div className="bg-green-100 p-2 rounded-full">
-									<Calendar className="h-4 w-4 text-green-600" />
-								</div>
-							</CardHeader>
-							<CardContent>
-								<div className="text-3xl font-bold text-green-600">
-									{bookings.length}
-								</div>
-								<p className="text-xs text-muted-foreground mt-1">
-									Service bookings made
-								</p>
-							</CardContent>
-						</Card>
+				
 
 						<Card className="hover:shadow-lg transition-shadow">
 							<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -230,15 +211,7 @@ const DashboardPage: React.FC = () => {
 							/>
 						</TabsContent>
 
-						{/* Bookings Tab */}
-						<TabsContent value="bookings" className="space-y-4">
-							<BookingsTabContent
-								getStatusColor={getStatusColor}
-								getStatusIcon={getStatusIcon}
-								formatCurrency={formatCurrency}
-								formatDate={formatDate}
-							/>
-						</TabsContent>
+		
 
 						{/* Profile Tab */}
 						<TabsContent value="profile" className="space-y-4">

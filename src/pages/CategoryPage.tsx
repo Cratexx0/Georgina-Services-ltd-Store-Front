@@ -1,381 +1,318 @@
-// export default CategoryPage;
-import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import React, { useEffect, useMemo, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
 import PaginatedProductGrid from "@/components/products/PaginatedProductGrid";
 import { apiService, Category } from "@/lib/api";
 import { Product } from "@/lib/type";
 import { Button } from "@/components/ui/button";
-import { Loader2, ChevronRight } from "lucide-react";
+import { ChevronRight, SlidersHorizontal } from "lucide-react";
+import { fallbackCategories } from "@/data/categories";
+import { getLocalProductsByCategory } from "@/lib/productUtils";
+import { useProductFilters } from "@/hooks/useProductFilters";
+import ProductFilters from "@/components/clothing/ProductFilters";
+import ProductSort from "@/components/clothing/ProductSort";
+import ErrorState from "@/components/common/ErrorState";
+import { ProductGridSkeleton } from "@/components/Loader/SkeletonLoader";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+
+const toLocalCategory = (): Category[] =>
+  fallbackCategories.map((cat) => ({
+    id: cat.id,
+    name: cat.name,
+    slug: cat.slug,
+    level: 1,
+    parentId: null,
+    description: cat.description,
+    sortOrder: 0,
+    isActive: true,
+    createdAt: "",
+    updatedAt: "",
+    image: cat.image,
+    subcategories: cat.subcategories,
+  }));
 
 const CategoryPage = () => {
-	const { categorySlug, subcategorySlug } = useParams<{
-		categorySlug: string;
-		subcategorySlug?: string;
-	}>();
-	const [currentCategory, setCurrentCategory] = useState<Category | null>(null);
-	const [subcategories, setSubcategories] = useState<Category[]>([]);
-	const [level3Categories, setLevel3Categories] = useState<string[]>([]);
-	const [products, setProducts] = useState<Product[]>([]);
-	const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-	const [selectedLevel3, setSelectedLevel3] = useState<string | null>(null);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
+  const { categorySlug, subcategorySlug } = useParams<{
+    categorySlug: string;
+    subcategorySlug?: string;
+  }>();
+  const [currentCategory, setCurrentCategory] = useState<Category | null>(null);
+  const [subcategories, setSubcategories] = useState<Category[]>([]);
+  const [level3Categories, setLevel3Categories] = useState<string[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [selectedLevel3, setSelectedLevel3] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [filterOpen, setFilterOpen] = useState(false);
 
-	useEffect(() => {
-		const fetchCategoryData = async () => {
-			try {
-				setLoading(true);
-				setError(null);
+  useEffect(() => {
+    const fetchCategoryData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-				// Fetch categories from API
-				const categories = await apiService.getCategories();
+        let categories: Category[] = [];
+        try {
+          categories = await apiService.getCategories();
+        } catch {
+          categories = toLocalCategory();
+        }
+        if (!categories?.length) categories = toLocalCategory();
 
-				// Find current category by slug
-				let currentCat: Category | null = null;
+        let currentCat =
+          categories.find(
+            (cat) => cat.slug === categorySlug && (cat.level === 1 || !cat.level)
+          ) || categories.find((cat) => cat.slug === categorySlug) || null;
 
-				if (categorySlug) {
-					currentCat =
-						categories.find(
-							(cat) =>
-								cat.slug === categorySlug &&
-								cat.level === 1 &&
-								cat.parentId === null
-						) || null;
-				}
+        if (!currentCat && categorySlug === "clothes") {
+          currentCat = toLocalCategory().find((c) => c.slug === "clothes") || null;
+        }
 
-				if (!currentCat) {
-					setError("Category not found");
-					setLoading(false);
-					return;
-				}
+        if (!currentCat) {
+          setError("Category not found");
+          setLoading(false);
+          return;
+        }
 
-				setCurrentCategory(currentCat);
+        setCurrentCategory(currentCat);
 
-				// Get subcategories for the current category (Level 2 categories)
-				const currentSubcategories = categories.filter(
-					(cat) => cat.level === 2 && cat.parentId === currentCat!.id
-				);
-				setSubcategories(currentSubcategories);
+        const currentSubcategories = categories.filter(
+          (cat) => cat.level === 2 && cat.parentId === currentCat!.id
+        );
+        if (currentSubcategories.length) {
+          setSubcategories(currentSubcategories);
+        } else {
+          const local = fallbackCategories.find((c) => c.slug === currentCat!.slug);
+          setSubcategories(
+            (local?.subcategories || []).map((sub) => ({
+              id: sub.id,
+              name: sub.name,
+              slug: sub.slug,
+              level: 2,
+              parentId: currentCat!.id,
+              description: sub.description || "",
+              sortOrder: 0,
+              isActive: true,
+              createdAt: "",
+              updatedAt: "",
+            }))
+          );
+        }
 
-				// Fetch products ONLY for the current Level 1 category
-				try {
-					const response = await apiService.getProducts(
-						1,
-						100,
-						currentCat.name
-					);
-					const categoryProducts = response.products.filter(
-						(product) => product.categoryLevel1 === currentCat!.name
-					);
-					setProducts(categoryProducts);
-				} catch (productError) {
-					console.error("Error fetching products:", productError);
-					setProducts([]);
-				}
-			} catch (err) {
-				console.error("Error fetching category data:", err);
-				setError("Failed to load categories");
-			} finally {
-				setLoading(false);
-			}
-		};
+        try {
+          const response = await apiService.getProducts(1, 100, currentCat.name);
+          const categoryProducts = (response.products || []).filter(
+            (product) =>
+              product.categoryLevel1?.toLowerCase() === currentCat!.name.toLowerCase()
+          );
+          if (categoryProducts.length) {
+            setProducts(categoryProducts);
+          } else {
+            setProducts(getLocalProductsByCategory(currentCat.slug));
+          }
+        } catch {
+          setProducts(getLocalProductsByCategory(currentCat.slug));
+        }
+      } catch {
+        setError("Failed to load this category.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-		fetchCategoryData();
-	}, [categorySlug]);
+    fetchCategoryData();
+  }, [categorySlug]);
 
-	// Update Level 3 categories and filter products when selection changes
-	useEffect(() => {
-		if (products.length === 0) {
-			setFilteredProducts([]);
-			setLevel3Categories([]);
-			return;
-		}
+  const baseFiltered = useMemo(() => {
+    let filtered = [...products];
+    if (subcategorySlug) {
+      const selectedSubcategory = subcategories.find((sub) => sub.slug === subcategorySlug);
+      if (selectedSubcategory) {
+        filtered = filtered.filter(
+          (product) =>
+            product.categoryLevel2?.toLowerCase() === selectedSubcategory.name.toLowerCase() ||
+            product.categoryLevel2?.toLowerCase() === selectedSubcategory.slug
+        );
+      }
+    }
+    return filtered;
+  }, [products, subcategories, subcategorySlug]);
 
-		let filtered = [...products];
+  useEffect(() => {
+    const cats = [...new Set(baseFiltered.map((p) => p.categoryLevel3).filter(Boolean))] as string[];
+    setLevel3Categories(cats);
+  }, [baseFiltered]);
 
-		// Filter by Level 2 category if selected
-		if (subcategorySlug) {
-			const selectedSubcategory = subcategories.find(
-				(sub) => sub.slug === subcategorySlug
-			);
-			if (selectedSubcategory) {
-				filtered = filtered.filter(
-					(product) => product.categoryLevel2 === selectedSubcategory.name
-				);
-			}
-		}
+  useEffect(() => {
+    setSelectedLevel3(null);
+  }, [subcategorySlug]);
 
-		// Extract Level 3 categories from the CURRENTLY filtered products
-		const availableLevel3Cats = [
-			...new Set(filtered.map((product) => product.categoryLevel3)),
-		]
-			.filter(Boolean)
-			.filter((cat) => {
-				// Double-check that the Level 3 category actually belongs to products in the current Level 1 category
-				return filtered.some((product) => product.categoryLevel3 === cat);
-			}) as string[];
+  const preFilter = useMemo(() => {
+    if (!selectedLevel3) return baseFiltered;
+    return baseFiltered.filter((p) => p.categoryLevel3 === selectedLevel3);
+  }, [baseFiltered, selectedLevel3]);
 
-		setLevel3Categories(availableLevel3Cats);
+  const filters = useProductFilters(preFilter);
+  const isClothes = categorySlug === "clothes";
+  const selectedSub = subcategories.find((sub) => sub.slug === subcategorySlug);
 
-		// Apply Level 3 filter if selected
-		if (selectedLevel3) {
-			filtered = filtered.filter(
-				(product) => product.categoryLevel3 === selectedLevel3
-			);
-		}
+  if (loading) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-10">
+          <div className="h-6 w-48 bg-muted animate-pulse rounded mb-8" />
+          <ProductGridSkeleton count={8} />
+        </div>
+      </Layout>
+    );
+  }
 
-		setFilteredProducts(filtered);
-	}, [products, subcategories, subcategorySlug, selectedLevel3]);
+  if (error || !currentCategory) {
+    return (
+      <Layout>
+        <ErrorState
+          title="Category not found"
+          message={error || "The category you're looking for doesn't exist."}
+        />
+      </Layout>
+    );
+  }
 
-	// Reset Level 3 filter when subcategory changes
-	useEffect(() => {
-		setSelectedLevel3(null);
-	}, [subcategorySlug]);
+  const heading = selectedLevel3
+    ? selectedLevel3
+    : selectedSub
+      ? selectedSub.name
+      : currentCategory.name;
 
-	// Only show Level 3 filters if we have more than 1 category
-	const shouldShowLevel3Filters = level3Categories.length > 1;
+  return (
+    <Layout>
+      <div className="border-b bg-background">
+        <div className="container mx-auto px-4 py-4">
+          <nav className="flex items-center flex-wrap gap-1 text-sm text-muted-foreground">
+            <Link to="/" className="hover:text-foreground">Home</Link>
+            <ChevronRight className="h-4 w-4" />
+            {subcategorySlug ? (
+              <Link to={`/category/${currentCategory.slug}`} className="hover:text-foreground">
+                {currentCategory.name}
+              </Link>
+            ) : (
+              <span className="text-foreground">{currentCategory.name}</span>
+            )}
+            {selectedSub && (
+              <>
+                <ChevronRight className="h-4 w-4" />
+                <span className="text-foreground">{selectedSub.name}</span>
+              </>
+            )}
+          </nav>
+        </div>
+      </div>
 
-	if (loading) {
-		return (
-			<Layout>
-				<div className="container mx-auto px-4 py-8 md:py-12">
-					<div className="h-6 w-48 bg-muted animate-pulse rounded mb-6" />
-					<div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4 lg:gap-6">
-						{Array.from({ length: 10 }).map((_, i) => (
-							<div
-								key={i}
-								className="bg-card rounded-lg overflow-hidden border border-border"
-							>
-								<div className="aspect-square bg-muted animate-pulse" />
-								<div className="p-2 md:p-3 space-y-2">
-									<div className="h-3 md:h-4 bg-muted animate-pulse rounded w-3/4" />
-									<div className="h-2 md:h-3 bg-muted animate-pulse rounded w-1/2" />
-									<div className="h-4 md:h-5 bg-muted animate-pulse rounded w-16" />
-								</div>
-							</div>
-						))}
-					</div>
-				</div>
-			</Layout>
-		);
-	}
+      {subcategories.length > 0 && (
+        <div className="border-b sticky top-16 bg-background/95 backdrop-blur z-30">
+          <div className="container mx-auto px-4 py-3 flex gap-2 overflow-x-auto">
+            <Button variant={!subcategorySlug ? "default" : "outline"} size="sm" asChild className="flex-shrink-0">
+              <Link to={`/category/${currentCategory.slug}`}>All {currentCategory.name}</Link>
+            </Button>
+            {subcategories.map((subcategory) => (
+              <Button
+                key={subcategory.id}
+                variant={subcategorySlug === subcategory.slug ? "default" : "outline"}
+                size="sm"
+                asChild
+                className="flex-shrink-0"
+              >
+                <Link to={`/category/${currentCategory.slug}/${subcategory.slug}`}>
+                  {subcategory.name}
+                </Link>
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
 
-	if (error || !currentCategory) {
-		return (
-			<Layout>
-				<div className="container mx-auto px-4 py-12 text-center">
-					<h1 className="text-3xl font-bold mb-4">Category not found</h1>
-					<p className="text-gray-600 mb-8">
-						{error || "The category you're looking for doesn't exist."}
-					</p>
-					<Button asChild>
-						<Link to="/">Back to Home</Link>
-					</Button>
-				</div>
-			</Layout>
-		);
-	}
+      <div className="container mx-auto px-4 py-8 md:py-10">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
+          <div>
+            <h1 className="font-serif text-3xl md:text-4xl mb-2">{heading}</h1>
+            <p className="text-muted-foreground max-w-2xl">
+              {selectedSub?.description || currentCategory.description}
+            </p>
+            <p className="text-sm text-muted-foreground mt-2">
+              Showing {filters.filtered.length} product{filters.filtered.length !== 1 ? "s" : ""}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="lg:hidden"
+              onClick={() => setFilterOpen(true)}
+            >
+              <SlidersHorizontal className="h-4 w-4 mr-2" />
+              Filter & Sort
+            </Button>
+            <div className="hidden lg:block">
+              <ProductSort value={filters.sort} onChange={filters.setSort} showRating={filters.hasRating} />
+            </div>
+          </div>
+        </div>
 
-	return (
-		<Layout>
-			{/* Breadcrumb Navigation */}
-			<div className="border-b border-gray-200 bg-white">
-				<div className="container mx-auto px-4 py-4">
-					<nav className="flex items-center space-x-2 text-sm text-gray-600">
-						<Link to="/" className="hover:text-gray-900">
-							Home
-						</Link>
-						{currentCategory && (
-							<>
-								<ChevronRight className="h-4 w-4" />
-								{subcategorySlug ? (
-									<Link
-										to={`/category/${currentCategory.slug}`}
-										className="hover:text-gray-900"
-									>
-										{currentCategory.name}
-									</Link>
-								) : (
-									<span className="text-gray-900 font-medium">
-										{currentCategory.name}
-									</span>
-								)}
-							</>
-						)}
-						{subcategorySlug && (
-							<>
-								<ChevronRight className="h-4 w-4" />
-								<span className="text-gray-900 font-medium">
-									{subcategories.find((sub) => sub.slug === subcategorySlug)
-										?.name || subcategorySlug}
-								</span>
-							</>
-						)}
-					</nav>
-				</div>
-			</div>
+        {level3Categories.length > 1 && (
+          <div className="flex flex-wrap gap-2 mb-6">
+            <button
+              onClick={() => setSelectedLevel3(null)}
+              className={`px-3 py-1.5 text-sm rounded-full border ${!selectedLevel3 ? "bg-foreground text-background" : "hover:border-foreground"}`}
+            >
+              All types
+            </button>
+            {level3Categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedLevel3(cat)}
+                className={`px-3 py-1.5 text-sm rounded-full border ${selectedLevel3 === cat ? "bg-foreground text-background" : "hover:border-foreground"}`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        )}
 
-			{/* Level 2 Subcategory Tabs */}
-			{subcategories.length > 0 && (
-				<div className="border-b border-gray-200 sticky top-16 bg-white z-30">
-					<div className="container mx-auto px-4 py-4">
-						<div className="flex space-x-2 overflow-x-auto">
-							<Button
-								variant={!subcategorySlug ? "default" : "outline"}
-								asChild
-								className="whitespace-nowrap flex-shrink-0"
-							>
-								<Link to={`/category/${currentCategory.slug}`}>
-									All {currentCategory.name}
-								</Link>
-							</Button>
-							{subcategories.map((subcategory) => (
-								<Button
-									key={subcategory.id}
-									variant={
-										subcategorySlug === subcategory.slug ? "default" : "outline"
-									}
-									asChild
-									className="whitespace-nowrap flex-shrink-0"
-								>
-									<Link
-										to={`/category/${currentCategory.slug}/${subcategory.slug}`}
-									>
-										{subcategory.name}
-									</Link>
-								</Button>
-							))}
-						</div>
-					</div>
-				</div>
-			)}
+        <div className={isClothes ? "grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-8" : ""}>
+          {isClothes && (
+            <aside className="hidden lg:block">
+              <div className="sticky top-28">
+                <ProductFilters filters={filters} />
+              </div>
+            </aside>
+          )}
+          <div>
+            <PaginatedProductGrid products={filters.filtered} itemsPerPage={12} />
+          </div>
+        </div>
+      </div>
 
-			{/* Level 3 Category Filters - Only show if we have multiple Level 3 categories */}
-			{shouldShowLevel3Filters && (
-				<div className="bg-white border-b border-gray-200">
-					<div className="container mx-auto px-4 py-4">
-						<div className="flex items-center justify-between flex-wrap gap-3">
-							<div className="flex items-center gap-2">
-								<span className="text-sm font-medium text-gray-700">
-									Filter by type:
-								</span>
-								<div className="flex flex-wrap gap-2">
-									<button
-										onClick={() => setSelectedLevel3(null)}
-										className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
-											!selectedLevel3
-												? "bg-primary text-primary-foreground"
-												: "bg-gray-100 text-gray-700 hover:bg-gray-200"
-										}`}
-									>
-										All Types
-									</button>
-									{level3Categories.map((level3Cat) => (
-										<button
-											key={level3Cat}
-											onClick={() => setSelectedLevel3(level3Cat)}
-											className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
-												selectedLevel3 === level3Cat
-													? "bg-primary text-primary-foreground"
-													: "bg-gray-100 text-gray-700 hover:bg-gray-200"
-											}`}
-										>
-											{level3Cat.toLowerCase()}
-										</button>
-									))}
-								</div>
-							</div>
-
-							{/* Product Count */}
-							<div className="text-sm font-medium text-gray-600">
-								{filteredProducts.length} product
-								{filteredProducts.length !== 1 ? "s" : ""}
-								{selectedLevel3 && (
-									<span className="text-primary"> · {selectedLevel3}</span>
-								)}
-							</div>
-						</div>
-					</div>
-				</div>
-			)}
-
-			{/* Category Header */}
-			<div className="bg-gray-50 py-8">
-				<div className="container mx-auto px-4">
-					<h1 className="text-3xl font-bold mb-4">
-						{selectedLevel3
-							? `${selectedLevel3} ${
-									subcategorySlug
-										? `- ${
-												subcategories.find(
-													(sub) => sub.slug === subcategorySlug
-												)?.name
-										  }`
-										: ""
-							  }`
-							: subcategorySlug
-							? `${
-									subcategories.find((sub) => sub.slug === subcategorySlug)
-										?.name || subcategorySlug
-							  }`
-							: `All ${currentCategory.name}`}
-					</h1>
-					<p className="text-gray-600 max-w-3xl">
-						{subcategorySlug
-							? subcategories.find((sub) => sub.slug === subcategorySlug)
-									?.description || currentCategory.description
-							: currentCategory.description}
-					</p>
-
-					{/* Show available types if we don't show the filter bar */}
-					{!shouldShowLevel3Filters && level3Categories.length === 1 && (
-						<p className="text-sm text-gray-500 mt-2">
-							Category: {level3Categories[0]}
-						</p>
-					)}
-				</div>
-			</div>
-
-			{/* Products */}
-			<div className="container mx-auto px-4 py-12">
-				{filteredProducts.length > 0 ? (
-					<PaginatedProductGrid products={filteredProducts} />
-				) : (
-					<div className="text-center py-12">
-						<h3 className="text-lg font-semibold mb-2">No products found</h3>
-						<p className="text-gray-600">
-							{selectedLevel3
-								? `There are no ${selectedLevel3} products${
-										subcategorySlug
-											? ` in ${
-													subcategories.find(
-														(sub) => sub.slug === subcategorySlug
-													)?.name
-											  }`
-											: ""
-								  } yet.`
-								: subcategorySlug
-								? `There are no products in the ${
-										subcategories.find((sub) => sub.slug === subcategorySlug)
-											?.name || subcategorySlug
-								  } category yet.`
-								: `There are no products in the ${currentCategory.name} category yet.`}
-						</p>
-						{selectedLevel3 && (
-							<Button
-								variant="outline"
-								onClick={() => setSelectedLevel3(null)}
-								className="mt-4"
-							>
-								Show All Products
-							</Button>
-						)}
-					</div>
-				)}
-			</div>
-		</Layout>
-	);
+      <Sheet open={filterOpen} onOpenChange={setFilterOpen}>
+        <SheetContent side="bottom" className="h-[88vh] overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Filter & Sort</SheetTitle>
+          </SheetHeader>
+          <div className="py-4 space-y-6">
+            <ProductSort value={filters.sort} onChange={filters.setSort} showRating={filters.hasRating} />
+            <ProductFilters filters={filters} />
+            <Button className="w-full" onClick={() => setFilterOpen(false)}>
+              Show {filters.filtered.length} products
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
+    </Layout>
+  );
 };
 
 export default CategoryPage;

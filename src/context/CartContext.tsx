@@ -12,8 +12,8 @@ export interface CartItem {
 interface CartContextType {
   cart: CartItem[];
   addToCart: (product: Product, quantity?: number, size?: string) => void;
-  removeFromCart: (productId: string | number) => void;
-  updateQuantity: (productId: string | number, quantity: number) => void;
+  removeFromCart: (productId: string | number, size?: string) => void;
+  updateQuantity: (productId: string | number, quantity: number, size?: string) => void;
   updateSize: (productId: string | number, size: string) => void;
   clearCart: () => void;
   getTotalPrice: () => number;
@@ -73,19 +73,28 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     });
   };
 
-  const removeFromCart = (productId: string | number) => {
-    setCart(currentCart => 
-      currentCart.filter(item => !compareProductIds(item.product.id, productId))
+  const matchesLine = (item: CartItem, productId: string | number, size?: string) => {
+    const idMatch = compareProductIds(item.product.id, productId);
+    if (size === undefined) return idMatch;
+    return idMatch && item.size === size;
+  };
+
+  const removeFromCart = (productId: string | number, size?: string) => {
+    setCart(currentCart =>
+      currentCart.filter(item => !matchesLine(item, productId, size))
     );
     toast.success("Item removed from cart");
   };
 
-  const updateQuantity = (productId: string | number, quantity: number) => {
-    if (quantity < 1) return;
-    
-    setCart(currentCart => 
-      currentCart.map(item => 
-        compareProductIds(item.product.id, productId) ? { ...item, quantity } : item
+  const updateQuantity = (productId: string | number, quantity: number, size?: string) => {
+    if (quantity < 1) {
+      removeFromCart(productId, size);
+      return;
+    }
+
+    setCart(currentCart =>
+      currentCart.map(item =>
+        matchesLine(item, productId, size) ? { ...item, quantity } : item
       )
     );
   };
