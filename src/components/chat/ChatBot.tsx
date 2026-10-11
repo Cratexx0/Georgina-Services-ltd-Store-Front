@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MessageCircle, X, Send, Bot, User } from 'lucide-react';
+import { MessageCircle, X, Send, Bot, Loader2, SquarePen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { apiService, ChatMessage, ChatSession, SendMessageData, SendMessageResponse } from '@/context/ApiService';
-import { Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 // Local component interface
 interface Message {
@@ -14,6 +14,9 @@ interface Message {
   timestamp: Date;
 }
 
+// Suggested first messages shown on a fresh chat (edit freely)
+const quickReplies = ['Where is my order?', 'Delivery information', 'Cleaning services'];
+
 const ChatBot: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -22,21 +25,23 @@ const ChatBot: React.FC = () => {
   const [sessionId, setSessionId] = useState<string>('new');
   const [unreadCount, setUnreadCount] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  
+  const inputRef = useRef<HTMLInputElement>(null);
+
   // Scroll to bottom when new messages arrive
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, isLoading]);
 
   // Load chat session when component mounts or opens
   useEffect(() => {
     if (isOpen) {
       loadChatSession();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   // Load unread count when chatbot is closed
@@ -44,7 +49,25 @@ const ChatBot: React.FC = () => {
     if (!isOpen && sessionId !== 'new') {
       loadUnreadCount();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, sessionId]);
+
+  // Close the chat with Escape
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsOpen(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isOpen]);
+
+  // Keep the input focused (it is disabled while a request is in flight)
+  useEffect(() => {
+    if (isOpen && !isLoading) {
+      inputRef.current?.focus();
+    }
+  }, [isOpen, isLoading]);
 
   // Convert API ChatMessage to local Message format
   const convertToLocalMessage = (apiMessage: ChatMessage): Message => {
@@ -56,40 +79,40 @@ const ChatBot: React.FC = () => {
     };
   };
 
-  // Load chat session data
-  const loadChatSession = async () => {
+  // Load chat session data (optionally for a specific session id)
+  const loadChatSession = async (id: string = sessionId) => {
     try {
       setIsLoading(true);
-      
+
       // Get or create chat session
-      const session = await apiService.getChatSession(sessionId);
-      
+      const session = await apiService.getChatSession(id);
+
       // Handle different response structures
       let sessionData: ChatSession;
       let sessionMessages: ChatMessage[] = [];
-      
+
       // Check for data property (wrapped response)
       if ('data' in session && session.data) {
         sessionData = session.data;
       } else {
         sessionData = session;
       }
-      
+
       // Extract messages from session data
       if (sessionData.messages && Array.isArray(sessionData.messages)) {
         sessionMessages = sessionData.messages;
       } else if (sessionData.data?.messages && Array.isArray(sessionData.data.messages)) {
         sessionMessages = sessionData.data.messages;
       }
-      
+
       // Update session ID if provided and valid
       if (sessionData.sessionId && sessionData.sessionId !== 'new') {
         setSessionId(sessionData.sessionId);
       }
-      
+
       // Convert API messages to local format
       const localMessages = sessionMessages.map(convertToLocalMessage);
-      
+
       // If no messages exist, show welcome message
       if (localMessages.length === 0) {
         setMessages([
@@ -103,7 +126,7 @@ const ChatBot: React.FC = () => {
       } else {
         setMessages(localMessages);
       }
-      
+
       // Mark session as read if we have unread messages
       const hasUnreadMessages = sessionMessages.some(msg => !msg.isRead && msg.sender === 'bot');
       if (hasUnreadMessages && sessionData.sessionId) {
@@ -113,10 +136,9 @@ const ChatBot: React.FC = () => {
           console.error('Error marking chat as read:', error);
         }
       }
-      
     } catch (error) {
       console.error('Error loading chat session:', error);
-      
+
       // Initialize with welcome message if no session exists
       if (messages.length === 0) {
         setMessages([
@@ -137,12 +159,12 @@ const ChatBot: React.FC = () => {
     try {
       if (sessionId !== 'new') {
         const response = await apiService.getUnreadChatCount(sessionId);
-        
+
         // Handle response - could be direct object or wrapped
         // The API returns { unreadCount: number } directly or wrapped in data
-        
+
         let unreadCountValue = 0;
-        
+
         if (typeof response === 'object' && response !== null) {
           // Check if response has data property (wrapped response)
           if ('data' in response && response.data && typeof response.data === 'object') {
@@ -156,7 +178,7 @@ const ChatBot: React.FC = () => {
             unreadCountValue = (response as any).unreadCount;
           }
         }
-        
+
         setUnreadCount(unreadCountValue);
       }
     } catch (error) {
@@ -166,16 +188,16 @@ const ChatBot: React.FC = () => {
   };
 
   // Helper function to extract bot response from API response
-  const extractBotResponse = (response: SendMessageResponse): { 
-    text: string; 
+  const extractBotResponse = (response: SendMessageResponse): {
+    text: string;
     messages: Message[];
   } => {
     // Default fallback
-    const result = { 
-      text: '', 
-      messages: [] as Message[] 
+    const result = {
+      text: '',
+      messages: [] as Message[],
     };
-    
+
     // Structure 1: Check for botMessage in data property
     if (response.success && response.data?.botMessage) {
       result.text = response.data.botMessage.message;
@@ -212,7 +234,7 @@ const ChatBot: React.FC = () => {
     }
     // Structure 6: success with no data (empty response)
     else if (response.success) {
-      result.text = "Thank you for your message! How else can I help you?";
+      result.text = 'Thank you for your message! How else can I help you?';
     }
     // Fallback
     else {
@@ -222,13 +244,15 @@ const ChatBot: React.FC = () => {
     return result;
   };
 
-  const handleSendMessage = async () => {
-    if (!inputValue.trim() || isLoading) return;
+  // Sends the typed message, or `override` when a quick reply is tapped
+  const handleSendMessage = async (override?: string) => {
+    const text = (override ?? inputValue).trim();
+    if (!text || isLoading) return;
 
     // Create user message
     const userMessage: Message = {
       id: `user-${Date.now()}`,
-      text: inputValue,
+      text,
       isBot: false,
       timestamp: new Date(),
     };
@@ -242,20 +266,20 @@ const ChatBot: React.FC = () => {
       // Prepare data for API
       const messageData: SendMessageData = {
         sessionId,
-        message: inputValue,
+        message: text,
         metadata: {
           timestamp: new Date().toISOString(),
           userAgent: navigator.userAgent,
           platform: 'web',
-        }
+        },
       };
-      
+
       // Send message to API
       const response: SendMessageResponse = await apiService.sendChatMessage(messageData);
 
       // Extract bot response from the API response
       const { text: botResponseText, messages: newBotMessages } = extractBotResponse(response);
-      
+
       // Add bot response(s)
       if (newBotMessages && newBotMessages.length > 0) {
         // Add all bot messages from the response
@@ -270,13 +294,12 @@ const ChatBot: React.FC = () => {
         };
         setMessages(prev => [...prev, botMessage]);
       }
-      
+
       // After sending message, refresh the session to get updated session ID if it changed
       await loadChatSession();
-      
     } catch (error) {
       console.error('❌ Error sending message:', error);
-      
+
       // Fallback error response
       const errorMessage: Message = {
         id: `error-${Date.now()}`,
@@ -290,13 +313,6 @@ const ChatBot: React.FC = () => {
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
-
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
@@ -307,7 +323,7 @@ const ChatBot: React.FC = () => {
       // Reset to new session
       setSessionId('new');
       setUnreadCount(0);
-      
+
       // Set welcome message
       setMessages([
         {
@@ -317,62 +333,59 @@ const ChatBot: React.FC = () => {
           timestamp: new Date(),
         },
       ]);
-      
-      // Load a fresh session
-      await loadChatSession();
-      
+
+      // Load a fresh session (pass 'new' explicitly - state has not updated yet)
+      await loadChatSession('new');
     } catch (error) {
       console.error('Error clearing chat:', error);
     }
   };
 
-
-
-  // Test API connection
-  const testApiConnection = async () => {
-    try {
-      const session = await apiService.getChatSession('test');
-      return true;
-    } catch (error) {
-      return false;
-    }
-  };
+  // Show suggestions only on a fresh chat (just the welcome message)
+  const showQuickReplies =
+    !isLoading && messages.length === 1 && messages[0].isBot;
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className="fixed bottom-4 right-4 z-50 sm:bottom-6 sm:right-6">
       {/* Chat Window */}
       {isOpen && (
-        <div className="absolute bottom-16 right-0 w-80 sm:w-96 bg-background border border-border rounded-lg shadow-lg overflow-hidden mb-2">
+        <div
+          role="dialog"
+          aria-label="Chat support"
+          className="absolute bottom-[4.5rem] right-0 mb-1 flex h-[min(34rem,calc(100dvh-8rem))] w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-2xl animate-in fade-in slide-in-from-bottom-2 duration-200 motion-reduce:animate-none sm:w-96"
+        >
           {/* Header */}
-          <div className="bg-primary text-primary-foreground p-4 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Bot className="h-5 w-5" />
-              <div>
-                <span className="font-medium">Chat Support</span>
-                {sessionId !== 'new' && (
-                  <span 
-                    className="ml-2 text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full cursor-help"
-                    title={`Session ID: ${sessionId}`}
-                  >
-                    ID: {sessionId.substring(0, 8)}...
-                  </span>
-                )}
-                {unreadCount > 0 && (
-                  <span className="ml-2 text-xs bg-red-500 text-white px-2 py-1 rounded-full">
-                    {unreadCount} new
-                  </span>
-                )}
+          <div className="flex items-center justify-between bg-primary px-4 py-3 text-primary-foreground">
+            <div className="flex min-w-0 items-center gap-3">
+              <div
+                className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-primary-foreground/15"
+                title={sessionId !== 'new' ? `Session ID: ${sessionId}` : undefined}
+              >
+                <Bot className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <p className="truncate font-medium leading-tight">Chat support</p>
+                <p className="truncate text-xs text-primary-foreground/75">
+                  Ask about orders, products or services
+                </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              {isLoading && (
-                <Loader2 className="h-4 w-4 animate-spin text-primary-foreground" />
-              )}
+            <div className="flex items-center gap-1">
               <button
                 type="button"
-                className="h-8 w-8 flex items-center justify-center text-primary-foreground hover:bg-primary/80 rounded-full transition-colors"
+                className="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-primary-foreground/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground"
+                onClick={handleClearChat}
+                title="Start new chat"
+                aria-label="Start new chat"
+              >
+                <SquarePen className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                className="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-primary-foreground/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground"
                 onClick={() => setIsOpen(false)}
                 title="Close chat"
+                aria-label="Close chat"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -380,137 +393,156 @@ const ChatBot: React.FC = () => {
           </div>
 
           {/* Messages */}
-          <ScrollArea className="h-72 p-4">
-            <div className="space-y-4">
-              {messages.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <p className="text-sm">No messages yet. Start a conversation!</p>
-                  <button
-                    onClick={testApiConnection}
-                    className="mt-2 text-xs text-blue-500 hover:text-blue-600"
-                  >
-                    Test API Connection
-                  </button>
-                </div>
-              ) : (
-                messages.map((message) => (
+          <ScrollArea className="min-h-0 flex-1">
+            <div
+              role="log"
+              aria-live="polite"
+              aria-label="Conversation"
+              className="space-y-1 p-4"
+            >
+              {messages.map((message, index) => {
+                const prev = messages[index - 1];
+                const next = messages[index + 1];
+                const isFirstInGroup = !prev || prev.isBot !== message.isBot;
+                const isLastInGroup = !next || next.isBot !== message.isBot;
+
+                return (
                   <div
                     key={message.id}
-                    className={`flex ${message.isBot ? 'justify-start' : 'justify-end'}`}
+                    className={cn(
+                      'flex items-end gap-2',
+                      message.isBot ? 'justify-start' : 'justify-end',
+                      isFirstInGroup && index > 0 && 'pt-3'
+                    )}
                   >
-                    <div className={`flex max-w-[80%] gap-2 ${message.isBot ? 'flex-row' : 'flex-row-reverse'}`}>
-                      <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-1 ${
-                        message.isBot ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-                      }`}>
-                        {message.isBot ? (
-                          <Bot className="h-3 w-3" />
-                        ) : (
-                          <User className="h-3 w-3" />
+                    {message.isBot && (
+                      <div className="h-7 w-7 flex-shrink-0">
+                        {isLastInGroup && (
+                          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                            <Bot className="h-4 w-4" />
+                          </div>
                         )}
                       </div>
-                      <div className="flex flex-col">
-                        <div
-                          className={`px-3 py-2 rounded-lg text-sm break-words whitespace-pre-wrap ${
-                            message.isBot
-                              ? 'bg-muted text-muted-foreground'
-                              : 'bg-primary text-primary-foreground'
-                          }`}
-                        >
-                          {message.text}
-                        </div>
-                        <span className={`text-xs text-muted-foreground mt-1 ${message.isBot ? 'text-left' : 'text-right'}`}>
+                    )}
+                    <div
+                      className={cn(
+                        'flex max-w-[78%] flex-col',
+                        message.isBot ? 'items-start' : 'items-end'
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          'whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2 text-sm leading-relaxed',
+                          message.isBot
+                            ? 'bg-muted text-foreground'
+                            : 'bg-primary text-primary-foreground',
+                          isLastInGroup && (message.isBot ? 'rounded-bl-md' : 'rounded-br-md')
+                        )}
+                      >
+                        {message.text}
+                      </div>
+                      {isLastInGroup && (
+                        <span className="mt-1 text-[11px] text-muted-foreground">
                           {formatTime(message.timestamp)}
                         </span>
-                      </div>
+                      )}
                     </div>
                   </div>
-                ))
+                );
+              })}
+
+              {/* Typing indicator */}
+              {isLoading && (
+                <div className="flex items-end gap-2 pt-3" aria-label="Support is typing">
+                  <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                    <Bot className="h-4 w-4" />
+                  </div>
+                  <div className="flex items-center gap-1 rounded-2xl rounded-bl-md bg-muted px-4 py-3">
+                    {[0, 150, 300].map((delay) => (
+                      <span
+                        key={delay}
+                        className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground/60 motion-reduce:animate-pulse"
+                        style={{ animationDelay: `${delay}ms` }}
+                      />
+                    ))}
+                  </div>
+                </div>
               )}
+
+              {/* Quick replies */}
+              {showQuickReplies && (
+                <div className="flex flex-wrap gap-2 pt-3">
+                  {quickReplies.map((reply) => (
+                    <button
+                      key={reply}
+                      type="button"
+                      onClick={() => handleSendMessage(reply)}
+                      className="rounded-full border border-border px-3 py-1.5 text-xs transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      {reply}
+                    </button>
+                  ))}
+                </div>
+              )}
+
               <div ref={messagesEndRef} />
             </div>
           </ScrollArea>
 
           {/* Input Area */}
-          <div className="p-4 border-t border-border">
-            <div className="flex justify-between items-center mb-2">
-              <div className="text-xs text-muted-foreground">
-                {messages.length > 0 && (
-                  <span>{messages.length} message{messages.length !== 1 ? 's' : ''}</span>
-                )}
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={debugState}
-                  className="text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded border border-border"
-                  title="Debug state"
-                >
-                  Debug
-                </button>
-                <button 
-                  onClick={handleClearChat}
-                  className="text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded border border-border"
-                  title="Start new chat"
-                >
-                  New Chat
-                </button>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Input
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyDown={handleKeyPress}
-                placeholder="Type your message..."
-                className="flex-1"
-                disabled={isLoading}
-              />
-              <Button 
-                size="icon" 
-                onClick={handleSendMessage}
-                disabled={isLoading || !inputValue.trim()}
-                title="Send message"
-                className="flex-shrink-0"
-              >
-                {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Send className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
-            <div className="mt-2 text-xs text-muted-foreground text-center">
-              Press <kbd className="px-1 py-0.5 bg-muted rounded">Enter</kbd> to send
-            </div>
-          </div>
+          <form
+            className="flex items-center gap-2 border-t border-border bg-background p-3"
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSendMessage();
+            }}
+          >
+            <Input
+              ref={inputRef}
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              placeholder="Type your message…"
+              aria-label="Message"
+              className="flex-1 rounded-full"
+              disabled={isLoading}
+            />
+            <Button
+              type="submit"
+              size="icon"
+              disabled={isLoading || !inputValue.trim()}
+              aria-label="Send message"
+              title="Send message"
+              className="h-10 w-10 flex-shrink-0 rounded-full"
+            >
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+            </Button>
+          </form>
         </div>
       )}
 
       {/* Toggle Button */}
       <div className="relative">
         {unreadCount > 0 && !isOpen && (
-          <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
+          <div
+            className="absolute -right-1 -top-1 z-10 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-xs font-medium text-white"
+            aria-label={`${unreadCount} unread ${unreadCount === 1 ? 'message' : 'messages'}`}
+          >
             {unreadCount > 9 ? '9+' : unreadCount}
           </div>
         )}
         <Button
           size="icon"
-          className="h-14 w-14 rounded-full shadow-lg relative hover:scale-105 transition-transform duration-200 bg-primary hover:bg-primary/90"
+          className="h-14 w-14 rounded-full bg-primary shadow-lg transition-transform duration-200 hover:scale-105 hover:bg-primary/90 motion-reduce:transition-none motion-reduce:hover:scale-100"
           onClick={() => setIsOpen(!isOpen)}
-          title={isOpen ? "Close chat" : "Open chat"}
-          aria-label={isOpen ? "Close chat" : "Open chat"}
+          title={isOpen ? 'Close chat' : 'Open chat'}
+          aria-label={isOpen ? 'Close chat' : 'Open chat'}
+          aria-expanded={isOpen}
         >
-          {isOpen ? (
-            <X className="h-6 w-6" />
-          ) : (
-            <>
-              <MessageCircle className="h-6 w-6" />
-              {unreadCount > 0 && (
-                <span className="absolute inset-0 flex items-center justify-center">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                </span>
-              )}
-            </>
-          )}
+          {isOpen ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
         </Button>
       </div>
     </div>
