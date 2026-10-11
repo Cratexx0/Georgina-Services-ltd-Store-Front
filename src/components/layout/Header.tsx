@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
+  ChevronRight,
   Heart,
   LayoutDashboard,
   LogIn,
   LogOut,
   Menu,
   ShoppingBag,
-  User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -39,11 +39,27 @@ const clothingLinks = [
   { label: "Kids", to: "/category/clothes/kids" },
 ];
 
+
+const iconButton =
+  "relative inline-flex h-10 w-10 items-center justify-center rounded-full text-foreground/80 transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background";
+
+const CountBadge = ({ count }: { count: number }) =>
+  count > 0 ? (
+    <span
+      key={count}
+      aria-hidden="true"
+      className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-foreground px-1 text-[10px] font-medium leading-none text-background animate-in zoom-in-50 duration-200 motion-reduce:animate-none"
+    >
+      {count > 99 ? "99+" : count}
+    </span>
+  ) : null;
+
 const Header = () => {
-  const { cart, getTotalItems } = useCart();
+  const { getTotalItems } = useCart();
   const { wishlist } = useWishlist();
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -55,18 +71,43 @@ const Header = () => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Close the mobile menu whenever the route changes
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [pathname]);
+
   const handleLogout = () => {
     logout();
     setIsMenuOpen(false);
     navigate("/");
   };
 
+  const displayName = user?.name || user?.fullname || "Account";
+
   const getUserInitials = () => {
     const name = user?.name || user?.fullname || user?.email || "U";
     return name.charAt(0).toUpperCase();
   };
 
+  // "Clothing" is the parent of Men/Women/Kids, so it only matches exactly
+  const isActive = (to: string) =>
+    to === "/category/clothes"
+      ? pathname === to
+      : pathname === to || pathname.startsWith(`${to}/`);
+
   const cartCount = getTotalItems();
+  const wishlistCount = wishlist.length;
+
+  const desktopLinkClass = (active: boolean) =>
+    cn(
+      "relative whitespace-nowrap py-1 text-sm tracking-wide transition-colors",
+      "after:absolute after:-bottom-0.5 after:left-0 after:h-px after:w-full after:origin-left after:bg-foreground",
+      "after:transition-transform after:duration-300 motion-reduce:after:transition-none",
+      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background rounded-sm",
+      active
+        ? "text-foreground after:scale-x-100"
+        : "text-foreground/70 hover:text-foreground after:scale-x-0 hover:after:scale-x-100"
+    );
 
   return (
     <>
@@ -74,169 +115,232 @@ const Header = () => {
         className={cn(
           "sticky top-0 z-50 border-b transition-all duration-300",
           scrolled
-            ? "bg-background/95 backdrop-blur-md shadow-sm border-border"
-            : "bg-background/80 backdrop-blur-md border-transparent"
+            ? "border-border bg-background/95 shadow-sm backdrop-blur-md"
+            : "border-transparent bg-background/80 backdrop-blur-md"
         )}
       >
         <div className="container mx-auto px-4">
-          <div className="flex h-16 md:h-[4.5rem] items-center justify-between gap-4">
-            <Link to="/" className="flex-shrink-0">
-              <img
-                src="/gina_logo.png"
-                alt="Georgina Services Limited"
-                width={140}
-                height={44}
-                className="h-9 w-auto md:h-10"
-              />
-            </Link>
-
-            <nav className="hidden lg:flex items-center gap-7 text-sm">
-              {clothingLinks.map((link) => (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  className="text-foreground/80 hover:text-foreground transition-colors tracking-wide"
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </nav>
-
-            <div className="hidden md:flex items-center gap-3 flex-1 justify-end max-w-xl">
-              <SearchBar className="w-[220px] lg:w-[280px]" />
-
-              <Link to="/wishlist" className="relative p-2" aria-label="Wishlist">
-                <Heart className="h-5 w-5" />
-                {wishlist.length > 0 && (
-                  <span className="absolute top-0.5 right-0.5 bg-foreground text-background rounded-full min-w-4 h-4 px-1 flex items-center justify-center text-[10px]">
-                    {wishlist.length}
-                  </span>
-                )}
-              </Link>
-
+          <div
+            className={cn(
+              "grid grid-cols-[1fr_auto_1fr] items-center gap-4 transition-[height] duration-300 md:flex md:justify-between",
+              scrolled ? "h-14 md:h-16" : "h-16 md:h-[4.5rem]"
+            )}
+          >
+            {/* Mobile menu button (left on mobile, hidden on md+) */}
+            <div className="flex md:hidden">
               <button
                 type="button"
-                className="relative p-2"
-                aria-label="Open shopping bag"
-                onClick={() => setCartOpen(true)}
-              >
-                <ShoppingBag className="h-5 w-5" />
-                {cartCount > 0 && (
-                  <span className="absolute top-0.5 right-0.5 bg-foreground text-background rounded-full min-w-4 h-4 px-1 flex items-center justify-center text-[10px]">
-                    {cartCount}
-                  </span>
-                )}
-              </button>
-
-              {isAuthenticated ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="rounded-full px-1" aria-label="Account">
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback className="bg-foreground text-background text-sm">
-                          {getUserInitials()}
-                        </AvatarFallback>
-                      </Avatar>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuLabel>
-                      <p className="text-sm font-medium">{user?.name || user?.fullname || "Account"}</p>
-                      <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => navigate("/dashboard")}>
-                      <LayoutDashboard className="mr-2 h-4 w-4" />
-                      Dashboard
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleLogout} className="text-destructive">
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Logout
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <Link to="/auth">
-                  <Button size="sm" variant="outline" className="gap-2">
-                    <LogIn className="h-4 w-4" />
-                    Sign in
-                  </Button>
-                </Link>
-              )}
-            </div>
-
-            <div className="flex md:hidden items-center gap-1">
-              <Link to="/wishlist" className="relative p-2" aria-label="Wishlist">
-                <Heart className="h-5 w-5" />
-                {wishlist.length > 0 && (
-                  <span className="absolute top-0.5 right-0.5 bg-foreground text-background rounded-full min-w-4 h-4 text-[10px] flex items-center justify-center">
-                    {wishlist.length}
-                  </span>
-                )}
-              </Link>
-              <button type="button" className="relative p-2" aria-label="Open shopping bag" onClick={() => setCartOpen(true)}>
-                <ShoppingBag className="h-5 w-5" />
-                {cart.length > 0 && (
-                  <span className="absolute top-0.5 right-0.5 bg-foreground text-background rounded-full min-w-4 h-4 text-[10px] flex items-center justify-center">
-                    {cartCount}
-                  </span>
-                )}
-              </button>
-              <button
-                type="button"
-                className="p-2"
+                className={cn(iconButton, "-ml-2")}
                 onClick={() => setIsMenuOpen(true)}
                 aria-label="Open menu"
               >
                 <Menu className="h-6 w-6" />
               </button>
             </div>
+
+            {/* Logo (centered on mobile, left on md+) */}
+            <Link
+              to="/"
+              className="flex-shrink-0 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background"
+              aria-label="Georgina Services Limited home"
+            >
+              <img
+                src="/gina_logo.png"
+                alt="Georgina Services Limited"
+                width={140}
+                height={44}
+                className={cn(
+                  "w-auto transition-all duration-300",
+                  scrolled ? "h-8 md:h-9" : "h-9 md:h-10"
+                )}
+              />
+            </Link>
+
+            {/* Desktop navigation */}
+            <nav
+              aria-label="Main"
+              className="hidden items-center gap-5 md:hidden lg:flex xl:gap-7"
+            >
+              {clothingLinks.map((link) => {
+                const active = isActive(link.to);
+                return (
+                  <Link
+                    key={link.to}
+                    to={link.to}
+                    aria-current={active ? "page" : undefined}
+                    className={desktopLinkClass(active)}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
+         
+            </nav>
+
+            {/* Actions */}
+            <div className="flex items-center justify-end gap-1 md:flex-1 md:gap-2">
+              <div className="hidden md:block">
+                <SearchBar className="w-[170px] xl:w-[260px]" />
+              </div>
+
+              <Link
+                to="/wishlist"
+                className={iconButton}
+                aria-label={
+                  wishlistCount > 0
+                    ? `Wishlist, ${wishlistCount} ${wishlistCount === 1 ? "item" : "items"}`
+                    : "Wishlist"
+                }
+              >
+                <Heart className="h-5 w-5" />
+                <CountBadge count={wishlistCount} />
+              </Link>
+
+              <button
+                type="button"
+                className={iconButton}
+                aria-label={
+                  cartCount > 0
+                    ? `Open shopping bag, ${cartCount} ${cartCount === 1 ? "item" : "items"}`
+                    : "Open shopping bag"
+                }
+                onClick={() => setCartOpen(true)}
+              >
+                <ShoppingBag className="h-5 w-5" />
+                <CountBadge count={cartCount} />
+              </button>
+
+              <div className="hidden md:block">
+                {isAuthenticated ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background"
+                        aria-label="Account menu"
+                      >
+                        <Avatar className="h-9 w-9">
+                          <AvatarFallback className="bg-foreground text-sm text-background">
+                            {getUserInitials()}
+                          </AvatarFallback>
+                        </Avatar>
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-60">
+                      <DropdownMenuLabel className="font-normal">
+                        <p className="truncate text-sm font-medium">{displayName}</p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {user?.email}
+                        </p>
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => navigate("/dashboard")}
+                        className="cursor-pointer"
+                      >
+                        <LayoutDashboard className="mr-2 h-4 w-4" />
+                        Dashboard
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={handleLogout}
+                        className="cursor-pointer text-destructive focus:text-destructive"
+                      >
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Log out
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : (
+                  <Button size="sm" variant="outline" className="gap-2" asChild>
+                    <Link to="/auth" aria-label="Sign in">
+                      <LogIn className="h-4 w-4" />
+                      <span className="hidden xl:inline">Sign in</span>
+                    </Link>
+                  </Button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </header>
 
+      {/* Mobile menu */}
       <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-        <SheetContent side="left" className="w-[86vw] sm:max-w-sm">
-          <SheetHeader>
-            <SheetTitle className="font-serif text-left text-2xl">Menu</SheetTitle>
+        <SheetContent side="left" className="flex w-[86vw] flex-col gap-0 p-0 sm:max-w-sm">
+          <SheetHeader className="border-b px-5 py-4 text-left">
+            <SheetTitle className="font-serif text-2xl">Menu</SheetTitle>
           </SheetHeader>
-          <div className="mt-6">
-            <SearchBar className="mb-6" onClose={() => setIsMenuOpen(false)} />
-            <nav className="flex flex-col gap-1">
-              {clothingLinks.map((link) => (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  onClick={() => setIsMenuOpen(false)}
-                  className="py-2.5 text-lg border-b border-border"
-                >
-                  {link.label}
-                </Link>
-              ))}
-              <Link to="/category/foodstuffs" onClick={() => setIsMenuOpen(false)} className="py-2.5 text-sm text-muted-foreground">
-                Food & Spices
-              </Link>
-              <Link to="/category/services" onClick={() => setIsMenuOpen(false)} className="py-2.5 text-sm text-muted-foreground">
-                Cleaning Services
-              </Link>
+
+          <div className="flex-1 overflow-y-auto px-5 py-5">
+            <SearchBar onClose={() => setIsMenuOpen(false)} />
+
+            <nav aria-label="Mobile" className="mt-6">
+              <ul>
+                {clothingLinks.map((link) => {
+                  const active = isActive(link.to);
+                  return (
+                    <li key={link.to}>
+                      <Link
+                        to={link.to}
+                        onClick={() => setIsMenuOpen(false)}
+                        aria-current={active ? "page" : undefined}
+                        className={cn(
+                          "flex items-center justify-between border-b border-border py-3 text-lg transition-colors",
+                          active ? "font-medium text-foreground" : "text-foreground/80"
+                        )}
+                      >
+                        {link.label}
+                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+
+    
             </nav>
-            <div className="mt-6">
-              {isAuthenticated ? (
-                <div className="space-y-2">
-                  <Button variant="outline" className="w-full justify-start" onClick={() => { setIsMenuOpen(false); navigate("/dashboard"); }}>
-                    <User className="h-4 w-4 mr-2" />
-                    {user?.name || "Account"}
+          </div>
+
+          {/* Account area pinned to the bottom */}
+          <div className="border-t bg-muted/30 px-5 py-4">
+            {isAuthenticated ? (
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-10 w-10">
+                    <AvatarFallback className="bg-foreground text-background">
+                      {getUserInitials()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium">{displayName}</p>
+                    <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      navigate("/dashboard");
+                    }}
+                  >
+                    <LayoutDashboard className="mr-2 h-4 w-4" />
+                    Dashboard
                   </Button>
-                  <Button variant="ghost" className="w-full justify-start" onClick={handleLogout}>
-                    <LogOut className="h-4 w-4 mr-2" /> Logout
+                  <Button variant="ghost" onClick={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Log out
                   </Button>
                 </div>
-              ) : (
-                <Button className="w-full" asChild>
-                  <Link to="/auth" onClick={() => setIsMenuOpen(false)}>Sign in</Link>
-                </Button>
-              )}
-            </div>
+              </div>
+            ) : (
+              <Button className="w-full" asChild>
+                <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Sign in
+                </Link>
+              </Button>
+            )}
           </div>
         </SheetContent>
       </Sheet>
