@@ -27,79 +27,58 @@ import CheckoutPage from "./pages/CheckOutPage";
 import AccountPage from "./pages/AccountPage";
 import DashboardPage from "./pages/DashboardPage";
 import SettingsPage from "./pages/SettingsPage";
-import CleaningServicesPage from "./pages/CleaningServicesPage";
+
 import WishlistPage from "./pages/WishlistPage";
 import Success from "./payment/Success";
 import Failure from "./payment/Failure";
-import BookingCheckoutPage from "./pages/BookingCheckoutPage";
 
-import ScrollToTop from "./components/ScrollToTop";
+import SmoothScroll from "../src/hooks/SmoothScroll.tsx";
 
 const queryClient = new QueryClient();
-// 
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-  
-        <OrderProvider>
-          <CartProvider>
-            <WishlistProvider>
-              <TooltipProvider>
-                <Toaster />
-                <Sonner />
-                <BrowserRouter>
-                  <ScrollToTop />
-                  <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/auth" element={<Auth />} />
-                    <Route path="/account" element={<AccountPage />} />
-                    <Route path="/dashboard" element={<DashboardPage />} />
-                    <Route path="/settings" element={<SettingsPage />} />
-                    <Route path="/wishlist" element={<WishlistPage />} />
-                    <Route
-                      path="/forgot/password"
-                      element={<ForgotPassword />}
-                    />
-                    <Route path="/reset/password" element={<ResetPassword />} />
-                    <Route
-                      path="/change/password"
-                      element={<ChangePassword />}
-                    />
-                    <Route path="/payment/success" element={<Success />} />
-                    <Route path="/payment/failure" element={<Failure />} />
-                    <Route path="/booking-checkout" element={<BookingCheckoutPage />} />
-                    {/* <Route path="/booking-success" element={<BookingSuccess />} /> */}
-                    <Route
-                      path="/category/:categorySlug"
-                      element={<CategoryPage />}
-                    />
-                    <Route
-                      path="/category/:categorySlug/:subcategorySlug"
-                      element={<CategoryPage />}
-                    />
-                    <Route
-                      path="/product/:productSlug"
-                      element={<ProductPage />}
-                    />
-                    <Route path="/cart" element={<CartPage />} />
-                    <Route path="/checkout" element={<CheckoutPage />} />
-                    <Route
-                      path="/category/services"
-                      element={<CleaningServicesPage />}
-                    />
-                    <Route path="/search" element={<SearchResults />} />
-                    <Route path="/about" element={<AboutPage />} />
-                    <Route path="/contact" element={<ContactPage />} />
-                    <Route path="/careers" element={<CareersPage />} />
-                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </BrowserRouter>
-              </TooltipProvider>
-            </WishlistProvider>
-          </CartProvider>
-        </OrderProvider>
-  
+      <OrderProvider>
+        <CartProvider>
+          <WishlistProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <SmoothScroll />
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/account" element={<AccountPage />} />
+                  <Route path="/dashboard" element={<DashboardPage />} />
+                  <Route path="/settings" element={<SettingsPage />} />
+                  <Route path="/wishlist" element={<WishlistPage />} />
+                  <Route path="/forgot/password" element={<ForgotPassword />} />
+                  <Route path="/reset/password" element={<ResetPassword />} />
+                  <Route path="/change/password" element={<ChangePassword />} />
+                  <Route path="/payment/success" element={<Success />} />
+                  <Route path="/payment/failure" element={<Failure />} />
+                  <Route path="/category/:categorySlug" element={<CategoryPage />} />
+                  <Route
+                    path="/category/:categorySlug/:subcategorySlug"
+                    element={<CategoryPage />}
+                  />
+                  <Route path="/product/:productSlug" element={<ProductPage />} />
+                  <Route path="/cart" element={<CartPage />} />
+                  <Route path="/checkout" element={<CheckoutPage />} />
+                  <Route path="/search" element={<SearchResults />} />
+                  <Route path="/about" element={<AboutPage />} />
+                  <Route path="/contact" element={<ContactPage />} />
+                  <Route path="/careers" element={<CareersPage />} />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </TooltipProvider>
+          </WishlistProvider>
+        </CartProvider>
+      </OrderProvider>
     </AuthProvider>
   </QueryClientProvider>
 );
