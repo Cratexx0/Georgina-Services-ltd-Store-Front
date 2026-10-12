@@ -330,7 +330,7 @@ const handleGoogleLogin = async () => {
   };
   
   return (
-    <div className="w-full max-w-md mx-auto bg-card border border-border rounded-xl shadow-2xl p-8 md:p-10">
+    <div className="w-full max-w-md mx-auto bg-card border border-border rounded-xl shadow-md p-8 md:p-10">
       <Tabs defaultValue="login" className="w-full">
         <TabsList className="grid w-full grid-cols-2 mb-6">
           <TabsTrigger value="login" className="flex items-center gap-2">
