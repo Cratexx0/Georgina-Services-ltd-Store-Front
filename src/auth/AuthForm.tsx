@@ -31,7 +31,7 @@ declare global {
   }
 }
 
-const GOOGLE_CLIENT_ID = "563615665302-oepp432au5ved0jf0asgip6ovulijl49.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 const FACEBOOK_APP_ID = import.meta.env.VITE_FACEBOOK_APP_ID || "";
 
 const AuthForm = () => {
@@ -109,89 +109,7 @@ const AuthForm = () => {
     loadFacebookSDK();
   }, []);
 
-  // const handleGoogleLogin = async () => {
-  //   console.log('🔧 [GOOGLE-LOGIN] Starting Google Sign-In');
 
-  //   // Only check if Google SDK is loaded
-  //   if (!window.google) {
-  //     console.error('❌ [GOOGLE-LOGIN] Google SDK not loaded');
-  //     toast({
-  //       title: "Google Sign-In Error",
-  //       description: "Google authentication service not loaded. Please refresh the page.",
-  //       variant: "destructive"
-  //     });
-  //     return;
-  //   }
-
-  //   setIsLoading(true);
-
-  //   try {
-  //     console.log('🔧 [GOOGLE-LOGIN] Initializing Google...');
-      
-  //     // Clear any previous sessions
-  //     if (window.google.accounts.id) {
-  //       window.google.accounts.id.cancel();
-  //     }
-
-  //     window.google.accounts.id.initialize({
-  //       client_id: GOOGLE_CLIENT_ID,
-  //       callback: async (response: any) => {
-  //         console.log('🔧 [GOOGLE-CALLBACK] Received response:', response);
-  //         setIsLoading(false);
-          
-  //         if (response?.credential) {
-  //           console.log('✅ [GOOGLE-CALLBACK] Got credential, length:', response.credential.length);
-  //           console.log('🔧 [GOOGLE-CALLBACK] Token preview:', response.credential.substring(0, 50) + '...');
-            
-  //           try {
-  //             await loginWithGoogle(response.credential);
-  //             toast({
-  //               title: "Login successful",
-  //               description: "Signed in with Google.",
-  //             });
-  //             navigate('/', { replace: true });
-  //           } catch (error: any) {
-  //             console.error('❌ [GOOGLE-CALLBACK] loginWithGoogle failed:', error);
-  //             toast({
-  //               title: "Google login failed",
-  //               description: error?.message || "Unable to sign in with Google.",
-  //               variant: "destructive"
-  //             });
-  //           }
-  //         } else {
-  //           console.warn('⚠️ [GOOGLE-CALLBACK] No credential in response:', response);
-  //           toast({
-  //             title: "Login cancelled",
-  //             description: "Google sign-in was cancelled.",
-  //             variant: "destructive"
-  //           });
-  //         }
-  //       },
-  //       use_fedcm_for_prompt: true  // Enable FedCM
-  //     });
-
-  //     console.log('🔧 [GOOGLE-LOGIN] Prompting user...');
-  //     // Trigger Google One Tap WITHOUT callback (FedCM requirement)
-  //     window.google.accounts.id.prompt();
-      
-  //     // Set timeout to handle no response
-  //     setTimeout(() => {
-  //       if (isLoading) {
-  //         console.log('⚠️ [GOOGLE-LOGIN] Prompt timeout - user may have dismissed');
-  //         setIsLoading(false);
-  //       }
-  //     }, 30000);
-      
-  //   } catch (error: any) {
-  //     console.error('❌ [GOOGLE-LOGIN] Error:', error);
-  //     setIsLoading(false);
-  //     toast({
-  //       title: "Google Sign-In Failed",
-  //       description: error?.message || "Please try again or use email login.",
-  //       variant: "destructive"
-  //     });
-  //   }
-  // };
 const handleGoogleLogin = async () => {
     
     if (!window.google) {
