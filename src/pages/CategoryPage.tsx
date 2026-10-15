@@ -53,7 +53,19 @@ const CategoryPage = () => {
 					matchedCat && matchedCat.level === 2
 						? categories.find((cat) => cat.id === matchedCat.parentId) ||
 							matchedCat
-						: matchedCat;
+						: matchedCat ||
+							({
+								id: "all-clothing",
+								name: "Clothing",
+								slug: "clothes",
+								level: 0,
+								parentId: null,
+								description: "Explore all clothing collections.",
+								sortOrder: 0,
+								isActive: true,
+								createdAt: "",
+								updatedAt: "",
+							} satisfies Category);
 
 				if (!currentCat) {
 					setError("Category not found");
@@ -63,9 +75,12 @@ const CategoryPage = () => {
 
 				setCurrentCategory(currentCat);
 
-				const currentSubcategories = categories.filter(
-					(cat) => cat.level === 2 && cat.parentId === currentCat!.id,
-				);
+				const currentSubcategories =
+					currentCat.id === "all-clothing"
+						? categories.filter((cat) => cat.level === 1)
+						: categories.filter(
+								(cat) => cat.level === 2 && cat.parentId === currentCat!.id,
+							);
 				if (currentSubcategories.length) {
 					setSubcategories(currentSubcategories);
 				} else setSubcategories([]);
@@ -76,8 +91,9 @@ const CategoryPage = () => {
 						.map(normalizeProduct)
 						.filter(
 							(product) =>
+								currentCat!.id === "all-clothing" ||
 								product.categoryLevel1?.toLowerCase() ===
-								currentCat!.name.toLowerCase(),
+									currentCat!.name.toLowerCase(),
 						);
 					setProducts(categoryProducts);
 				} catch {
@@ -99,8 +115,7 @@ const CategoryPage = () => {
 	}, [categorySlug, subcategorySlug]);
 
 	const selectedSub = subcategories.find(
-		(sub) =>
-			sub.slug === (subcategorySlug || categorySlug),
+		(sub) => sub.slug === (subcategorySlug || categorySlug),
 	);
 
 	const baseFiltered = useMemo(() => {
@@ -265,16 +280,18 @@ const CategoryPage = () => {
 							<Button
 								key={subcategory.id}
 								variant={
-									selectedSub?.slug === subcategory.slug
-										? "default"
-										: "outline"
+									selectedSub?.slug === subcategory.slug ? "default" : "outline"
 								}
 								size="sm"
 								asChild
 								className="flex-shrink-0 snap-start rounded-full transition-all hover:-translate-y-0.5"
 							>
 								<Link
-									to={`/clothes/${currentCategory.slug}/${subcategory.slug}`}
+									to={
+										currentCategory.id === "all-clothing"
+											? `/clothes/${subcategory.slug}`
+											: `/clothes/${currentCategory.slug}/${subcategory.slug}`
+									}
 								>
 									{subcategory.name}
 								</Link>

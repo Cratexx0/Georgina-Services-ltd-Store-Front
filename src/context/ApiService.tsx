@@ -1,4 +1,5 @@
 import { Product } from "@/lib/type";
+import { User } from "./AuthContext";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
@@ -93,7 +94,7 @@ export interface ChatMessage {
 	message: string;
 	sender: "user" | "bot";
 	messageType: "text" | "quick_reply" | "suggestion";
-	metadata?: any;
+	metadata?: string[];
 	isRead: boolean;
 	timestamp: string;
 	createdAt: string;
@@ -1598,10 +1599,10 @@ class ApiService {
 		});
 	}
 
-	async updateProfile(data: any) {
-		return this.request("/api/users/profile", {
+	async updateProfile(id: number, user: User) {
+		return this.request(`/api/user/update/${id}`, {
 			method: "PUT",
-			body: JSON.stringify(data),
+			body: JSON.stringify({ user }),
 			requiresAuth: true,
 		});
 	}
