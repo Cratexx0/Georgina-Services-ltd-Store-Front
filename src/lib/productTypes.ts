@@ -1,9 +1,6 @@
-// Unified product type that works with both API and local fallback products
 import { Product as ApiProduct } from '@/lib/type';
-import { Product as LocalProduct } from '@/data/products';
 
-// Union type that accepts both product formats
-export type FlexibleProduct = ApiProduct | LocalProduct;
+export type FlexibleProduct = ApiProduct;
 
 // Type guard to check if it's an API product
 export const isApiProduct = (product: FlexibleProduct): product is ApiProduct => {
@@ -11,11 +8,6 @@ export const isApiProduct = (product: FlexibleProduct): product is ApiProduct =>
 };
 
 // Type guard to check if it's a local product
-export const isLocalProduct = (product: FlexibleProduct): product is LocalProduct => {
-  return 'categoryId' in product;
-};
-
-// Helper to get product ID as string
 export const getProductId = (product: FlexibleProduct): string | number => {
   return product.id;
 };

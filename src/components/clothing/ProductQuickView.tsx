@@ -7,9 +7,7 @@ import {
   getDiscountPercent,
   getProductImages,
   getProductSizes,
-  localToApiProduct,
 } from "@/lib/productUtils";
-import { Product as LocalProduct } from "@/data/products";
 import { Product as ApiProduct } from "@/lib/type";
 import { useCart } from "@/context/CartContext";
 import ProductImage from "@/components/common/ProductImage";
@@ -21,7 +19,7 @@ interface ProductQuickViewProps {
 }
 
 const toApi = (p: FlexibleProduct): ApiProduct =>
-  "categoryLevel1" in p ? p : localToApiProduct(p as LocalProduct);
+  p as ApiProduct;
 
 const ProductQuickView: React.FC<ProductQuickViewProps> = ({
   product,

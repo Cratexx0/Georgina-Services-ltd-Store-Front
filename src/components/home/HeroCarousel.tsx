@@ -2,12 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { categories } from '@/data/categories';
+import { useCategories } from '@/hooks/useCategories';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
 const HeroCarousel: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const { categories } = useCategories();
   
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev === categories.length - 1 ? 0 : prev + 1));
@@ -25,6 +26,12 @@ const HeroCarousel: React.FC = () => {
     
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    setCurrentSlide(0);
+  }, [categories.length]);
+
+  if (categories.length === 0) return null;
 
   return (
     <div className="relative h-[60vh] overflow-hidden">

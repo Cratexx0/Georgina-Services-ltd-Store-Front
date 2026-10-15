@@ -56,7 +56,7 @@ export function CheckoutSessionWrapper({
 			if (!response.ok) {
 				const errorText = await response.text();
 				throw new Error(
-					`Failed to create checkout session: ${response.status} ${response.statusText}`
+					`Failed to create checkout session: ${response.status} ${response.statusText}`,
 				);
 			}
 

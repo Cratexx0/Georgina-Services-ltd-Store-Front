@@ -41,7 +41,11 @@ const CheckoutPage: React.FC = () => {
 	};
 
 	// Helper functions to manage pending order in sessionStorage
-	const getPendingOrder = (): { orderId: string; cartHash: string; clientSecret: string } | null => {
+	const getPendingOrder = (): {
+		orderId: string;
+		cartHash: string;
+		clientSecret: string;
+	} | null => {
 		const pending = sessionStorage.getItem("pendingOrder");
 		if (pending) {
 			try {
@@ -53,10 +57,14 @@ const CheckoutPage: React.FC = () => {
 		return null;
 	};
 
-	const setPendingOrder = (orderId: string, cartHash: string, clientSecret: string) => {
+	const setPendingOrder = (
+		orderId: string,
+		cartHash: string,
+		clientSecret: string,
+	) => {
 		sessionStorage.setItem(
 			"pendingOrder",
-			JSON.stringify({ orderId, cartHash, clientSecret })
+			JSON.stringify({ orderId, cartHash, clientSecret }),
 		);
 	};
 
@@ -76,7 +84,11 @@ const CheckoutPage: React.FC = () => {
 		const pendingOrder = getPendingOrder();
 
 		// If we have a pending order and cart has changed, clear it
-		if (pendingOrder && pendingOrder.cartHash !== currentCartHash && cart.length > 0) {
+		if (
+			pendingOrder &&
+			pendingOrder.cartHash !== currentCartHash &&
+			cart.length > 0
+		) {
 			clearPendingOrder();
 			setClientSecret("");
 			setCreatedOrderId(null);
@@ -152,7 +164,7 @@ const CheckoutPage: React.FC = () => {
 	// Helper function for error messages
 	const getCheckoutErrorMessage = (
 		user: User | null,
-		firstCartItem: CartItem
+		firstCartItem: CartItem,
 	): string => {
 		if (user === null) return "Please log in to continue with payment";
 		if (firstCartItem === null) return "No items in cart";
@@ -175,7 +187,12 @@ const CheckoutPage: React.FC = () => {
 				const pendingOrder = getPendingOrder();
 
 				// If we have a pending order and cart hasn't changed, reuse it
-				if (pendingOrder && pendingOrder.cartHash === currentCartHash && pendingOrder.clientSecret && pendingOrder.orderId) {
+				if (
+					pendingOrder &&
+					pendingOrder.cartHash === currentCartHash &&
+					pendingOrder.clientSecret &&
+					pendingOrder.orderId
+				) {
 					setCreatedOrderId(pendingOrder.orderId);
 					setClientSecret(pendingOrder.clientSecret);
 					setCartHash(currentCartHash);
@@ -193,7 +210,7 @@ const CheckoutPage: React.FC = () => {
 					productId: item.product.id.toString(),
 					name: item.product.name,
 					price: Number.parseFloat(
-						item.product.discountPrice || item.product.price
+						item.product.discountPrice || item.product.price,
 					),
 					quantity: item.quantity,
 					image: item.product.images[0],
@@ -206,7 +223,7 @@ const CheckoutPage: React.FC = () => {
 					total,
 					"stripe",
 					"Order created for payment processing",
-					undefined // No paymentIntentId yet
+					undefined, // No paymentIntentId yet
 				);
 
 				if (!orderResponse.success || !orderResponse.data) {
@@ -222,10 +239,7 @@ const CheckoutPage: React.FC = () => {
 
 				// STEP 2: Create PaymentIntent with orderId
 				const response = await fetch(
-					`${
-						import.meta.env.VITE_API_URL ||
-						"https://georgina-server-code.onrender.com"
-					}/api/payment`,
+					`${import.meta.env.VITE_API_URL}/api/payment`,
 					{
 						method: "POST",
 						headers: {
@@ -246,7 +260,7 @@ const CheckoutPage: React.FC = () => {
 							tax: tax,
 							total: total,
 						}),
-					}
+					},
 				);
 
 				if (!response.ok) {
@@ -282,18 +296,18 @@ const CheckoutPage: React.FC = () => {
 				// Check if this is a CheckoutSession secret instead of PaymentIntent
 				if (secret.startsWith("cs_")) {
 					throw new Error(
-						"Backend returned CheckoutSession instead of PaymentIntent. Please ensure backend creates PaymentIntent when paymentIntentMode=true"
+						"Backend returned CheckoutSession instead of PaymentIntent. Please ensure backend creates PaymentIntent when paymentIntentMode=true",
 					);
 				}
 
 				// Validate PaymentIntent client secret format
 				const isValidPaymentIntentSecret = secret.match(
-					/^pi_[a-zA-Z0-9]+_secret_[a-zA-Z0-9]+$/
+					/^pi_[a-zA-Z0-9]+_secret_[a-zA-Z0-9]+$/,
 				);
 
 				if (!isValidPaymentIntentSecret) {
 					throw new Error(
-						"Invalid PaymentIntent client secret format received from server"
+						"Invalid PaymentIntent client secret format received from server",
 					);
 				}
 
@@ -302,7 +316,6 @@ const CheckoutPage: React.FC = () => {
 
 				// Save pending order to sessionStorage
 				setPendingOrder(orderId, currentCartHash, secret);
-
 			} catch (error) {
 				toast.error("Failed to initialize payment. Please try again.");
 				setClientSecret(""); // Reset on error
@@ -329,7 +342,7 @@ const CheckoutPage: React.FC = () => {
 			// Extract billing address from paymentIntent
 			const billingAddress = (paymentIntent as any).billingAddress;
 			let shippingAddressString = user?.email || "To be confirmed";
-			
+
 			if (billingAddress) {
 				// Format the address properly
 				const addressParts = [
@@ -340,7 +353,7 @@ const CheckoutPage: React.FC = () => {
 					billingAddress.postal_code,
 					billingAddress.country,
 				].filter(Boolean);
-				
+
 				if (addressParts.length > 0) {
 					shippingAddressString = addressParts.join(", ");
 				}
@@ -354,7 +367,7 @@ const CheckoutPage: React.FC = () => {
 				productId: item.product.id.toString(),
 				name: item.product.name,
 				price: Number.parseFloat(
-					item.product.discountPrice || item.product.price
+					item.product.discountPrice || item.product.price,
 				),
 				quantity: item.quantity,
 				image: item.product.images[0],
@@ -387,7 +400,7 @@ const CheckoutPage: React.FC = () => {
 		} catch (error) {
 			setOrderProcessed(false); // Reset if there was an error
 			toast.error(
-				"Payment succeeded but there was an error processing your order. Please contact support."
+				"Payment succeeded but there was an error processing your order. Please contact support.",
 			);
 		}
 	};
@@ -491,7 +504,7 @@ const CheckoutPage: React.FC = () => {
 									<div className="space-y-3 max-h-[400px] md:max-h-96 overflow-y-auto">
 										{cart.map((item) => {
 											const itemPrice = Number.parseFloat(
-												item.product.discountPrice || item.product.price
+												item.product.discountPrice || item.product.price,
 											);
 											const itemTotal = itemPrice * item.quantity;
 

@@ -1,6 +1,6 @@
 import { Product } from "@/lib/type";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL ;
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 interface RequestOptions extends RequestInit {
 	requiresAuth?: boolean;
@@ -11,76 +11,76 @@ interface RequestOptions extends RequestInit {
 // =============================================
 
 export interface Review {
-  id: string;
-  productId: string;
-  userId: string;
-  userName: string;
-  userEmail: string;
-  rating: number;
-  title?: string;
-  comment: string;
-  verifiedPurchase: boolean;
-  helpfulCount: number;
-  isApproved: boolean;
-  reply?: string;
-  repliedAt?: string;
-  createdAt: string;
-  updatedAt: string;
-  product?: {
-    id: string;
-    name: string;
-    slug: string;
-    images?: string[];
-  };
+	id: string;
+	productId: string;
+	userId: string;
+	userName: string;
+	userEmail: string;
+	rating: number;
+	title?: string;
+	comment: string;
+	verifiedPurchase: boolean;
+	helpfulCount: number;
+	isApproved: boolean;
+	reply?: string;
+	repliedAt?: string;
+	createdAt: string;
+	updatedAt: string;
+	product?: {
+		id: string;
+		name: string;
+		slug: string;
+		images?: string[];
+	};
 }
 
 export interface CreateReviewRequest {
-  userId: string;
-  userName: string;
-  userEmail: string;
-  rating: number;
-  title?: string;
-  comment: string;
-  verifiedPurchase?: boolean;
+	userId: string;
+	userName: string;
+	userEmail: string;
+	rating: number;
+	title?: string;
+	comment: string;
+	verifiedPurchase?: boolean;
 }
 
 export interface ReviewStats {
-  averageRating: string;
-  ratingDistribution: Record<number, number>;
-  totalReviews: number;
+	averageRating: string;
+	ratingDistribution: Record<number, number>;
+	totalReviews: number;
 }
 
 export interface PaginationInfo {
-  currentPage: number;
-  totalPages: number;
-  totalReviews: number;
-  hasNext: boolean;
-  hasPrev: boolean;
+	currentPage: number;
+	totalPages: number;
+	totalReviews: number;
+	hasNext: boolean;
+	hasPrev: boolean;
 }
 
 export interface ProductReviewsResponse {
-  reviews: Review[];
-  pagination: PaginationInfo;
-  stats: ReviewStats;
-  message: string;
+	reviews: Review[];
+	pagination: PaginationInfo;
+	stats: ReviewStats;
+	message: string;
 }
 
 export interface UserReviewsResponse {
-  reviews: Review[];
-  pagination: PaginationInfo;
-  message: string;
+	reviews: Review[];
+	pagination: PaginationInfo;
+	message: string;
 }
 
 export interface AllReviewsResponse {
-  reviews: Review[];
-  pagination: PaginationInfo;
-  stats: {
-    totalReviews: number;
-    approvedReviews: number;
-    pendingReviews: number;
-    averageRating: { average: number | null };
-  };
-  message: string;
+	reviews: Review[];
+	pagination: PaginationInfo;
+	stats: {
+		totalReviews: number;
+		approvedReviews: number;
+		pendingReviews: number;
+		averageRating: { average: number | null };
+	};
+	message: string;
 }
 
 // =============================================
@@ -182,8 +182,7 @@ class ApiService {
 					return userData.email;
 				}
 			}
-		} catch (error) {
-		}
+		} catch (error) {}
 
 		return null;
 	}
@@ -210,8 +209,7 @@ class ApiService {
 					return userId;
 				}
 			}
-		} catch (error) {
-		}
+		} catch (error) {}
 
 		return null;
 	}
@@ -245,7 +243,7 @@ class ApiService {
 	// Request method
 	private async request(
 		endpoint: string,
-		options: RequestOptions = {}
+		options: RequestOptions = {},
 	): Promise<any> {
 		try {
 			const { requiresAuth = true, ...fetchOptions } = options;
@@ -295,7 +293,7 @@ class ApiService {
 					.json()
 					.catch(() => ({ message: "Unknown error" }));
 				throw new Error(
-					errorData.message || `Request failed with status ${response.status}`
+					errorData.message || `Request failed with status ${response.status}`,
 				);
 			}
 
@@ -342,7 +340,7 @@ class ApiService {
 			// Handle other non-200 responses
 			if (!response.ok) {
 				throw new Error(
-					`Token verification failed with status ${response.status}`
+					`Token verification failed with status ${response.status}`,
 				);
 			}
 
@@ -378,29 +376,23 @@ class ApiService {
 		options: {
 			page?: number;
 			limit?: number;
-			sort?: 'newest' | 'helpful' | 'rating_high' | 'rating_low';
+			sort?: "newest" | "helpful" | "rating_high" | "rating_low";
 			rating?: number;
 			verified?: boolean;
-		} = {}
+		} = {},
 	): Promise<ProductReviewsResponse> {
-		const {
-			page = 1,
-			limit = 10,
-			sort = 'newest',
-			rating,
-			verified
-		} = options;
+		const { page = 1, limit = 10, sort = "newest", rating, verified } = options;
 
 		const queryParams = new URLSearchParams({
 			page: page.toString(),
 			limit: limit.toString(),
 			sort,
 			...(rating !== undefined && { rating: rating.toString() }),
-			...(verified !== undefined && { verified: verified.toString() })
+			...(verified !== undefined && { verified: verified.toString() }),
 		});
 
 		return this.request(`/api/products/${productId}/reviews?${queryParams}`, {
-			method: 'GET',
+			method: "GET",
 			requiresAuth: false, // Public endpoint
 		});
 	}
@@ -410,7 +402,7 @@ class ApiService {
 	 */
 	async createReview(
 		productId: string,
-		reviewData: CreateReviewRequest
+		reviewData: CreateReviewRequest,
 	): Promise<{
 		success: boolean;
 		message: string;
@@ -421,7 +413,7 @@ class ApiService {
 		};
 	}> {
 		return this.request(`/api/products/${productId}/reviews`, {
-			method: 'POST',
+			method: "POST",
 			body: JSON.stringify(reviewData),
 			requiresAuth: true,
 		});
@@ -436,7 +428,7 @@ class ApiService {
 		helpfulCount?: number;
 	}> {
 		return this.request(`/api/reviews/${reviewId}/helpful`, {
-			method: 'POST',
+			method: "POST",
 			requiresAuth: true,
 		});
 	}
@@ -449,17 +441,17 @@ class ApiService {
 		options: {
 			page?: number;
 			limit?: number;
-		} = {}
+		} = {},
 	): Promise<UserReviewsResponse> {
 		const { page = 1, limit = 10 } = options;
 
 		const queryParams = new URLSearchParams({
 			page: page.toString(),
-			limit: limit.toString()
+			limit: limit.toString(),
 		});
 
 		return this.request(`/api/users/${userId}/reviews?${queryParams}`, {
-			method: 'GET',
+			method: "GET",
 			requiresAuth: true,
 		});
 	}
@@ -469,14 +461,14 @@ class ApiService {
 	 */
 	async replyToReview(
 		reviewId: string,
-		reply: string
+		reply: string,
 	): Promise<{
 		success: boolean;
 		message: string;
 		review?: Review;
 	}> {
 		return this.request(`/api/reviews/${reviewId}/reply`, {
-			method: 'POST',
+			method: "POST",
 			body: JSON.stringify({ reply }),
 			requiresAuth: true,
 		});
@@ -495,7 +487,7 @@ class ApiService {
 			isApproved?: boolean;
 			verifiedPurchase?: boolean;
 			search?: string;
-		} = {}
+		} = {},
 	): Promise<AllReviewsResponse> {
 		const {
 			page = 1,
@@ -505,7 +497,7 @@ class ApiService {
 			rating,
 			isApproved,
 			verifiedPurchase,
-			search
+			search,
 		} = filters;
 
 		const queryParams = new URLSearchParams({
@@ -515,12 +507,14 @@ class ApiService {
 			...(userId && { userId }),
 			...(rating !== undefined && { rating: rating.toString() }),
 			...(isApproved !== undefined && { isApproved: isApproved.toString() }),
-			...(verifiedPurchase !== undefined && { verifiedPurchase: verifiedPurchase.toString() }),
-			...(search && { search })
+			...(verifiedPurchase !== undefined && {
+				verifiedPurchase: verifiedPurchase.toString(),
+			}),
+			...(search && { search }),
 		});
 
 		return this.request(`/api/admin/reviews?${queryParams}`, {
-			method: 'GET',
+			method: "GET",
 			requiresAuth: true,
 		});
 	}
@@ -530,14 +524,14 @@ class ApiService {
 	 */
 	async updateReviewStatus(
 		reviewId: string,
-		isApproved: boolean
+		isApproved: boolean,
 	): Promise<{
 		success: boolean;
 		message: string;
 		review?: Review;
 	}> {
 		return this.request(`/api/admin/reviews/${reviewId}/status`, {
-			method: 'PATCH',
+			method: "PATCH",
 			body: JSON.stringify({ isApproved }),
 			requiresAuth: true,
 		});
@@ -551,7 +545,7 @@ class ApiService {
 		message: string;
 	}> {
 		return this.request(`/api/reviews/${reviewId}`, {
-			method: 'DELETE',
+			method: "DELETE",
 			requiresAuth: true,
 		});
 	}
@@ -561,7 +555,7 @@ class ApiService {
 	 */
 	async checkUserReview(
 		productId: string,
-		userId: string
+		userId: string,
 	): Promise<{
 		success: boolean;
 		hasReviewed: boolean;
@@ -570,16 +564,16 @@ class ApiService {
 		try {
 			// First get user's reviews
 			const userReviews = await this.getUserReviews(userId, { limit: 100 });
-			
+
 			// Check if any review is for this product
 			const existingReview = userReviews.reviews.find(
-				review => review.productId === productId
+				(review) => review.productId === productId,
 			);
 
 			return {
 				success: true,
 				hasReviewed: !!existingReview,
-				existingReview
+				existingReview,
 			};
 		} catch (error) {
 			return {
@@ -602,12 +596,13 @@ class ApiService {
 			const response = await this.getProductReviews(productId, { limit: 1 });
 			return {
 				success: true,
-				stats: response.stats
+				stats: response.stats,
 			};
 		} catch (error) {
 			return {
 				success: false,
-				message: error instanceof Error ? error.message : 'Failed to get review stats'
+				message:
+					error instanceof Error ? error.message : "Failed to get review stats",
 			};
 		}
 	}
@@ -617,7 +612,7 @@ class ApiService {
 	 */
 	calculateAverageRating(reviews: Review[]): number {
 		if (!reviews || reviews.length === 0) return 0;
-		
+
 		const total = reviews.reduce((sum, review) => sum + review.rating, 0);
 		return parseFloat((total / reviews.length).toFixed(1));
 	}
@@ -626,12 +621,18 @@ class ApiService {
 	 * Helper method to get rating distribution
 	 */
 	getRatingDistribution(reviews: Review[]): Record<number, number> {
-		const distribution: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-		
-		reviews.forEach(review => {
+		const distribution: Record<number, number> = {
+			1: 0,
+			2: 0,
+			3: 0,
+			4: 0,
+			5: 0,
+		};
+
+		reviews.forEach((review) => {
 			distribution[review.rating]++;
 		});
-		
+
 		return distribution;
 	}
 
@@ -645,19 +646,19 @@ class ApiService {
 		const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
 		if (diffDays === 0) {
-			return 'Today';
+			return "Today";
 		} else if (diffDays === 1) {
-			return 'Yesterday';
+			return "Yesterday";
 		} else if (diffDays < 7) {
 			return `${diffDays} days ago`;
 		} else if (diffDays < 30) {
 			const weeks = Math.floor(diffDays / 7);
-			return `${weeks} ${weeks === 1 ? 'week' : 'weeks'} ago`;
+			return `${weeks} ${weeks === 1 ? "week" : "weeks"} ago`;
 		} else {
-			return date.toLocaleDateString('en-US', {
-				year: 'numeric',
-				month: 'short',
-				day: 'numeric'
+			return date.toLocaleDateString("en-US", {
+				year: "numeric",
+				month: "short",
+				day: "numeric",
 			});
 		}
 	}
@@ -670,8 +671,8 @@ class ApiService {
 	 * Social login with Google
 	 */
 	async socialLoginGoogle(idToken: string): Promise<SocialLoginResponse> {
-		return this.request('/api/auth/google', {
-			method: 'POST',
+		return this.request("/api/auth/google", {
+			method: "POST",
 			body: JSON.stringify({ idToken }),
 			requiresAuth: false,
 		});
@@ -681,8 +682,8 @@ class ApiService {
 	 * Social login with Facebook
 	 */
 	async socialLoginFacebook(accessToken: string): Promise<SocialLoginResponse> {
-		return this.request('/api/auth/facebook', {
-			method: 'POST',
+		return this.request("/api/auth/facebook", {
+			method: "POST",
 			body: JSON.stringify({ accessToken }),
 			requiresAuth: false,
 		});
@@ -696,50 +697,21 @@ class ApiService {
 	 * Get featured products - use correct endpoint
 	 */
 	async getFeaturedProducts(): Promise<Product[]> {
-		const response = await this.request("/api/products/featured", {
-			method: "GET",
-			requiresAuth: false,
-		});
-
-		// Extract just the products array from the response
-		if (response && response.products && Array.isArray(response.products)) {
-			return this.normalizeProducts(response.products);
-		}
-		return [];
+		return (await this.getProducts()).filter((product) => product.isFeatured);
 	}
 
 	/**
 	 * Get trending products - use correct endpoint
 	 */
 	async getTrendingProducts(): Promise<Product[]> {
-		const response = await this.request("/api/products/trending", {
-			method: "GET",
-			requiresAuth: false,
-		});
-
-		// Extract just the products array from the response
-		if (response && response.products && Array.isArray(response.products)) {
-			return this.normalizeProducts(response.products);
-		}
-
-		return [];
+		return (await this.getProducts()).filter((product) => product.isTrending);
 	}
 
 	/**
 	 * Get new arrivals - use correct endpoint
 	 */
 	async getNewArrivals(): Promise<Product[]> {
-		const response = await this.request("/api/products/new-arrivals", {
-			method: "GET",
-			requiresAuth: false,
-		});
-
-		// Extract just the products array from the response
-		if (response && response.products && Array.isArray(response.products)) {
-			return this.normalizeProducts(response.products);
-		}
-
-		return [];
+		return (await this.getProducts()).filter((product) => product.isNewArrival);
 	}
 
 	/**
@@ -783,7 +755,7 @@ class ApiService {
 	async getProductsByCategory(
 		categoryLevel1: string,
 		categoryLevel2?: string,
-		categoryLevel3?: string
+		categoryLevel3?: string,
 	) {
 		try {
 			let endpoint = "";
@@ -829,7 +801,6 @@ class ApiService {
 				requiresAuth: false, // Product details are public
 			});
 
-
 			// Handle different response structures
 			let productData = null;
 
@@ -873,7 +844,7 @@ class ApiService {
 		} catch (error) {
 			console.error(
 				`📦 [GET_PRODUCT_BY_ID] Error fetching product ${id}:`,
-				error
+				error,
 			);
 			throw error;
 		}
@@ -924,11 +895,11 @@ class ApiService {
 			body: JSON.stringify(paymentData),
 			requiresAuth: true,
 		});
-		
+
 		if (!response.sessionId || !response.url) {
-			throw new Error(response.message || 'Failed to initiate payment');
+			throw new Error(response.message || "Failed to initiate payment");
 		}
-		
+
 		return response;
 	}
 
@@ -1019,7 +990,7 @@ class ApiService {
 	async getAllBookings(
 		page: number = 1,
 		limit: number = 10,
-		filters: any = {}
+		filters: any = {},
 	) {
 		const queryParams = new URLSearchParams({
 			page: page.toString(),
@@ -1091,7 +1062,7 @@ class ApiService {
 	async getUserDashboardBookings(
 		page: number = 1,
 		limit: number = 10,
-		status?: string
+		status?: string,
 	): Promise<{
 		success: boolean;
 		data?: any[];
@@ -1108,7 +1079,8 @@ class ApiService {
 			if (!userEmail || !userId) {
 				return {
 					success: false,
-					message: "User information not found. Please ensure you are logged in.",
+					message:
+						"User information not found. Please ensure you are logged in.",
 					data: [],
 					bookings: [],
 					total: 0,
@@ -1125,30 +1097,36 @@ class ApiService {
 				...(status && { status }),
 			});
 
-		const response = await this.request(`/api/user/bookings?${queryParams}`, {
-			method: "GET",
-			requiresAuth: true,
-		});
+			const response = await this.request(`/api/user/bookings?${queryParams}`, {
+				method: "GET",
+				requiresAuth: true,
+			});
 
-		// Ensure consistent response structure
+			// Ensure consistent response structure
 			return {
 				success: response.success !== false,
 				data: response.data || response.bookings || [],
 				bookings: response.bookings || response.data || [],
 				total: response.total || response.totalCount || 0,
 				page: response.page || response.currentPage || page,
-				totalPages: response.totalPages || Math.ceil((response.total || 0) / limit),
+				totalPages:
+					response.totalPages || Math.ceil((response.total || 0) / limit),
 				message: response.message,
 			};
 		} catch (error) {
 			console.error("❌ [getUserDashboardBookings] Error:", error);
-			
+
 			// Check if error is due to endpoint not implemented
-			const errorMessage = error instanceof Error ? error.message : String(error);
-			if (errorMessage.includes("not implemented") || errorMessage.includes("404")) {
+			const errorMessage =
+				error instanceof Error ? error.message : String(error);
+			if (
+				errorMessage.includes("not implemented") ||
+				errorMessage.includes("404")
+			) {
 				return {
 					success: false,
-					message: "Booking endpoint is not yet implemented on the server. Please contact support.",
+					message:
+						"Booking endpoint is not yet implemented on the server. Please contact support.",
 					data: [],
 					bookings: [],
 					total: 0,
@@ -1234,7 +1212,7 @@ class ApiService {
 	 */
 	async cancelUserBooking(
 		id: string,
-		cancellationReason?: string
+		cancellationReason?: string,
 	): Promise<{
 		success: boolean;
 		message?: string;
@@ -1334,7 +1312,7 @@ class ApiService {
 		totalAmount?: number,
 		paymentMethod?: string,
 		customerNotes?: string,
-		paymentIntentId?: string
+		paymentIntentId?: string,
 	): Promise<{
 		success: boolean;
 		data?: any;
@@ -1474,7 +1452,7 @@ class ApiService {
 	 */
 	async updateOrderStatus(
 		orderId: string,
-		status: string
+		status: string,
 	): Promise<{
 		success: boolean;
 		message?: string;
@@ -1500,7 +1478,7 @@ class ApiService {
 	}
 
 	async sendChatMessage(
-		messageData: SendMessageData
+		messageData: SendMessageData,
 	): Promise<SendMessageResponse> {
 		return this.request("/api/chat/send", {
 			method: "POST",
@@ -1518,7 +1496,7 @@ class ApiService {
 	}
 
 	async markChatAsRead(
-		sessionId: string
+		sessionId: string,
 	): Promise<{ success: boolean; message: string }> {
 		return this.request(`/api/chat/read/${sessionId}`, {
 			method: "PATCH",
@@ -1527,7 +1505,7 @@ class ApiService {
 	}
 
 	async getUnreadChatCount(
-		sessionId: string
+		sessionId: string,
 	): Promise<{ unreadCount: number }> {
 		const response = await this.request(`/api/chat/unread/${sessionId}`, {
 			method: "GET",
@@ -1740,7 +1718,7 @@ class ApiService {
 
 		level2.forEach((level2Cat) => {
 			const parent = level1.find(
-				(level1Cat) => level1Cat.id === level2Cat.parentId
+				(level1Cat) => level1Cat.id === level2Cat.parentId,
 			);
 			if (parent) {
 				if (!parent.subcategories) parent.subcategories = [];
@@ -1750,7 +1728,7 @@ class ApiService {
 
 		level3.forEach((level3Cat) => {
 			const parent = level2.find(
-				(level2Cat) => level2Cat.id === level3Cat.parentId
+				(level2Cat) => level2Cat.id === level3Cat.parentId,
 			);
 			if (parent) {
 				if (!parent.subcategories) parent.subcategories = [];
@@ -1824,7 +1802,7 @@ class ApiService {
 		return this.requestWithFormData(
 			`/api/admin/products/${productId}`,
 			productData,
-			"PUT"
+			"PUT",
 		);
 	}
 
@@ -1847,7 +1825,7 @@ class ApiService {
 	 */
 	async updateProductSpecialCategories(
 		productId: string,
-		categories: string[]
+		categories: string[],
 	) {
 		return this.request(`/api/products/${productId}/special-categories`, {
 			method: "PATCH",
@@ -1914,13 +1892,10 @@ class ApiService {
 		message?: string;
 	}> {
 		try {
-			const response = await this.request(
-				`/api/wishlist/check/${productId}`,
-				{
-					method: "GET",
-					requiresAuth: true,
-				}
-			);
+			const response = await this.request(`/api/wishlist/check/${productId}`, {
+				method: "GET",
+				requiresAuth: true,
+			});
 
 			return {
 				success: response.success !== false,
@@ -1972,7 +1947,7 @@ class ApiService {
 	private async requestWithFormData(
 		endpoint: string,
 		data: any,
-		method: "POST" | "PUT" = "POST"
+		method: "POST" | "PUT" = "POST",
 	) {
 		const token = this.getToken();
 
@@ -2049,4 +2024,3 @@ class ApiService {
 }
 
 export const apiService = new ApiService(API_BASE_URL);
-

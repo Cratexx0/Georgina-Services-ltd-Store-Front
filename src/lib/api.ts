@@ -1,5 +1,6 @@
-const API_BASE_URL =
-	import.meta.env.VITE_API_URL || "https://georgina-server-code.onrender.com";
+import { Product } from "./type";
+
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 // Interfaces
 export interface Category {
@@ -32,55 +33,6 @@ export interface SubCategory {
 	updatedAt?: string;
 }
 // src/types/product.ts
-export interface Product {
-	// Core identifiers
-	id: number;
-	name: string;
-	slug: string;
-	description: string | null;
-
-	// Pricing
-	price: string;
-	discountPrice?: string; // Optional since it's not in your data
-
-	// Categories
-	categoryLevel1: string;
-	categoryLevel2: string | null;
-	categoryLevel3: string | null;
-
-	// Product type
-	serviceType: "physical" | "service";
-	serviceDuration: string | null;
-	unit: string;
-
-	// Inventory
-	stock: number;
-	images: string[];
-	isActive: boolean;
-
-	// Metadata
-	tags: string[];
-	brand: string | null;
-
-	// Special categories
-	isFeatured: boolean;
-	isTrending: boolean;
-	isNewArrival: boolean;
-	featuredOrder: number;
-	trendingOrder: number;
-	newArrivalOrder: number;
-
-	// Wishlist
-	wishList: boolean;
-
-	// Size
-	size: string | null;
-
-	// Timestamps
-	createdAt: string;
-	updatedAt: string;
-}
-
 export interface Review {
 	id: string;
 	userId: string;
@@ -161,7 +113,7 @@ class ApiService {
 
 	private async request<T>(
 		endpoint: string,
-		options: RequestInit = {}
+		options: RequestInit = {},
 	): Promise<T> {
 		const url = `${this.baseUrl}${endpoint}`;
 		const headers: HeadersInit = {
@@ -213,7 +165,7 @@ class ApiService {
 	async register(
 		name: string,
 		email: string,
-		password: string
+		password: string,
 	): Promise<AuthResponse> {
 		return this.request<AuthResponse>("/api/auth/customer/register", {
 			method: "POST",
@@ -230,7 +182,7 @@ class ApiService {
 
 	async resetPassword(
 		token: string,
-		password: string
+		password: string,
 	): Promise<{ message: string }> {
 		return this.request<{ message: string }>("/api/auth/resetpassword", {
 			method: "POST",
@@ -264,73 +216,57 @@ class ApiService {
 		return this.request<SubCategory>(`/api/subcategories/${id}`);
 	}
 
-	// Products
-	// async getProducts(page = 1, limit = 10, category?: string, subcategory?: string): Promise<{ products: Product[], total: number }> {
-	//   let endpoint = `/api/products?page=${page}&limit=${limit}`;
-	//   if (category) endpoint += `&category=${category}`;
-	//   if (subcategory) endpoint += `&subcategory=${subcategory}`;
-	//   return this.request<{ products: Product[], total: number }>(endpoint);
-	// }
-
-	// async getProductById(id: string): Promise<Product> {
-	//   return this.request<Product>(`/api/products/${id}`);
-	// }
-
 	async getTrendingProducts(
 		page = 1,
-		limit = 10
+		limit = 10,
 	): Promise<{
 		products: Product[];
 		total: number;
 		page: number;
 		limit: number;
 	}> {
-		return this.request<{
-			products: Product[];
-			total: number;
-			page: number;
-			limit: number;
-		}>(`/api/products/trending?page=${page}&limit=${limit}`);
+		const response = await this.getProducts(1, 1000);
+		const flagged = response.products.filter((product) => product.isTrending);
+		const products = flagged.slice((page - 1) * limit, page * limit);
+		return { products, total: flagged.length, page, limit };
 	}
 
 	async getNewArrivalProducts(
 		page = 1,
-		limit = 10
+		limit = 10,
 	): Promise<{
 		products: Product[];
 		total: number;
 		page: number;
 		limit: number;
 	}> {
-		return this.request<{
-			products: Product[];
-			total: number;
-			page: number;
-			limit: number;
-		}>(`/api/products/new-arrivals?page=${page}&limit=${limit}`);
+		const response = await this.getProducts(1, 1000);
+		const flagged = response.products.filter(
+			(product) => product.isNewArrival,
+		);
+		const products = flagged.slice((page - 1) * limit, page * limit);
+		return { products, total: flagged.length, page, limit };
 	}
 
 	async getFeaturedProducts(
 		page = 1,
-		limit = 10
+		limit = 10,
 	): Promise<{
 		products: Product[];
 		total: number;
 		page: number;
 		limit: number;
 	}> {
-		return this.request<{
-			products: Product[];
-			total: number;
-			page: number;
-			limit: number;
-		}>(`/api/products/featured?page=${page}&limit=${limit}`);
+		const response = await this.getProducts(1, 1000);
+		const flagged = response.products.filter((product) => product.isFeatured);
+		const products = flagged.slice((page - 1) * limit, page * limit);
+		return { products, total: flagged.length, page, limit };
 	}
 
 	async rateProduct(
 		productId: string,
 		rating: number,
-		comment: string
+		comment: string,
 	): Promise<Product> {
 		return this.request<Product>(`/api/products/${productId}/rate`, {
 			method: "POST",
@@ -341,7 +277,7 @@ class ApiService {
 	// Orders
 	async createOrder(
 		items: { productId: string; quantity: number }[],
-		shippingAddress: Address
+		shippingAddress: Address,
 	): Promise<Order> {
 		return this.request<Order>("/api/orders", {
 			method: "POST",
@@ -359,7 +295,7 @@ class ApiService {
 
 	// Cleaning Services
 	async bookCleaningService(
-		booking: Omit<CleaningBooking, "id" | "userId" | "status">
+		booking: Omit<CleaningBooking, "id" | "userId" | "status">,
 	): Promise<CleaningBooking> {
 		return this.request<CleaningBooking>("/api/cleaning/book", {
 			method: "POST",
@@ -392,15 +328,15 @@ class ApiService {
 			{
 				method: "POST",
 				body: JSON.stringify(data),
-			}
+			},
 		);
 	}
 
 	async verifyPayment(
-		reference: string
+		reference: string,
 	): Promise<{ success: boolean; order?: Order }> {
 		return this.request<{ success: boolean; order?: Order }>(
-			`/api/payments/verify/${reference}`
+			`/api/payments/verify/${reference}`,
 		);
 	}
 
@@ -412,11 +348,12 @@ class ApiService {
 		limit = 10,
 		category?: string,
 		subcategory?: string,
-		search?: string
+		search?: string,
 	): Promise<{ products: Product[]; total: number }> {
 		let endpoint = `/api/products?page=${page}&limit=${limit}`;
 		if (category) endpoint += `&category=${encodeURIComponent(category)}`;
-		if (subcategory) endpoint += `&subcategory=${encodeURIComponent(subcategory)}`;
+		if (subcategory)
+			endpoint += `&subcategory=${encodeURIComponent(subcategory)}`;
 		if (search) endpoint += `&search=${encodeURIComponent(search)}`;
 		return this.request<{ products: Product[]; total: number }>(endpoint);
 	}
@@ -424,21 +361,21 @@ class ApiService {
 	// Add these new methods:
 	async getProductBySlug(slug: string): Promise<Product> {
 		const response = await this.request<{ product: Product }>(
-			`/api/products/slug/${slug}`
+			`/api/products/slug/${slug}`,
 		);
 		return response.product;
 	}
 
 	async getProductsByCategory(category: string): Promise<Product[]> {
 		const response = await this.request<{ products: Product[] }>(
-			`/api/products/category/${category}`
+			`/api/products/category/${category}`,
 		);
 		return response.products;
 	}
 
 	async getProductById(id: string): Promise<Product> {
 		const response = await this.request<{ product: Product }>(
-			`/api/products/${id}`
+			`/api/products/${id}`,
 		);
 		return response.product;
 	}

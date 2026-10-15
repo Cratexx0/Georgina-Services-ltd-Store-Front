@@ -10,8 +10,7 @@ import config from "@/config/env";
 import { Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
-const API_BASE_URL =
-	import.meta.env.VITE_API_URL || "https://georgina-server-code.onrender.com";
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 // Initialize Stripe
 const stripePromise = loadStripe(config.stripe.publishableKey);
@@ -55,7 +54,7 @@ export function PaymentIntentWrapper({
 
 				if (!response.ok) {
 					throw new Error(
-						`Failed to create payment intent: ${response.status} ${response.statusText}`
+						`Failed to create payment intent: ${response.status} ${response.statusText}`,
 					);
 				}
 
