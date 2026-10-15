@@ -48,7 +48,7 @@ const DashboardPage: React.FC = () => {
 	}, [searchParams]);
 
 	const getStatusColor = (
-		status: string
+		status: string,
 	): "default" | "secondary" | "destructive" | "outline" => {
 		const statusLower = status.toLowerCase();
 		if (
@@ -93,15 +93,16 @@ const DashboardPage: React.FC = () => {
 	const calculateTotalSpent = () => {
 		const orderTotal = orders.reduce(
 			(acc, order) => acc + (order.totalAmount || 0),
-			0
+			0,
 		);
 		//const bookingTotal = bookings.reduce(
-	
-		return orderTotal ;
+
+		return orderTotal;
 	};
 
 	const formatCurrency = (amount: number) => {
-		return `£${amount.toFixed(2)}`;
+		const safeAmount = Number(amount);
+		return `£${(Number.isFinite(safeAmount) ? safeAmount : 0).toFixed(2)}`;
 	};
 
 	const formatDate = (date: Date | string) => {
@@ -155,8 +156,6 @@ const DashboardPage: React.FC = () => {
 							</CardContent>
 						</Card>
 
-				
-
 						<Card className="hover:shadow-lg transition-shadow">
 							<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 								<CardTitle className="text-sm font-medium">
@@ -183,16 +182,11 @@ const DashboardPage: React.FC = () => {
 						onValueChange={setActiveTab}
 						className="space-y-4"
 					>
-						<TabsList className="grid w-full grid-cols-3 h-12">
+						<TabsList className="grid w-full grid-cols-2 h-12">
 							<TabsTrigger value="orders" className="flex items-center gap-2">
 								<ShoppingBag className="h-4 w-4" />
 								<span className="hidden sm:inline">My Orders</span>
 								<span className="sm:hidden">Orders</span>
-							</TabsTrigger>
-							<TabsTrigger value="bookings" className="flex items-center gap-2">
-								<Calendar className="h-4 w-4" />
-								<span className="hidden sm:inline">My Bookings</span>
-								<span className="sm:hidden">Bookings</span>
 							</TabsTrigger>
 							<TabsTrigger value="profile" className="flex items-center gap-2">
 								<User className="h-4 w-4" />
@@ -210,8 +204,6 @@ const DashboardPage: React.FC = () => {
 								formatDate={formatDate}
 							/>
 						</TabsContent>
-
-		
 
 						{/* Profile Tab */}
 						<TabsContent value="profile" className="space-y-4">
