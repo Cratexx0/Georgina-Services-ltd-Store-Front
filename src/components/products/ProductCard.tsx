@@ -7,14 +7,12 @@ import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { toast } from "@/components/ui/sonner";
 import { Product as ApiProduct } from "@/lib/type";
-import { Product as LocalProduct } from "@/data/products";
 import { FlexibleProduct, getDiscountPrice, getPrice } from "@/lib/productTypes";
 import {
   getDiscountPercent,
   getProductImages,
   getProductRating,
   getProductSizes,
-  localToApiProduct,
 } from "@/lib/productUtils";
 import ProductImage from "@/components/common/ProductImage";
 
@@ -23,7 +21,7 @@ interface ProductCardProps {
 }
 
 const toApiProduct = (p: FlexibleProduct): ApiProduct =>
-  "categoryLevel1" in p ? p : localToApiProduct(p as LocalProduct);
+  p as ApiProduct;
 
 const stop = (e: React.SyntheticEvent) => {
   e.preventDefault();

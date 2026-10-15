@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import { apiService } from "@/lib/api";
 import { Product } from "@/lib/type";
-import { searchLocalProducts } from "@/lib/productUtils";
 import { useDebounce } from "@/hooks/useDebounce";
 import { ProductGridSkeleton } from "@/components/Loader/SkeletonLoader";
 import EmptyState from "@/components/common/EmptyState";
@@ -38,11 +37,11 @@ const SearchResults = () => {
       try {
         const data = await apiService.getProducts(1, 48, undefined, undefined, debounced);
         if (!cancelled) {
-          setResults(data.products?.length ? data.products : searchLocalProducts(debounced));
+          setResults(data.products || []);
         }
       } catch {
         if (!cancelled) {
-          setResults(searchLocalProducts(debounced));
+          setResults([]);
         }
       } finally {
         if (!cancelled) setLoading(false);

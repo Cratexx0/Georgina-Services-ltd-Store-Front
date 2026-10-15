@@ -100,7 +100,7 @@ const CategoryTabs: React.FC = () => {
             >
               <Link
                 key={category.id}
-                to={`/category/${category.slug}`}
+                to={`/clothes/${category.slug}`}
                 className="group"
 
               >
