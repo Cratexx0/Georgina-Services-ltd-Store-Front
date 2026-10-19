@@ -12,6 +12,12 @@ import StripeProvider from "@/providers/CheckoutProvider";
 import CheckoutForm from "@/components/stripe/CheckoutForm";
 import type { PaymentIntent } from "@stripe/stripe-js";
 import { apiService } from "@/context/ApiService";
+import { getProductImages, handleImageError } from "@/lib/productUtils";
+import type { Product } from "@/lib/type";
+
+// Some products have `images: null`, so never index `product.images` directly.
+const firstImage = (product: Product): string =>
+	getProductImages(product)[0] ?? "";
 
 const CheckoutPage: React.FC = () => {
 	const { cart, getTotalPrice, clearCart } = useCart();
@@ -209,7 +215,7 @@ const CheckoutPage: React.FC = () => {
 					name: item.product.name,
 					price: Number.parseFloat(item.product.discount || item.product.price),
 					quantity: item.quantity,
-					image: item.product.images[0],
+					image: firstImage(item.product),
 				}));
 
 				// Create order with temporary shipping address (will be updated after payment)
@@ -226,13 +232,13 @@ const CheckoutPage: React.FC = () => {
 					throw new Error("Failed to create order");
 				}
 
+				// The API may return a number or a string id; always work with a string.
 				const rawId = orderResponse.data.id;
-				const orderId = rawId !== undefined && rawId !== null ? String(rawId) : "";
+				const orderId =
+					rawId !== undefined && rawId !== null ? String(rawId) : "";
 				if (!orderId) {
 					throw new Error("Order created but no ID returned");
 				}
-
-				setCreatedOrderId(orderId);
 
 				setCreatedOrderId(orderId);
 
@@ -367,7 +373,7 @@ const CheckoutPage: React.FC = () => {
 				name: item.product.name,
 				price: Number.parseFloat(item.product.discount || item.product.price),
 				quantity: item.quantity,
-				image: item.product.images[0],
+				image: firstImage(item.product),
 			}));
 
 			// TODO: Optionally update the order with the billing address if backend supports it
@@ -507,12 +513,13 @@ const CheckoutPage: React.FC = () => {
 
 											return (
 												<div
-													key={item.product.id}
+													key={`${item.product.id}-${item.size}`}
 													className="flex gap-3 md:gap-4 pb-3 border-b last:border-0"
 												>
 													<img
-														src={item.product.images[0]}
+														src={firstImage(item.product)}
 														alt={item.product.name}
+														onError={handleImageError}
 														className="w-16 h-16 md:w-20 md:h-20 object-cover rounded flex-shrink-0"
 													/>
 													<div className="flex-1 min-w-0">
