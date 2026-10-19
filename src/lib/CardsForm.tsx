@@ -1,10 +1,9 @@
-// src/lib/CardsForm.tsx
-// Minimal product tile: image, centred name + price, and just two icons —
-// wishlist (heart) and add-to-cart (bag). Sizes, quantity and everything else live on the details page.
+
 import React from "react";
 import { Link } from "react-router-dom";
-import { Heart, ShoppingBag } from "lucide-react";
+import { GitCompare, Heart, ShoppingBag } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useCompare } from "@/context/Comparecontext";
 import { useWishlist } from "@/context/useWishlist";
 import { Product } from "@/lib/type";
 import {
@@ -26,6 +25,7 @@ interface Props {
 const StoreProductCard = ({ product, index = 0 }: Props) => {
 	const { addToCart } = useCart();
 	const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+	const { toggleCompare, isInCompare } = useCompare();
 
 	const images = getProductImages(product);
 	const sizes = getProductSizes(product);
@@ -38,6 +38,7 @@ const StoreProductCard = ({ product, index = 0 }: Props) => {
 	const out = product.stock === 0;
 	const low = product.stock > 0 && product.stock <= 5;
 	const wished = isInWishlist(product.id);
+	const compared = isInCompare(product.id);
 
 	// Transparent PNG cut-outs sit nicely "contained"; photos fill the tile.
 	const isCutout = /\.png(\?|$)/i.test(images[0] || "");
@@ -62,6 +63,12 @@ const StoreProductCard = ({ product, index = 0 }: Props) => {
 		e.stopPropagation();
 		if (wished) await removeFromWishlist(product.id);
 		else await addToWishlist(product);
+	};
+
+	const handleCompare = (e: React.MouseEvent) => {
+		e.preventDefault();
+		e.stopPropagation();
+		toggleCompare(product);
 	};
 
 	const handleAdd = (e: React.MouseEvent) => {
@@ -141,6 +148,22 @@ const StoreProductCard = ({ product, index = 0 }: Props) => {
 							wished ? "fill-red-500 text-red-500" : ""
 						}`}
 					/>
+				</button>
+
+				{/* compare */}
+				<button
+					type="button"
+					onClick={handleCompare}
+					aria-label={compared ? "Remove from compare" : "Add to compare"}
+					aria-pressed={compared}
+					title={compared ? "In compare" : "Compare"}
+					className={`absolute right-3 top-14 grid h-9 w-9 place-items-center rounded-full shadow-sm backdrop-blur transition-all duration-200 hover:scale-110 active:scale-90 ${
+						compared
+							? "bg-foreground text-background"
+							: "bg-white/90 text-foreground"
+					}`}
+				>
+					<GitCompare className="h-[18px] w-[18px]" />
 				</button>
 
 				{/* add to cart */}

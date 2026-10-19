@@ -37,6 +37,8 @@ const clothingLinks = [
   { label: "Men", to: "/category/clothes/men" },
   { label: "Women", to: "/category/clothes/women" },
   { label: "Kids", to: "/category/clothes/kids" },
+  { label: "Compare", to: "/compare" },
+  { label: "Contact", to: "/contact" },
 ];
 
 

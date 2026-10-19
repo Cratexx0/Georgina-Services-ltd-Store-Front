@@ -1,9 +1,8 @@
-
-// export default ProductCard;
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { Heart, ShoppingBag, Star, X } from "lucide-react";
+import { GitCompare, Heart, ShoppingBag, Star, X } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useCompare } from "@/context/Comparecontext";
 import { useWishlist } from "@/context/useWishlist";
 import { toast } from "@/components/ui/sonner";
 import { Product as ApiProduct } from "@/lib/type";
@@ -31,6 +30,7 @@ const stop = (e: React.SyntheticEvent) => {
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+  const { toggleCompare, isInCompare } = useCompare();
   const [pickerOpen, setPickerOpen] = useState(false);
 
   const productId =
@@ -43,6 +43,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const discountPercentage = getDiscountPercent(product);
   const rating = getProductRating(product);
   const wished = isInWishlist(productId);
+  const compared = isInCompare(product.id);
   const soldOut = product.stock === 0;
   const isNew =
     ("isNewArrival" in product && product.isNewArrival) ||
@@ -78,6 +79,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     } else {
       await addToWishlist(toApiProduct(product));
     }
+  };
+
+  const handleCompareToggle = (e: React.MouseEvent) => {
+    stop(e);
+    toggleCompare(toApiProduct(product));
   };
 
   const iconButton =
@@ -146,6 +152,18 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               className={iconButton}
             >
               <ShoppingBag className="h-4 w-4 text-foreground" />
+            </button>
+            <button
+              type="button"
+              onClick={handleCompareToggle}
+              aria-label={compared ? "Remove from compare" : "Add to compare"}
+              aria-pressed={compared}
+              title={compared ? "In compare" : "Compare"}
+              className={`${iconButton} ${compared ? "!bg-foreground" : ""}`}
+            >
+              <GitCompare
+                className={`h-4 w-4 ${compared ? "text-background" : "text-foreground"}`}
+              />
             </button>
           </div>
 

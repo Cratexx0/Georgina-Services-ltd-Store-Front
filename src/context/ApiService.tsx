@@ -536,6 +536,18 @@ class ApiService {
 		});
 	}
 
+
+
+
+	async deleteOrder(orderId: string): Promise<{
+		success: boolean;
+		message: string;
+	}> {
+		return this.request(`/api/orders/${orderId}`, {
+			method: "DELETE",
+			requiresAuth: true,
+		});
+	}		
 	/**
 	 * Check if user has already reviewed a product
 	 */

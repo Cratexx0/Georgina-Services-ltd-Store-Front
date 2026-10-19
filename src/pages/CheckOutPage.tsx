@@ -226,10 +226,13 @@ const CheckoutPage: React.FC = () => {
 					throw new Error("Failed to create order");
 				}
 
-				const orderId = orderResponse.data.id || orderResponse.data._id;
+				const rawId = orderResponse.data.id;
+				const orderId = rawId !== undefined && rawId !== null ? String(rawId) : "";
 				if (!orderId) {
 					throw new Error("Order created but no ID returned");
 				}
+
+				setCreatedOrderId(orderId);
 
 				setCreatedOrderId(orderId);
 
