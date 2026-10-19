@@ -26,7 +26,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { useCart } from "@/context/CartContext";
-import { useWishlist } from "@/context/WishlistContext";
+import { useWishlist } from "@/context/useWishlist";
 import { useAuth } from "@/context/AuthContext";
 import SearchBar from "@/components/ui/SearchBar";
 import MiniCart from "@/components/cart/MiniCart";

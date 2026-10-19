@@ -160,13 +160,13 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
 					}
 				}
 
-				const transformedOrders: Order[] = apiOrders.map((apiOrder: any) => ({
+				const transformedOrders: Order[] = apiOrders.map((apiOrder) => ({
 					id: String(apiOrder.id ?? apiOrder._id ?? ""),
 					orderNumber:
 						apiOrder.orderNumber ||
 						apiOrder.orderNo ||
 						`ORD-${String(apiOrder.id ?? "").slice(-6) || "XXXXX"}`,
-					items: (apiOrder.items || []).map((item: any) => ({
+					items: (apiOrder.items || []).map((item) => ({
 						id: String(item.id ?? item._id ?? ""),
 						productId:
 							item.productId == null ? undefined : String(item.productId),
@@ -262,8 +262,8 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
 			} else {
 				throw new Error(response.message || "Failed to create order");
 			}
-		} catch (error: any) {
-			console.error("Order creation error:", error);
+		} catch (error) {
+			error();
 			toast.error(error.message || "Failed to create order");
 			throw error;
 		} finally {
@@ -297,8 +297,8 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
 			} else {
 				throw new Error(response.message || "Failed to cancel order");
 			}
-		} catch (error: any) {
-			console.error("Cancel order error:", error);
+		} catch (error) {
+			error();
 			toast.error(error.message || "Failed to cancel order");
 			throw error;
 		} finally {
@@ -317,8 +317,8 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
 			} else {
 				throw new Error(response.message || "Failed to delete order");
 			}
-		} catch (error: any) {
-			console.error("Delete order error:", error);
+		} catch (error) {
+			error();
 			toast.error(error.message || "Failed to delete order");
 			throw error;
 		} finally {

@@ -94,7 +94,6 @@ const CheckoutPage: React.FC = () => {
 			setCreatedOrderId(null);
 			setOrderProcessed(false);
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [cart]);
 
 	// Detect user's country for currency and payment processing
@@ -130,7 +129,7 @@ const CheckoutPage: React.FC = () => {
 			}
 		};
 
-		detectCountry();
+		void detectCountry();
 	}, []);
 
 	// Enhanced product and user data handling
@@ -188,8 +187,7 @@ const CheckoutPage: React.FC = () => {
 
 				// If we have a pending order and cart hasn't changed, reuse it
 				if (
-					pendingOrder &&
-					pendingOrder.cartHash === currentCartHash &&
+					pendingOrder?.cartHash === currentCartHash &&
 					pendingOrder.clientSecret &&
 					pendingOrder.orderId
 				) {
@@ -209,9 +207,7 @@ const CheckoutPage: React.FC = () => {
 				const orderItems = cart.map((item) => ({
 					productId: item.product.id.toString(),
 					name: item.product.name,
-					price: Number.parseFloat(
-						item.product.discountPrice || item.product.price,
-					),
+					price: Number.parseFloat(item.product.discount || item.product.price),
 					quantity: item.quantity,
 					image: item.product.images[0],
 				}));
@@ -326,7 +322,7 @@ const CheckoutPage: React.FC = () => {
 			}
 		};
 
-		createOrderAndPaymentIntent();
+		void createOrderAndPaymentIntent();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []); // Empty dependency array - only create PaymentIntent once on mount
 
@@ -366,9 +362,7 @@ const CheckoutPage: React.FC = () => {
 			const orderItems = cart.map((item) => ({
 				productId: item.product.id.toString(),
 				name: item.product.name,
-				price: Number.parseFloat(
-					item.product.discountPrice || item.product.price,
-				),
+				price: Number.parseFloat(item.product.discount || item.product.price),
 				quantity: item.quantity,
 				image: item.product.images[0],
 			}));
@@ -504,7 +498,7 @@ const CheckoutPage: React.FC = () => {
 									<div className="space-y-3 max-h-[400px] md:max-h-96 overflow-y-auto">
 										{cart.map((item) => {
 											const itemPrice = Number.parseFloat(
-												item.product.discountPrice || item.product.price,
+												item.product.discount || item.product.price,
 											);
 											const itemTotal = itemPrice * item.quantity;
 

@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Heart, ShoppingBag, Star, X } from "lucide-react";
 import { useCart } from "@/context/CartContext";
-import { useWishlist } from "@/context/WishlistContext";
+import { useWishlist } from "@/context/useWishlist";
 import { toast } from "@/components/ui/sonner";
 import { Product as ApiProduct } from "@/lib/type";
 import { FlexibleProduct, getDiscountPrice, getPrice } from "@/lib/productTypes";

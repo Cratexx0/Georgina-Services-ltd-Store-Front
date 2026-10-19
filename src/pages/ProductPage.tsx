@@ -17,7 +17,7 @@ import {
 	ChevronRight,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
-import { useWishlist } from "@/context/WishlistContext";
+import { useWishlist } from "@/context/useWishlist";
 import RelatedProductsCarousel from "@/components/products/RelatedProductsCarousel";
 import ProductReview from "@/components/products/ProductReview";
 import { toast } from "@/components/ui/sonner";

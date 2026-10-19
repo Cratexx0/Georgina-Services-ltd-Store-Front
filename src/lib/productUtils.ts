@@ -104,16 +104,6 @@
 //   return images.length ? images : placeholdersFor(product);
 // };
 
-// // Use on any <img>: onError={handleImageError}
-// // A missing / broken image steps through PLACEHOLDER_IMAGES one by one, then stops (no loops).
-// export const handleImageError = (e: SyntheticEvent<HTMLImageElement>) => {
-//   const img = e.currentTarget;
-//   const next = Number(img.dataset.fallbackIndex ?? "-1") + 1;
-//   if (next >= PLACEHOLDER_IMAGES.length) return;
-//   img.dataset.fallbackIndex = String(next);
-//   img.src = PLACEHOLDER_IMAGES[next];
-// };
-
 // export const getNumericPrice = (product: FlexibleProduct): number => {
 //   const discounted = getDiscountPrice(product);
 //   return discounted ?? getPrice(product);
@@ -212,37 +202,9 @@ import {
 import type { SyntheticEvent } from "react";
 
 export const CLOTHING_SLUG = "clothes";
-// Fallback images, shown when a product has no images or one fails to load.
-// Paste your Unsplash URLs here — the gallery shows every one of them.
-export const PLACEHOLDER_IMAGES: string[] = [
-	"https://images.unsplash.com/photo-1601653233006-5c9fd30eab12?w=600&auto=format&fit=crop&q=60",
-	"https://images.unsplash.com/photo-1746116572566-7e14bd735f6f?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D",
-	"https://images.unsplash.com/photo-1618354690420-1f3e5c8b6d4e?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D",
-	"https://images.unsplash.com/photo-1618354690420-1f3e5c8b6d4e?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D",
-	"https://images.unsplash.com/photo-1618354690420-1f3e5c8b6d4e?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D",
-	"https://images.unsplash.com/photo-1618354690420-1f3e5c8b6d4e?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D",
-	"https://images.unsplash.com/photo-1550393705-1ce798914528?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D",
-	"https://images.unsplash.com/photo-1627595359082-cc2b3487a40b?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D",
-	"https://images.unsplash.com/photo-1643014205087-13f5861f1479?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D",
-];
-
-// Kept so any file that still imports PLACEHOLDER_IMAGE keeps working.
-export const PLACEHOLDER_IMAGE = PLACEHOLDER_IMAGES[0];
-
-// Gives each product its own starting fallback image (so cards don't all look the same).
-// Same product always gets the same one; duplicates in PLACEHOLDER_IMAGES are ignored.
-const hashString = (s: string): number => {
-	let h = 0;
-	for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
-	return h;
-};
-
-const placeholdersFor = (product: FlexibleProduct): string[] => {
-	const list = [...new Set(PLACEHOLDER_IMAGES.filter(Boolean))];
-	if (list.length < 2) return list;
-	const start = hashString(String(product.slug ?? "")) % list.length;
-	return [...list.slice(start), ...list.slice(0, start)];
-};
+// Crossed-camera fallback shown when a product image is unavailable.
+export const PLACEHOLDER_IMAGE = "/placeholder.svg";
+export const PLACEHOLDER_IMAGES: string[] = [PLACEHOLDER_IMAGE];
 
 export const isClothingProduct = (product: FlexibleProduct): boolean => {
 	const level1 = (product.categoryLevel1 || "").toLowerCase();
@@ -250,20 +212,18 @@ export const isClothingProduct = (product: FlexibleProduct): boolean => {
 };
 
 // Returns every image of the product (de-duplicated, empty entries removed).
-// Falls back to the placeholder array only when the product has no images at all.
+// Falls back to the crossed-camera placeholder when the product has no images.
 export const getProductImages = (product: FlexibleProduct): string[] => {
 	const images = [...new Set((product.images ?? []).filter(Boolean))];
-	return images.length ? images : placeholdersFor(product);
+	return images.length ? images : [PLACEHOLDER_IMAGE];
 };
 
 // Use on any <img>: onError={handleImageError}
-// A missing / broken image steps through PLACEHOLDER_IMAGES one by one, then stops (no loops).
+// A missing / broken image is replaced with the crossed-camera placeholder.
 export const handleImageError = (e: SyntheticEvent<HTMLImageElement>) => {
 	const img = e.currentTarget;
-	const next = Number(img.dataset.fallbackIndex ?? "-1") + 1;
-	if (next >= PLACEHOLDER_IMAGES.length) return;
-	img.dataset.fallbackIndex = String(next);
-	img.src = PLACEHOLDER_IMAGES[next];
+	if (img.src.endsWith(PLACEHOLDER_IMAGE)) return;
+	img.src = PLACEHOLDER_IMAGE;
 };
 
 export const getNumericPrice = (product: FlexibleProduct): number => {

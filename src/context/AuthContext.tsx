@@ -111,9 +111,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 				} else {
 					throw new Error("Failed to get user data from response");
 				}
-			} catch (userError: any) {
-				console.error("❌ Failed to verify token or get user data:", userError);
-
+			} catch (userError) {
 				if (
 					userError.message?.includes("401") ||
 					userError.message?.includes("Invalid token")
@@ -125,8 +123,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 				return false;
 			}
 		} catch (err) {
-			console.error("❌ Auth check failed:", err);
 			clearAuthData();
+			err("An error occured");
 			return false;
 		} finally {
 			setLoading(false);

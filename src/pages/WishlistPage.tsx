@@ -1,6 +1,6 @@
 import React from "react";
 import Layout from "@/components/layout/Layout";
-import { useWishlist } from "@/context/WishlistContext";
+import { useWishlist } from "@/context/useWishlist";
 import { Button } from "@/components/ui/button";
 import { Heart } from "lucide-react";
 import EmptyState from "@/components/common/EmptyState";

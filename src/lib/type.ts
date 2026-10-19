@@ -1,4 +1,25 @@
 // src/types/product.ts
+export enum UserRole {
+	USER = "USER",
+	ADMIN = "ADMIN",
+}
+
+export interface User {
+	id: number;
+	name: string;
+	email: string;
+	password: string | null;
+	contact: string | null;
+	role: UserRole;
+
+	orders?: Order[];
+	reviews?: Review[];
+	wishlistItems?: Wishlist[];
+	notifications?: Notification[];
+
+	createdAt: Date;
+	updatedAt: Date;
+}
 export interface Product {
 	// Core identifiers
 	id: number;
@@ -117,4 +138,59 @@ export interface Booking {
 	notes?: string;
 	createdAt: string;
 	updatedAt: string;
+}
+
+export interface Category {
+	id: string;
+	name: string;
+	slug: string;
+	level: number;
+	parentId: string | null;
+	description: string | null;
+	sortOrder: number;
+	isActive: boolean;
+
+	parent?: Category | null;
+	children?: Category[];
+
+	createdAt: Date;
+	updatedAt: Date;
+}
+
+export interface Wishlist {
+	id: number;
+	userId: number;
+	productId: number;
+
+	user?: User;
+	product?: Product;
+
+	createdAt: Date;
+	updatedAt: Date;
+}
+
+export interface Review {
+	id: number;
+	productId: number;
+	userId: number;
+
+	userName: string;
+	userEmail: string | null;
+
+	rating: number;
+	title: string | null;
+	comment: string;
+
+	verifiedPurchase: boolean;
+	isApproved: boolean;
+	helpfulCount: number;
+
+	reply: string | null;
+	repliedAt: Date | null;
+
+	product?: Product;
+	user?: User;
+
+	createdAt: Date;
+	updatedAt: Date;
 }

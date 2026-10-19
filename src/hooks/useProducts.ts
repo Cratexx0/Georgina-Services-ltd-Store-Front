@@ -31,7 +31,9 @@ const useProductFlag = (
 				// Flagged products are paginated by the API, so filtering a small
 				// page can incorrectly produce an empty collection.
 				const data = await apiService.getProducts(1, 1000);
-				const flagged = (data.products || []).filter((product) => product[flag]);
+				const flagged = (data.products || []).filter(
+					(product) => product[flag],
+				);
 				const start = (page - 1) * limit;
 				const list = flagged.slice(start, start + limit);
 				if (!cancelled) {
@@ -50,7 +52,7 @@ const useProductFlag = (
 				if (!cancelled) setLoading(false);
 			}
 		};
-		run();
+		void run();
 		return () => {
 			cancelled = true;
 		};
@@ -110,7 +112,7 @@ export const useProducts = (
 				if (!cancelled) setLoading(false);
 			}
 		};
-		run();
+		void run();
 		return () => {
 			cancelled = true;
 		};

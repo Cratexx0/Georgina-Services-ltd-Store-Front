@@ -11,618 +11,464 @@ import { Separator } from "@/components/ui/separator";
 
 // Declare global types for OAuth SDKs
 declare global {
-  interface Window {
-    google?: {
-      accounts: {
-        id: {
-          initialize: (config: any) => void;
-          prompt: (callback?: (notification: any) => void) => void;
-          renderButton: (element: HTMLElement, config: any) => void;
-          cancel: () => void;
-        };
-      };
-    };
-    FB?: {
-      init: (config: any) => void;
-      login: (callback: (response: any) => void, config?: any) => void;
-      getLoginStatus: (callback: (response: any) => void) => void;
-    };
-    fbAsyncInit?: () => void;
-  }
+	interface Window {
+		google?: {
+			accounts: {
+				id: {
+					initialize: (config) => void;
+					prompt: (callback?: (notification) => void) => void;
+					renderButton: (element: HTMLElement, config) => void;
+					cancel: () => void;
+				};
+			};
+		};
+		FB?: {
+			init: (config) => void;
+			login: (callback: (response) => void, config?) => void;
+			getLoginStatus: (callback: (response) => void) => void;
+		};
+		fbAsyncInit?: () => void;
+	}
 }
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 const FACEBOOK_APP_ID = import.meta.env.VITE_FACEBOOK_APP_ID || "";
 
 const AuthForm = () => {
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [showLoginPassword, setShowLoginPassword] = useState<boolean>(false);
-  const [showRegisterPassword, setShowRegisterPassword] = useState<boolean>(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
-  const [loginData, setLoginData] = useState({ email: '', password: '' });
-  const [registerData, setRegisterData] = useState({ 
-    email: '', 
-    password: '', 
-    fullName: '', 
-    confirmpassword: '' 
-  });
-  const [googleLoaded, setGoogleLoaded] = useState(false);
-  const [facebookLoaded, setFacebookLoaded] = useState(false);
-  const { toast } = useToast();
-  const { login, register, loginWithGoogle, loginWithFacebook } = useAuth();
-  const navigate = useNavigate();
+	const [isLoading, setIsLoading] = useState<boolean>(false);
+	const [showLoginPassword, setShowLoginPassword] = useState<boolean>(false);
+	const [showRegisterPassword, setShowRegisterPassword] =
+		useState<boolean>(false);
+	const [showConfirmPassword, setShowConfirmPassword] =
+		useState<boolean>(false);
+	const [loginData, setLoginData] = useState({ email: "", password: "" });
+	const [registerData, setRegisterData] = useState({
+		email: "",
+		password: "",
+		fullName: "",
+		confirmpassword: "",
+	});
+	const [googleLoaded, setGoogleLoaded] = useState(false);
+	const [facebookLoaded, setFacebookLoaded] = useState(false);
+	const { toast } = useToast();
+	const { login, register, loginWithGoogle, loginWithFacebook } = useAuth();
+	const navigate = useNavigate();
 
-  // Load Google SDK
-  useEffect(() => {
-    
-    const loadGoogleSDK = () => {
-      if (document.getElementById('google-sdk')) {
-        setGoogleLoaded(true);
-        return;
-      }
+	// Load Google SDK
+	useEffect(() => {
+		const loadGoogleSDK = () => {
+			if (document.getElementById("google-sdk")) {
+				setGoogleLoaded(true);
+				return;
+			}
 
-      const script = document.createElement('script');
-      script.id = 'google-sdk';
-      script.src = 'https://accounts.google.com/gsi/client';
-      script.async = true;
-      script.defer = true;
-      script.onload = () => {
-        setGoogleLoaded(true);
-      };
-      script.onerror = (error) => {
-      };
-      
-      document.head.appendChild(script);
-    };
+			const script = document.createElement("script");
+			script.id = "google-sdk";
+			script.src = "https://accounts.google.com/gsi/client";
+			script.async = true;
+			script.defer = true;
+			script.onload = () => {
+				setGoogleLoaded(true);
+			};
+			script.onerror = (error) => {};
 
-    loadGoogleSDK();
-  }, []);
+			document.head.appendChild(script);
+		};
 
-  // Load Facebook SDK
-  useEffect(() => {
-    if (!FACEBOOK_APP_ID) return;
+		loadGoogleSDK();
+	}, []);
 
-    const loadFacebookSDK = () => {
-      if (document.getElementById('facebook-jssdk')) {
-        setFacebookLoaded(true);
-        return;
-      }
+	// Load Facebook SDK
+	useEffect(() => {
+		if (!FACEBOOK_APP_ID) return;
 
-      window.fbAsyncInit = function() {
-        window.FB?.init({
-          appId: FACEBOOK_APP_ID,
-          cookie: true,
-          xfbml: true,
-          version: 'v18.0'
-        });
-        setFacebookLoaded(true);
-      };
+		const loadFacebookSDK = () => {
+			if (document.getElementById("facebook-jssdk")) {
+				setFacebookLoaded(true);
+				return;
+			}
 
-      const script = document.createElement('script');
-      script.id = 'facebook-jssdk';
-      script.src = 'https://connect.facebook.net/en_US/sdk.js';
-      script.async = true;
-      script.defer = true;
-      document.head.appendChild(script);
-    };
+			window.fbAsyncInit = function () {
+				window.FB?.init({
+					appId: FACEBOOK_APP_ID,
+					cookie: true,
+					xfbml: true,
+					version: "v18.0",
+				});
+				setFacebookLoaded(true);
+			};
 
-    loadFacebookSDK();
-  }, []);
+			const script = document.createElement("script");
+			script.id = "facebook-jssdk";
+			script.src = "https://connect.facebook.net/en_US/sdk.js";
+			script.async = true;
+			script.defer = true;
+			document.head.appendChild(script);
+		};
 
+		loadFacebookSDK();
+	}, []);
 
-const handleGoogleLogin = async () => {
-    
-    if (!window.google) {
-      toast({
-        title: "Google Sign-In Error",
-        description: "Google authentication service not loaded. Please refresh the page.",
-        variant: "destructive"
-      });
-      return;
-    }
+	const handleGoogleLogin = async () => {
+		if (!window.google) {
+			toast({
+				title: "Google Sign-In Error",
+				description:
+					"Google authentication service not loaded. Please refresh the page.",
+				variant: "destructive",
+			});
+			return;
+		}
 
-    setIsLoading(true);
+		setIsLoading(true);
 
-    try {
-      // Create a temporary container for the button
-      const tempContainer = document.createElement('div');
-      tempContainer.style.position = 'absolute';
-      tempContainer.style.top = '-9999px';
-      document.body.appendChild(tempContainer);
+		try {
+			// Create a temporary container for the button
+			const tempContainer = document.createElement("div");
+			tempContainer.style.position = "absolute";
+			tempContainer.style.top = "-9999px";
+			document.body.appendChild(tempContainer);
 
-      window.google.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID,
-        callback: async (response: any) => {
-          // Clean up the temporary container
-          if (tempContainer && tempContainer.parentNode) {
-            tempContainer.parentNode.removeChild(tempContainer);
-          }
-          
-          setIsLoading(false);
-          
-          if (response?.credential) {
-            try {
-              await loginWithGoogle(response.credential);
-              toast({
-                title: "Login successful",
-                description: "Signed in with Google.",
-              });
-              navigate('/', { replace: true });
-            } catch (error: any) {
-              console.error('❌ [GOOGLE-CALLBACK] loginWithGoogle failed:', error);
-              toast({
-                title: "Google login failed",
-                description: error?.message || "Unable to sign in with Google.",
-                variant: "destructive"
-              });
-            }
-          } else {
-            console.warn('⚠️ [GOOGLE-CALLBACK] No credential in response:', response);
-            toast({
-              title: "Login cancelled",
-              description: "Google sign-in was cancelled.",
-              variant: "destructive"
-            });
-          }
-        }
-      });
-      
-      // Render a hidden button and click it to trigger the popup
-      window.google.accounts.id.renderButton(tempContainer, {
-        type: 'standard',
-        theme: 'outline',
-        size: 'large',
-        text: 'continue_with',
-        width: 250
-      });
+			window.google.accounts.id.initialize({
+				client_id: GOOGLE_CLIENT_ID,
+				callback: async (response) => {
+					// Clean up the temporary container
+					if (tempContainer && tempContainer.parentNode) {
+						tempContainer.parentNode.removeChild(tempContainer);
+					}
 
-      // Trigger the click after a short delay
-      setTimeout(() => {
-        const button = tempContainer.querySelector('div[role="button"]') as HTMLElement;
-        if (button) {
-          button.click();
-        } else {
-          console.error('❌ [GOOGLE-LOGIN] Could not find rendered button');
-          setIsLoading(false);
-          toast({
-            title: "Google Sign-In Failed",
-            description: "Could not initialize Google sign-in.",
-            variant: "destructive"
-          });
-        }
-      }, 100);
+					setIsLoading(false);
 
-    } catch (error: any) {
-      console.error('❌ [GOOGLE-LOGIN] Error:', error);
-      setIsLoading(false);
-      toast({
-        title: "Google Sign-In Failed",
-        description: error?.message || "Please try again or use email login.",
-        variant: "destructive"
-      });
-    }
-  };
-  
-  const handleFacebookLogin = async () => {
-    if (!FACEBOOK_APP_ID) {
-      toast({
-        title: "Configuration needed",
-        description: "Facebook login is not configured. Please contact support.",
-        variant: "destructive"
-      });
-      return;
-    }
+					if (response?.credential) {
+						try {
+							await loginWithGoogle(response.credential);
+							toast({
+								title: "Login successful",
+								description: "Signed in with Google.",
+							});
+							navigate("/", { replace: true });
+						} catch (error) {
+							error();
+							toast({
+								title: "Google login failed",
+								description: error?.message || "Unable to sign in with Google.",
+								variant: "destructive",
+							});
+						}
+					} else {
+						console.warn(
+							"⚠️ [GOOGLE-CALLBACK] No credential in response:",
+							response,
+						);
+						toast({
+							title: "Login cancelled",
+							description: "Google sign-in was cancelled.",
+							variant: "destructive",
+						});
+					}
+				},
+			});
 
-    setIsLoading(true);
-    try {
-      window.FB?.login(async (response: any) => {
-        if (response.authResponse) {
-          try {
-            await loginWithFacebook(response.authResponse.accessToken);
-            toast({
-              title: "Login successful",
-              description: "Signed in with Facebook.",
-            });
-            navigate('/', { replace: true });
-          } catch (error: any) {
-            toast({
-              title: "Facebook login failed",
-              description: error?.message || "Unable to sign in with Facebook.",
-              variant: "destructive"
-            });
-          }
-        } else {
-          toast({
-            title: "Login cancelled",
-            description: "Facebook sign-in was cancelled.",
-            variant: "destructive"
-          });
-        }
-        setIsLoading(false);
-      }, { scope: 'email,public_profile' });
-    } catch (error: any) {
-      setIsLoading(false);
-      toast({
-        title: "Facebook login failed",
-        description: error?.message || "Unable to initialize Facebook sign-in.",
-        variant: "destructive"
-      });
-    }
-  };
-  
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    
-    try {
-      
-      await login(loginData.email, loginData.password);
-      
-      toast({
-        title: "Login successful",
-        description: "Welcome back to our store!",
-      });
-      
-      navigate('/', { replace: true });
-      
-    } catch (error: any) {
-      
-      toast({
-        title: "Login failed",
-        description: error.message || "Please check your credentials and try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (registerData.password !== registerData.confirmpassword) {
-      toast({
-        title: "Registration failed",
-        description: "Passwords do not match.",
-        variant: "destructive"
-      });
-      return;
-    }
+			// Render a hidden button and click it to trigger the popup
+			window.google.accounts.id.renderButton(tempContainer, {
+				type: "standard",
+				theme: "outline",
+				size: "large",
+				text: "continue_with",
+				width: 250,
+			});
 
-    if (registerData.password.length < 6) {
-      toast({
-        title: "Registration failed",
-        description: "Password must be at least 6 characters long.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    setIsLoading(true);
-    
-    try {
-      const fullName = registerData.fullName.trim();
-      
-      await register(fullName, registerData.email, registerData.password);
-      
-      toast({
-        title: "Registration successful",
-        description: "Your account has been created. Welcome!",
-      });
-      
-      navigate('/', { replace: true });
-      
-    } catch (error: any) {
-      console.error('👤 [FORM] Registration error:', error);
-      
-      toast({
-        title: "Registration failed",
-        description: error.message || "Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+			// Trigger the click after a short delay
+			setTimeout(() => {
+				const button = tempContainer.querySelector(
+					'div[role="button"]',
+				) as HTMLElement;
+				if (button) {
+					button.click();
+				} else {
+					console.error("❌ [GOOGLE-LOGIN] Could not find rendered button");
+					setIsLoading(false);
+					toast({
+						title: "Google Sign-In Failed",
+						description: "Could not initialize Google sign-in.",
+						variant: "destructive",
+					});
+				}
+			}, 100);
+		} catch (error) {
+			error();
+			setIsLoading(false);
+			toast({
+				title: "Google Sign-In Failed",
+				description: error?.message || "Please try again or use email login.",
+				variant: "destructive",
+			});
+		}
+	};
 
-  const handleForgotPassword = async () => {
-    navigate("/forgot/password")
-  };
-  
-  return (
-    <div className="w-full max-w-md mx-auto bg-card border border-border rounded-xl shadow-md p-8 md:p-10">
-      <Tabs defaultValue="login" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-6">
-          <TabsTrigger value="login" className="flex items-center gap-2">
-            <LogIn className="h-4 w-4" /> Login
-          </TabsTrigger>
-          <TabsTrigger value="register" className="flex items-center gap-2">
-            <UserPlus className="h-4 w-4" /> Register
-          </TabsTrigger>
-        </TabsList>
-        
-        {/* Login Form */}
-        <TabsContent value="login" className="space-y-4">
-          <div className="animate-fade-in">
-            <h2 className="text-2xl font-bold tracking-tight text-center mb-4">
-              Welcome back
-            </h2>
-            <p className="text-sm text-muted-foreground text-center mb-6">
-              Enter your credentials to access your account
-            </p>
-          </div>
-          
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div className="animate-fade-in delay-100">
-              <Label htmlFor="login-email">Email</Label>
-              <Input 
-                id="login-email" 
-                type="email" 
-                placeholder="name@example.com"
-                value={loginData.email}
-                onChange={(e) => setLoginData({...loginData, email: e.target.value})}
-                required
-                disabled={isLoading}
-                className="mt-1"
-              />
-            </div>
-            
-            <div className="animate-fade-in delay-200">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="login-password">Password</Label>
-                <button 
-                  type="button"
-                  onClick={handleForgotPassword}
-                  className="text-xs text-primary hover:underline"
-                  disabled={isLoading}
-                >
-                  Forgot password?
-                </button>
-              </div>
-              <div className="relative mt-1">
-                <Input 
-                  id="login-password" 
-                  type={showLoginPassword ? "text" : "password"}
-                  value={loginData.password}
-                  onChange={(e) => setLoginData({...loginData, password: e.target.value})}
-                  required
-                  disabled={isLoading}
-                  className="pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowLoginPassword(!showLoginPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                  disabled={isLoading}
-                >
-                  {showLoginPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-            </div>
-            
-            <Button 
-              type="submit" 
-              className="w-full animate-fade-in delay-300"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <div className="flex items-center gap-2">
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-opacity-20 border-t-white"></div>
-                  Logging in...
-                </div>
-              ) : (
-                <>Sign in</>
-              )}
-            </Button>
-          </form>
-          
-          <div className="relative my-6 animate-fade-in delay-400">
-            <div className="absolute inset-0 flex items-center">
-              <Separator className="w-full" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 gap-3 animate-fade-in delay-500">
-            <Button 
-              variant="outline" 
-              type="button"
-              disabled={isLoading}
-              onClick={handleGoogleLogin}
-              className="flex items-center gap-2"
-            >
-              <svg className="h-4 w-4" viewBox="0 0 24 24">
-                <path
-                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                  fill="#4285F4"
-                />
-                <path
-                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  fill="#34A853"
-                />
-                <path
-                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                  fill="#FBBC05"
-                />
-                <path
-                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                  fill="#EA4335"
-                />
-              </svg>
-              Google
-            </Button>
-            {/* <Button 
-              variant="outline" 
-              type="button"
-              disabled={isLoading}
-              onClick={handleFacebookLogin}
-              className="flex items-center gap-2"
-            >
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="#1877F2">
-                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-              </svg>
-              Facebook
-            </Button> */}
-          </div>
-        </TabsContent>
-        
-        {/* Register Form */}
-        <TabsContent value="register" className="space-y-4">
-          <div className="animate-fade-in">
-            <h2 className="text-2xl font-bold tracking-tight text-center mb-4">
-              Create an account
-            </h2>
-            <p className="text-sm text-muted-foreground text-center mb-6">
-              Enter your details below to create your account
-            </p>
-          </div>
-          
-          <form onSubmit={handleRegister} className="space-y-4">
-            <div className="animate-fade-in delay-100">
-              <Label htmlFor="register-full-name">Full name</Label>
-              <Input 
-                id="register-full-name" 
-                type="text"
-                placeholder="John Doe"
-                value={registerData.fullName}
-                onChange={(e) => setRegisterData({...registerData, fullName: e.target.value})}
-                required
-                disabled={isLoading}
-                className="mt-1"
-              />
-            </div>
-            
-            <div className="animate-fade-in delay-200">
-              <Label htmlFor="register-email">Email</Label>
-              <Input 
-                id="register-email" 
-                type="email" 
-                placeholder="name@example.com"
-                value={registerData.email}
-                onChange={(e) => setRegisterData({...registerData, email: e.target.value})}
-                required
-                disabled={isLoading}
-                className="mt-1"
-              />
-            </div>
-            
-            <div className="animate-fade-in delay-300">
-              <Label htmlFor="register-password">Password</Label>
-              <div className="relative mt-1">
-                <Input 
-                  id="register-password" 
-                  type={showRegisterPassword ? "text" : "password"}
-                  placeholder="At least 6 characters"
-                  value={registerData.password}
-                  onChange={(e) => setRegisterData({...registerData, password: e.target.value})}
-                  required
-                  minLength={6}
-                  disabled={isLoading}
-                  className="pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowRegisterPassword(!showRegisterPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                  disabled={isLoading}
-                >
-                  {showRegisterPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-            </div>
+	const handleFacebookLogin = async () => {
+		if (!FACEBOOK_APP_ID) {
+			toast({
+				title: "Configuration needed",
+				description:
+					"Facebook login is not configured. Please contact support.",
+				variant: "destructive",
+			});
+			return;
+		}
 
-            <div className="animate-fade-in delay-400">
-              <Label htmlFor="confirm-password">Confirm Password</Label>
-              <div className="relative mt-1">
-                <Input 
-                  id="confirm-password" 
-                  type={showConfirmPassword ? "text" : "password"}
-                  placeholder="Confirm your password"
-                  value={registerData.confirmpassword}
-                  onChange={(e) => setRegisterData({...registerData, confirmpassword: e.target.value})}
-                  required
-                  disabled={isLoading}
-                  className="pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                  disabled={isLoading}
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-            </div>
-            
-            <Button 
-              type="submit" 
-              className="w-full animate-fade-in delay-500"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <div className="flex items-center gap-2">
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-opacity-20 border-t-white"></div>
-                  Creating account...
-                </div>
-              ) : (
-                <>Create account</>
-              )}
-            </Button>
-          </form>
-          
-          <div className="relative my-6 animate-fade-in delay-600">
-            <div className="absolute inset-0 flex items-center">
-              <Separator className="w-full" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 gap-3 animate-fade-in delay-700">
-            <Button 
-              variant="outline" 
-              type="button"
-              disabled={isLoading}
-              onClick={handleGoogleLogin}
-              className="flex items-center gap-2"
-            >
-              <svg className="h-4 w-4" viewBox="0 0 24 24">
-                <path
-                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                  fill="#4285F4"
-                />
-                <path
-                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  fill="#34A853"
-                />
-                <path
-                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                  fill="#FBBC05"
-                />
-                <path
-                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                  fill="#EA4335"
-                />
-              </svg>
-              Google
-            </Button>
-            {/* <Button 
+		setIsLoading(true);
+		try {
+			window.FB?.login(
+				async (response) => {
+					if (response.authResponse) {
+						try {
+							await loginWithFacebook(response.authResponse.accessToken);
+							toast({
+								title: "Login successful",
+								description: "Signed in with Facebook.",
+							});
+							navigate("/", { replace: true });
+						} catch (error) {
+							toast({
+								title: "Facebook login failed",
+								description:
+									error?.message || "Unable to sign in with Facebook.",
+								variant: "destructive",
+							});
+						}
+					} else {
+						toast({
+							title: "Login cancelled",
+							description: "Facebook sign-in was cancelled.",
+							variant: "destructive",
+						});
+					}
+					setIsLoading(false);
+				},
+				{ scope: "email,public_profile" },
+			);
+		} catch (error) {
+			setIsLoading(false);
+			toast({
+				title: "Facebook login failed",
+				description: error?.message || "Unable to initialize Facebook sign-in.",
+				variant: "destructive",
+			});
+		}
+	};
+
+	const handleLogin = async (e: React.FormEvent) => {
+		e.preventDefault();
+		setIsLoading(true);
+
+		try {
+			await login(loginData.email, loginData.password);
+
+			toast({
+				title: "Login successful",
+				description: "Welcome back to our store!",
+			});
+
+			navigate("/", { replace: true });
+		} catch (error) {
+			toast({
+				title: "Login failed",
+				description:
+					error.message || "Please check your credentials and try again.",
+				variant: "destructive",
+			});
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+	const handleRegister = async (e: React.FormEvent) => {
+		e.preventDefault();
+
+		if (registerData.password !== registerData.confirmpassword) {
+			toast({
+				title: "Registration failed",
+				description: "Passwords do not match.",
+				variant: "destructive",
+			});
+			return;
+		}
+
+		if (registerData.password.length < 6) {
+			toast({
+				title: "Registration failed",
+				description: "Password must be at least 6 characters long.",
+				variant: "destructive",
+			});
+			return;
+		}
+
+		setIsLoading(true);
+
+		try {
+			const fullName = registerData.fullName.trim();
+
+			await register(fullName, registerData.email, registerData.password);
+
+			toast({
+				title: "Registration successful",
+				description: "Your account has been created. Welcome!",
+			});
+
+			navigate("/", { replace: true });
+		} catch (error) {
+			console.error("👤 [FORM] Registration error:", error);
+
+			toast({
+				title: "Registration failed",
+				description: error.message || "Please try again.",
+				variant: "destructive",
+			});
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+	const handleForgotPassword = async () => {
+		navigate("/forgot/password");
+	};
+
+	return (
+		<div className="w-full max-w-md mx-auto bg-card border border-border rounded-xl shadow-md p-8 md:p-10">
+			<Tabs defaultValue="login" className="w-full">
+				<TabsList className="grid w-full grid-cols-2 mb-6">
+					<TabsTrigger value="login" className="flex items-center gap-2">
+						<LogIn className="h-4 w-4" /> Login
+					</TabsTrigger>
+					<TabsTrigger value="register" className="flex items-center gap-2">
+						<UserPlus className="h-4 w-4" /> Register
+					</TabsTrigger>
+				</TabsList>
+
+				{/* Login Form */}
+				<TabsContent value="login" className="space-y-4">
+					<div className="animate-fade-in">
+						<h2 className="text-2xl font-bold tracking-tight text-center mb-4">
+							Welcome back
+						</h2>
+						<p className="text-sm text-muted-foreground text-center mb-6">
+							Enter your credentials to access your account
+						</p>
+					</div>
+
+					<form onSubmit={handleLogin} className="space-y-4">
+						<div className="animate-fade-in delay-100">
+							<Label htmlFor="login-email">Email</Label>
+							<Input
+								id="login-email"
+								type="email"
+								placeholder="name@example.com"
+								value={loginData.email}
+								onChange={(e) =>
+									setLoginData({ ...loginData, email: e.target.value })
+								}
+								required
+								disabled={isLoading}
+								className="mt-1"
+							/>
+						</div>
+
+						<div className="animate-fade-in delay-200">
+							<div className="flex items-center justify-between">
+								<Label htmlFor="login-password">Password</Label>
+								<button
+									type="button"
+									onClick={handleForgotPassword}
+									className="text-xs text-primary hover:underline"
+									disabled={isLoading}
+								>
+									Forgot password?
+								</button>
+							</div>
+							<div className="relative mt-1">
+								<Input
+									id="login-password"
+									type={showLoginPassword ? "text" : "password"}
+									value={loginData.password}
+									onChange={(e) =>
+										setLoginData({ ...loginData, password: e.target.value })
+									}
+									required
+									disabled={isLoading}
+									className="pr-10"
+								/>
+								<button
+									type="button"
+									onClick={() => setShowLoginPassword(!showLoginPassword)}
+									className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+									disabled={isLoading}
+								>
+									{showLoginPassword ? (
+										<EyeOff className="h-4 w-4" />
+									) : (
+										<Eye className="h-4 w-4" />
+									)}
+								</button>
+							</div>
+						</div>
+
+						<Button
+							type="submit"
+							className="w-full animate-fade-in delay-300"
+							disabled={isLoading}
+						>
+							{isLoading ? (
+								<div className="flex items-center gap-2">
+									<div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-opacity-20 border-t-white"></div>
+									Logging in...
+								</div>
+							) : (
+								<>Sign in</>
+							)}
+						</Button>
+					</form>
+
+					<div className="relative my-6 animate-fade-in delay-400">
+						<div className="absolute inset-0 flex items-center">
+							<Separator className="w-full" />
+						</div>
+						<div className="relative flex justify-center text-xs uppercase">
+							<span className="bg-card px-2 text-muted-foreground">
+								Or continue with
+							</span>
+						</div>
+					</div>
+
+					<div className="grid grid-cols-1 gap-3 animate-fade-in delay-500">
+						<Button
+							variant="outline"
+							type="button"
+							disabled={isLoading}
+							onClick={handleGoogleLogin}
+							className="flex items-center gap-2"
+						>
+							<svg className="h-4 w-4" viewBox="0 0 24 24">
+								<path
+									d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+									fill="#4285F4"
+								/>
+								<path
+									d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+									fill="#34A853"
+								/>
+								<path
+									d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+									fill="#FBBC05"
+								/>
+								<path
+									d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+									fill="#EA4335"
+								/>
+							</svg>
+							Google
+						</Button>
+						{/* <Button 
               variant="outline" 
               type="button"
               disabled={isLoading}
@@ -634,11 +480,192 @@ const handleGoogleLogin = async () => {
               </svg>
               Facebook
             </Button> */}
-          </div>
-        </TabsContent>
-      </Tabs>
-    </div>
-  );
+					</div>
+				</TabsContent>
+
+				{/* Register Form */}
+				<TabsContent value="register" className="space-y-4">
+					<div className="animate-fade-in">
+						<h2 className="text-2xl font-bold tracking-tight text-center mb-4">
+							Create an account
+						</h2>
+						<p className="text-sm text-muted-foreground text-center mb-6">
+							Enter your details below to create your account
+						</p>
+					</div>
+
+					<form onSubmit={handleRegister} className="space-y-4">
+						<div className="animate-fade-in delay-100">
+							<Label htmlFor="register-full-name">Full name</Label>
+							<Input
+								id="register-full-name"
+								type="text"
+								placeholder="John Doe"
+								value={registerData.fullName}
+								onChange={(e) =>
+									setRegisterData({ ...registerData, fullName: e.target.value })
+								}
+								required
+								disabled={isLoading}
+								className="mt-1"
+							/>
+						</div>
+
+						<div className="animate-fade-in delay-200">
+							<Label htmlFor="register-email">Email</Label>
+							<Input
+								id="register-email"
+								type="email"
+								placeholder="name@example.com"
+								value={registerData.email}
+								onChange={(e) =>
+									setRegisterData({ ...registerData, email: e.target.value })
+								}
+								required
+								disabled={isLoading}
+								className="mt-1"
+							/>
+						</div>
+
+						<div className="animate-fade-in delay-300">
+							<Label htmlFor="register-password">Password</Label>
+							<div className="relative mt-1">
+								<Input
+									id="register-password"
+									type={showRegisterPassword ? "text" : "password"}
+									placeholder="At least 6 characters"
+									value={registerData.password}
+									onChange={(e) =>
+										setRegisterData({
+											...registerData,
+											password: e.target.value,
+										})
+									}
+									required
+									minLength={6}
+									disabled={isLoading}
+									className="pr-10"
+								/>
+								<button
+									type="button"
+									onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+									className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+									disabled={isLoading}
+								>
+									{showRegisterPassword ? (
+										<EyeOff className="h-4 w-4" />
+									) : (
+										<Eye className="h-4 w-4" />
+									)}
+								</button>
+							</div>
+						</div>
+
+						<div className="animate-fade-in delay-400">
+							<Label htmlFor="confirm-password">Confirm Password</Label>
+							<div className="relative mt-1">
+								<Input
+									id="confirm-password"
+									type={showConfirmPassword ? "text" : "password"}
+									placeholder="Confirm your password"
+									value={registerData.confirmpassword}
+									onChange={(e) =>
+										setRegisterData({
+											...registerData,
+											confirmpassword: e.target.value,
+										})
+									}
+									required
+									disabled={isLoading}
+									className="pr-10"
+								/>
+								<button
+									type="button"
+									onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+									className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+									disabled={isLoading}
+								>
+									{showConfirmPassword ? (
+										<EyeOff className="h-4 w-4" />
+									) : (
+										<Eye className="h-4 w-4" />
+									)}
+								</button>
+							</div>
+						</div>
+
+						<Button
+							type="submit"
+							className="w-full animate-fade-in delay-500"
+							disabled={isLoading}
+						>
+							{isLoading ? (
+								<div className="flex items-center gap-2">
+									<div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-opacity-20 border-t-white"></div>
+									Creating account...
+								</div>
+							) : (
+								<>Create account</>
+							)}
+						</Button>
+					</form>
+
+					<div className="relative my-6 animate-fade-in delay-600">
+						<div className="absolute inset-0 flex items-center">
+							<Separator className="w-full" />
+						</div>
+						<div className="relative flex justify-center text-xs uppercase">
+							<span className="bg-card px-2 text-muted-foreground">
+								Or continue with
+							</span>
+						</div>
+					</div>
+
+					<div className="grid grid-cols-1 gap-3 animate-fade-in delay-700">
+						<Button
+							variant="outline"
+							type="button"
+							disabled={isLoading}
+							onClick={handleGoogleLogin}
+							className="flex items-center gap-2"
+						>
+							<svg className="h-4 w-4" viewBox="0 0 24 24">
+								<path
+									d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+									fill="#4285F4"
+								/>
+								<path
+									d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+									fill="#34A853"
+								/>
+								<path
+									d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+									fill="#FBBC05"
+								/>
+								<path
+									d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+									fill="#EA4335"
+								/>
+							</svg>
+							Google
+						</Button>
+						{/* <Button 
+              variant="outline" 
+              type="button"
+              disabled={isLoading}
+              onClick={handleFacebookLogin}
+              className="flex items-center gap-2"
+            >
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="#1877F2">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              </svg>
+              Facebook
+            </Button> */}
+					</div>
+				</TabsContent>
+			</Tabs>
+		</div>
+	);
 };
 
 export default AuthForm;

@@ -105,8 +105,8 @@ const ChangePassword = () => {
 			} else {
 				throw new Error(response.message || "Failed to change password");
 			}
-		} catch (error: any) {
-			console.error("Password change error:", error);
+		} catch (error) {
+			error();
 
 			let errorMessage = "Please check your current password and try again.";
 
@@ -199,8 +199,8 @@ const ChangePassword = () => {
 			});
 
 			navigate("/account");
-		} catch (error: any) {
-			console.error("Password change error:", error);
+		} catch (error) {
+			error();
 
 			toast({
 				title: "Failed to change password",

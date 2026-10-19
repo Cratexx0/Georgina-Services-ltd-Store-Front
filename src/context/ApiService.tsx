@@ -1,4 +1,4 @@
-import { Product } from "@/lib/type";
+import { Category, Order, Product, Wishlist } from "@/lib/type";
 import { User } from "./AuthContext";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
@@ -115,7 +115,7 @@ export interface ChatSession {
 export interface SendMessageData {
 	sessionId: string;
 	message: string;
-	metadata?: any;
+	metadata?: Product;
 }
 
 export interface SendMessageResponse {
@@ -143,10 +143,10 @@ export interface SocialLoginRequest {
 export interface SocialLoginResponse {
 	success: boolean;
 	token?: string;
-	user?: any;
+	user?: User;
 	data?: {
 		token?: string;
-		user?: any;
+		user?: User;
 	};
 	message?: string;
 }
@@ -174,16 +174,9 @@ class ApiService {
 					return userData.email;
 				}
 			}
-
-			// Fallback to localStorage
-			const localUserString = localStorage.getItem("user");
-			if (localUserString) {
-				const userData = JSON.parse(localUserString);
-				if (userData?.email) {
-					return userData.email;
-				}
-			}
-		} catch (error) {}
+		} catch (error) {
+			// Ignore malformed session data; no email is available from this cache.
+		}
 
 		return null;
 	}
@@ -200,23 +193,15 @@ class ApiService {
 					return userId;
 				}
 			}
-
-			// Fallback to localStorage
-			const localUserString = localStorage.getItem("user");
-			if (localUserString) {
-				const userData = JSON.parse(localUserString);
-				const userId = userData?.id || userData?.userId || userData?._id;
-				if (userId) {
-					return userId;
-				}
-			}
-		} catch (error) {}
+		} catch (error) {
+			error("An error occured");
+		}
 
 		return null;
 	}
 
 	// Get user data from cookies
-	private getUserFromCookies(): any {
+	private getUserFromCookies(): User {
 		try {
 			const cookieValue = document.cookie
 				.split("; ")
@@ -728,7 +713,11 @@ class ApiService {
 	}): Promise<Product[]> {
 		try {
 			const queryString = params
-				? `?${new URLSearchParams(params as any).toString()}`
+				? `?${new URLSearchParams(
+						Object.entries(params)
+							.filter(([, value]) => value !== undefined)
+							.map(([key, value]) => [key, String(value)] as [string, string]),
+					).toString()}`
 				: "";
 
 			const response = await this.request(`/api/products${queryString}`, {
@@ -857,7 +846,9 @@ class ApiService {
 	async getProductBySlug(slug: string) {
 		try {
 			const products = await this.getProducts();
-			const product = products.find((product: any) => product.slug === slug);
+			const product = products.find(
+				(product: Product) => product.slug === slug,
+			);
 
 			if (!product) {
 				throw new Error(`Product with slug "${slug}" not found`);
@@ -865,6 +856,7 @@ class ApiService {
 
 			return product || null;
 		} catch (error) {
+			error();
 			return null;
 		}
 	}
@@ -919,7 +911,7 @@ class ApiService {
 		price: number;
 		selectedFeatures?: string[];
 		specialInstructions?: string;
-	}): Promise<{ success: boolean; data?: any; message?: string }> {
+	}): Promise<{ success: boolean; data?: Product; message?: string }> {
 		return this.request("/api/bookings", {
 			method: "POST",
 			body: JSON.stringify(bookingData),
@@ -946,9 +938,9 @@ class ApiService {
 	 * Get user's bookings for dashboard - AUTO email detection
 	 * @deprecated Use getUserDashboardBookings instead for better typing
 	 */
-	async getMyBookings(page: number = 1, limit: number = 10, status?: string) {
-		return this.getUserDashboardBookings(page, limit, status);
-	}
+	// async getMyBookings(page: number = 1, limit: number = 10, status?: string) {
+	// 	return this.getUserDashboardBookings(page, limit, status);
+	// }
 
 	/**
 	 * Get upcoming bookings - AUTO email detection
@@ -1022,248 +1014,248 @@ class ApiService {
 	/**
 	 * Create a new booking
 	 */
-	async createNewBooking(bookingData: {
-		customerName: string;
-		customerEmail: string;
-		customerPhone: string;
-		serviceType: string;
-		address: string;
-		date: string;
-		time: string;
-		duration: number;
-		price: number;
-		selectedFeatures?: string[];
-		specialInstructions?: string;
-	}): Promise<{ success: boolean; data?: any; message?: string }> {
-		return this.request("/api/bookings", {
-			method: "POST",
-			body: JSON.stringify(bookingData),
-			requiresAuth: true,
-		});
-	}
+	// async createNewBooking(bookingData: {
+	// 	customerName: string;
+	// 	customerEmail: string;
+	// 	customerPhone: string;
+	// 	serviceType: string;
+	// 	address: string;
+	// 	date: string;
+	// 	time: string;
+	// 	duration: number;
+	// 	price: number;
+	// 	selectedFeatures?: string[];
+	// 	specialInstructions?: string;
+	// }): Promise<{ success: boolean; data?: Product; message?: string }> {
+	// 	return this.request("/api/bookings", {
+	// 		method: "POST",
+	// 		body: JSON.stringify(bookingData),
+	// 		requiresAuth: true,
+	// 	});
+	// }
 
 	/**
 	 * Get available time slots for a specific date
 	 */
-	async getAvailableBookingSlots(date: string): Promise<{
-		success: boolean;
-		data?: string[];
-		availableSlots?: string[];
-		timeSlots?: string[];
-	}> {
-		return this.request(`/api/bookings/available-slots/${date}`, {
-			method: "GET",
-			requiresAuth: true,
-		});
-	}
+	// async getAvailableBookingSlots(date: string): Promise<{
+	// 	success: boolean;
+	// 	data?: string[];
+	// 	availableSlots?: string[];
+	// 	timeSlots?: string[];
+	// }> {
+	// 	return this.request(`/api/bookings/available-slots/${date}`, {
+	// 		method: "GET",
+	// 		requiresAuth: true,
+	// 	});
+	// }
 
 	/**
 	 * Get user dashboard bookings with pagination
 	 */
-	async getUserDashboardBookings(
-		page: number = 1,
-		limit: number = 10,
-		status?: string,
-	): Promise<{
-		success: boolean;
-		data?: any[];
-		bookings?: any[];
-		total?: number;
-		page?: number;
-		totalPages?: number;
-		message?: string;
-	}> {
-		try {
-			const userEmail = this.getUserEmail();
-			const userId = this.getUserId();
+	// async getUserDashboardBookings(
+	// 	page: number = 1,
+	// 	limit: number = 10,
+	// 	status?: string,
+	// ): Promise<{
+	// 	success: boolean;
+	// 	data?: Product[];
+	// 	bookings?: any[];
+	// 	total?: number;
+	// 	page?: number;
+	// 	totalPages?: number;
+	// 	message?: string;
+	// }> {
+	// 	try {
+	// 		const userEmail = this.getUserEmail();
+	// 		const userId = this.getUserId();
 
-			if (!userEmail || !userId) {
-				return {
-					success: false,
-					message:
-						"User information not found. Please ensure you are logged in.",
-					data: [],
-					bookings: [],
-					total: 0,
-					page: 1,
-					totalPages: 0,
-				};
-			}
+	// 		if (!userEmail || !userId) {
+	// 			return {
+	// 				success: false,
+	// 				message:
+	// 					"User information not found. Please ensure you are logged in.",
+	// 				data: [],
+	// 				bookings: [],
+	// 				total: 0,
+	// 				page: 1,
+	// 				totalPages: 0,
+	// 			};
+	// 		}
 
-			const queryParams = new URLSearchParams({
-				page: page.toString(),
-				limit: limit.toString(),
-				email: userEmail,
-				id: userId,
-				...(status && { status }),
-			});
+	// 		const queryParams = new URLSearchParams({
+	// 			page: page.toString(),
+	// 			limit: limit.toString(),
+	// 			email: userEmail,
+	// 			id: userId,
+	// 			...(status && { status }),
+	// 		});
 
-			const response = await this.request(`/api/user/bookings?${queryParams}`, {
-				method: "GET",
-				requiresAuth: true,
-			});
+	// 		const response = await this.request(`/api/user/bookings?${queryParams}`, {
+	// 			method: "GET",
+	// 			requiresAuth: true,
+	// 		});
 
-			// Ensure consistent response structure
-			return {
-				success: response.success !== false,
-				data: response.data || response.bookings || [],
-				bookings: response.bookings || response.data || [],
-				total: response.total || response.totalCount || 0,
-				page: response.page || response.currentPage || page,
-				totalPages:
-					response.totalPages || Math.ceil((response.total || 0) / limit),
-				message: response.message,
-			};
-		} catch (error) {
-			console.error("❌ [getUserDashboardBookings] Error:", error);
+	// 		// Ensure consistent response structure
+	// 		return {
+	// 			success: response.success !== false,
+	// 			data: response.data || response.bookings || [],
+	// 			bookings: response.bookings || response.data || [],
+	// 			total: response.total || response.totalCount || 0,
+	// 			page: response.page || response.currentPage || page,
+	// 			totalPages:
+	// 				response.totalPages || Math.ceil((response.total || 0) / limit),
+	// 			message: response.message,
+	// 		};
+	// 	} catch (error) {
+	// 		console.error("❌ [getUserDashboardBookings] Error:", error);
 
-			// Check if error is due to endpoint not implemented
-			const errorMessage =
-				error instanceof Error ? error.message : String(error);
-			if (
-				errorMessage.includes("not implemented") ||
-				errorMessage.includes("404")
-			) {
-				return {
-					success: false,
-					message:
-						"Booking endpoint is not yet implemented on the server. Please contact support.",
-					data: [],
-					bookings: [],
-					total: 0,
-					page: 1,
-					totalPages: 0,
-				};
-			}
+	// 		// Check if error is due to endpoint not implemented
+	// 		const errorMessage =
+	// 			error instanceof Error ? error.message : String(error);
+	// 		if (
+	// 			errorMessage.includes("not implemented") ||
+	// 			errorMessage.includes("404")
+	// 		) {
+	// 			return {
+	// 				success: false,
+	// 				message:
+	// 					"Booking endpoint is not yet implemented on the server. Please contact support.",
+	// 				data: [],
+	// 				bookings: [],
+	// 				total: 0,
+	// 				page: 1,
+	// 				totalPages: 0,
+	// 			};
+	// 		}
 
-			return {
-				success: false,
-				message: errorMessage,
-				data: [],
-				bookings: [],
-				total: 0,
-				page: 1,
-				totalPages: 0,
-			};
-		}
-	}
+	// 		return {
+	// 			success: false,
+	// 			message: errorMessage,
+	// 			data: [],
+	// 			bookings: [],
+	// 			total: 0,
+	// 			page: 1,
+	// 			totalPages: 0,
+	// 		};
+	// 	}
+	// }
 
 	/**
 	 * Get dashboard upcoming bookings
 	 */
-	async getDashboardUpcomingBookings(): Promise<{
-		success: boolean;
-		data?: any[];
-		bookings?: any[];
-	}> {
-		const userEmail = this.getUserEmail();
+	// async getDashboardUpcomingBookings(): Promise<{
+	// 	success: boolean;
+	// 	data?: Product[];
+	// 	bookings?: any[];
+	// }> {
+	// 	const userEmail = this.getUserEmail();
 
-		if (!userEmail) {
-			throw new Error("No user email found. Please ensure you are logged in.");
-		}
+	// 	if (!userEmail) {
+	// 		throw new Error("No user email found. Please ensure you are logged in.");
+	// 	}
 
-		return this.request(`/api/user/bookings/upcoming?email=${userEmail}`, {
-			method: "GET",
-			requiresAuth: true,
-		});
-	}
+	// 	return this.request(`/api/user/bookings/upcoming?email=${userEmail}`, {
+	// 		method: "GET",
+	// 		requiresAuth: true,
+	// 	});
+	// }
 
 	/**
 	 * Get recent bookings for dashboard
 	 */
-	async getDashboardRecentBookings(): Promise<{
-		success: boolean;
-		data?: any[];
-		bookings?: any[];
-	}> {
-		const userEmail = this.getUserEmail();
+	// async getDashboardRecentBookings(): Promise<{
+	// 	success: boolean;
+	// 	data?: Product[];
+	// 	bookings?: any[];
+	// }> {
+	// 	const userEmail = this.getUserEmail();
 
-		if (!userEmail) {
-			throw new Error("No user email found. Please ensure you are logged in.");
-		}
+	// 	if (!userEmail) {
+	// 		throw new Error("No user email found. Please ensure you are logged in.");
+	// 	}
 
-		return this.request(`/api/user/bookings/recent?email=${userEmail}`, {
-			method: "GET",
-			requiresAuth: true,
-		});
-	}
+	// 	return this.request(`/api/user/bookings/recent?email=${userEmail}`, {
+	// 		method: "GET",
+	// 		requiresAuth: true,
+	// 	});
+	// }
 
 	/**
 	 * Get specific booking by ID for authenticated user
 	 */
-	async getMyBookingById(id: string): Promise<{
-		success: boolean;
-		data?: any;
-		booking?: any;
-	}> {
-		const userEmail = this.getUserEmail();
+	// async getMyBookingById(id: string): Promise<{
+	// 	success: boolean;
+	// 	data?: Product;
+	// 	booking?: any;
+	// }> {
+	// 	const userEmail = this.getUserEmail();
 
-		if (!userEmail) {
-			throw new Error("No user email found. Please ensure you are logged in.");
-		}
+	// 	if (!userEmail) {
+	// 		throw new Error("No user email found. Please ensure you are logged in.");
+	// 	}
 
-		return this.request(`/api/user/bookings/${id}?email=${userEmail}`, {
-			method: "GET",
-			requiresAuth: true,
-		});
-	}
+	// 	return this.request(`/api/user/bookings/${id}?email=${userEmail}`, {
+	// 		method: "GET",
+	// 		requiresAuth: true,
+	// 	});
+	// }
 
 	/**
 	 * Cancel a booking
 	 */
-	async cancelUserBooking(
-		id: string,
-		cancellationReason?: string,
-	): Promise<{
-		success: boolean;
-		message?: string;
-		data?: any;
-	}> {
-		return this.request(`/api/user/bookings/${id}/cancel`, {
-			method: "PATCH",
-			body: JSON.stringify({ cancellationReason }),
-			requiresAuth: true,
-		});
-	}
+	// async cancelUserBooking(
+	// 	id: string,
+	// 	cancellationReason?: string,
+	// ): Promise<{
+	// 	success: boolean;
+	// 	message?: string;
+	// 	data?: Product;
+	// }> {
+	// 	return this.request(`/api/user/bookings/${id}/cancel`, {
+	// 		method: "PATCH",
+	// 		body: JSON.stringify({ cancellationReason }),
+	// 		requiresAuth: true,
+	// 	});
+	// }
 
 	/**
 	 * Get booking by ID (public access)
 	 */
-	async getPublicBookingById(id: string): Promise<{
-		success: boolean;
-		data?: any;
-		booking?: any;
-	}> {
-		return this.request(`/api/bookings/${id}`, {
-			method: "GET",
-			requiresAuth: false, // Public access
-		});
-	}
+	// async getPublicBookingById(id: string): Promise<{
+	// 	success: boolean;
+	// 	data?: Product;
+	// 	booking?: any;
+	// }> {
+	// 	return this.request(`/api/bookings/${id}`, {
+	// 		method: "GET",
+	// 		requiresAuth: false, // Public access
+	// 	});
+	// }
 
-	async getBookingById(id: string): Promise<{
-		success: boolean;
-		data?: any;
-		booking?: any;
-	}> {
-		return this.request(`/api/bookings/${id}`, {
-			method: "GET",
-			requiresAuth: false, // Public access
-		});
-	}
+	// async getBookingById(id: string): Promise<{
+	// 	success: boolean;
+	// 	data?: Product;
+	// 	booking?: any;
+	// }> {
+	// 	return this.request(`/api/bookings/${id}`, {
+	// 		method: "GET",
+	// 		requiresAuth: false, // Public access
+	// 	});
+	// }
 
 	/**
 	 * Get bookings by email (public access)
 	 */
-	async getBookingsByEmail(email: string): Promise<{
-		success: boolean;
-		data?: any[];
-		bookings?: any[];
-	}> {
-		return this.request(`/api/bookings/email/${email}`, {
-			method: "GET",
-			requiresAuth: false, // Public access
-		});
-	}
+	// async getBookingsByEmail(email: string): Promise<{
+	// 	success: boolean;
+	// 	data?: Product[];
+	// 	bookings?: any[];
+	// }> {
+	// 	return this.request(`/api/bookings/email/${email}`, {
+	// 		method: "GET",
+	// 		requiresAuth: false, // Public access
+	// 	});
+	// }
 
 	// =============================================
 	// 🛒 ORDER ENDPOINTS
@@ -1286,8 +1278,8 @@ class ApiService {
 		customerNotes?: string;
 	}): Promise<{
 		success: boolean;
-		data?: any;
-		order?: any;
+		data?: Product;
+		order?: Order;
 		message?: string;
 	}> {
 		return this.request("/api/orders", {
@@ -1309,15 +1301,15 @@ class ApiService {
 			price: number;
 			image?: string;
 		}>,
-		shippingAddress: any, // Address object or string
+		shippingAddress: string, // Address object or string
 		totalAmount?: number,
 		paymentMethod?: string,
 		customerNotes?: string,
 		paymentIntentId?: string,
 	): Promise<{
 		success: boolean;
-		data?: any;
-		order?: any;
+		data?: Product;
+		order?: Order;
 		message?: string;
 	}> {
 		// Calculate total amount if not provided
@@ -1352,8 +1344,8 @@ class ApiService {
 	 */
 	async getUserOrders(): Promise<{
 		success: boolean;
-		data?: any[];
-		orders?: any[];
+		data?: Product[];
+		orders?: Order[];
 		message?: string;
 	}> {
 		return this.request("/api/orders/my-orders", {
@@ -1367,8 +1359,8 @@ class ApiService {
 	 */
 	async getMyOrders(): Promise<{
 		success: boolean;
-		data?: any[];
-		orders?: any[];
+		data?: Product[];
+		orders?: Order[];
 		message?: string;
 	}> {
 		try {
@@ -1396,7 +1388,7 @@ class ApiService {
 	async cancelUserOrder(orderId: string): Promise<{
 		success: boolean;
 		message?: string;
-		data?: any;
+		data?: Product;
 	}> {
 		return this.request(`/api/orders/${orderId}/cancel`, {
 			method: "PUT",
@@ -1409,8 +1401,8 @@ class ApiService {
 	 */
 	async getOrderByNumber(orderNumber: string): Promise<{
 		success: boolean;
-		data?: any;
-		order?: any;
+		data?: Product;
+		order?: Order;
 		message?: string;
 	}> {
 		return this.request(`/api/orders/number/${orderNumber}`, {
@@ -1424,8 +1416,8 @@ class ApiService {
 	 */
 	async getOrderById(orderId: string): Promise<{
 		success: boolean;
-		data?: any;
-		order?: any;
+		data?: Product;
+		order?: Order;
 		message?: string;
 	}> {
 		return this.request(`/api/orders/${orderId}`, {
@@ -1440,7 +1432,7 @@ class ApiService {
 	async cancelOrder(orderId: string): Promise<{
 		success: boolean;
 		message?: string;
-		data?: any;
+		data?: Product;
 	}> {
 		return this.request(`/api/orders/${orderId}/cancel`, {
 			method: "PUT",
@@ -1457,7 +1449,7 @@ class ApiService {
 	): Promise<{
 		success: boolean;
 		message?: string;
-		data?: any;
+		data?: Product;
 	}> {
 		return this.request(`/api/admin/orders/${orderId}/status`, {
 			method: "PATCH",
@@ -1616,7 +1608,7 @@ class ApiService {
 	}): Promise<{
 		success: boolean;
 		message?: string;
-		data?: any;
+		data?: Product;
 	}> {
 		return this.request("/api/auth/change-password", {
 			method: "POST",
@@ -1634,7 +1626,7 @@ class ApiService {
 	}): Promise<{
 		success: boolean;
 		message?: string;
-		data?: any;
+		data?: Product;
 	}> {
 		return this.request("/api/users/change-password", {
 			method: "PUT",
@@ -1690,61 +1682,33 @@ class ApiService {
 
 	async getCategoriesByLevel(level: number) {
 		const categories = await this.getCategories();
-		return categories.filter((cat: any) => cat.level === level);
+		return categories.filter((cat: Category) => cat.level === level);
 	}
 
 	async getCategoriesByParent(parentId: string) {
 		const categories = await this.getCategories();
-		return categories.filter((cat: any) => cat.parentId === parentId);
+		return categories.filter((cat: Category) => cat.parentId === parentId);
 	}
 
-	private buildCategoryTree(categories: any[]) {
-		const level1: any[] = [];
-		const level2: any[] = [];
-		const level3: any[] = [];
+	private buildCategoryTree(categories: Category[]) {
+		const level: Category[] = [];
 
 		categories.forEach((category) => {
 			switch (category.level) {
 				case 1:
-					level1.push(category);
-					break;
-				case 2:
-					level2.push(category);
-					break;
-				case 3:
-					level3.push(category);
+					level.push(category);
 					break;
 			}
 		});
 
-		level2.forEach((level2Cat) => {
-			const parent = level1.find(
-				(level1Cat) => level1Cat.id === level2Cat.parentId,
-			);
-			if (parent) {
-				if (!parent.subcategories) parent.subcategories = [];
-				parent.subcategories.push(level2Cat);
-			}
-		});
-
-		level3.forEach((level3Cat) => {
-			const parent = level2.find(
-				(level2Cat) => level2Cat.id === level3Cat.parentId,
-			);
-			if (parent) {
-				if (!parent.subcategories) parent.subcategories = [];
-				parent.subcategories.push(level3Cat);
-			}
-		});
-
-		return { level1, level2, level3 };
+		return { level };
 	}
 
 	// =============================================
 	// 💳 PAYMENT ENDPOINTS
 	// =============================================
 
-	async initiatePayment(orderData: any) {
+	async initiatePayment(orderData: Order) {
 		return this.request("/api/payment", {
 			method: "POST",
 			body: JSON.stringify(orderData),
@@ -1795,11 +1759,11 @@ class ApiService {
 		});
 	}
 
-	async createAdminProduct(productData: any) {
+	async createAdminProduct(productData: Product) {
 		return this.requestWithFormData("/api/admin/products", productData, "POST");
 	}
 
-	async updateAdminProduct(productId: string, productData: any) {
+	async updateAdminProduct(productId: string, productData: Product) {
 		return this.requestWithFormData(
 			`/api/admin/products/${productId}`,
 			productData,
@@ -1845,7 +1809,7 @@ class ApiService {
 	async addToWishlist(productId: string): Promise<{
 		success: boolean;
 		message?: string;
-		data?: any;
+		data?: Product;
 	}> {
 		return this.request("/api/wishlist/add", {
 			method: "POST",
@@ -1859,8 +1823,8 @@ class ApiService {
 	 */
 	async getWishlist(): Promise<{
 		success: boolean;
-		data?: any[];
-		wishlist?: any[];
+		data?: Product[];
+		wishlist?: Wishlist[];
 		message?: string;
 	}> {
 		try {
@@ -1919,7 +1883,7 @@ class ApiService {
 	async removeFromWishlist(productId: string): Promise<{
 		success: boolean;
 		message?: string;
-		data?: any;
+		data?: Product;
 	}> {
 		return this.request(`/api/wishlist/remove/${productId}`, {
 			method: "DELETE",
@@ -1933,7 +1897,7 @@ class ApiService {
 	async clearWishlist(): Promise<{
 		success: boolean;
 		message?: string;
-		data?: any;
+		data?: Product;
 	}> {
 		return this.request("/api/wishlist/clear", {
 			method: "DELETE",
@@ -1990,7 +1954,7 @@ class ApiService {
 	}
 
 	// In your ApiService - update the normalizeProducts method
-	private normalizeProducts(products: any[]): Product[] {
+	private normalizeProducts(products: Product[]): Product[] {
 		return products.map((product) => ({
 			// Map all fields exactly as they come from the backend
 			id: product.id,
@@ -1998,12 +1962,10 @@ class ApiService {
 			slug: product.slug || "",
 			description: product.description || null,
 			price: product.price?.toString() || "0",
-			discountPrice: product.discountPrice?.toString() || undefined,
+			discount: product.discount?.toString() || undefined,
 			categoryLevel1: product.categoryLevel1 || "",
 			categoryLevel2: product.categoryLevel2 || null,
 			categoryLevel3: product.categoryLevel3 || null,
-			serviceType: product.serviceType || "physical",
-			serviceDuration: product.serviceDuration || null,
 			unit: product.unit || "piece",
 			stock: typeof product.stock === "number" ? product.stock : 0,
 			images: Array.isArray(product.images) ? product.images : [],
@@ -2018,6 +1980,9 @@ class ApiService {
 			newArrivalOrder: product.newArrivalOrder || 0,
 			wishList: product.wishList || false,
 			size: product.size || null,
+			weight: product.weight ?? "",
+			averageRating: product.averageRating ?? "",
+			totalReviews: product.totalReviews ?? 0,
 			createdAt: product.createdAt || new Date().toISOString(),
 			updatedAt: product.updatedAt || new Date().toISOString(),
 		}));

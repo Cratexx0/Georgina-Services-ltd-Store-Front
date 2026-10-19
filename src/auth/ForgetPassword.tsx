@@ -30,7 +30,6 @@ const ForgotPassword = () => {
 		setIsLoading(true);
 
 		try {
-
 			// Check if the method exists
 			if (!apiService.forgotPassword) {
 				console.error("❌ forgotPassword method not found in apiService");
@@ -49,8 +48,8 @@ const ForgotPassword = () => {
 			} else {
 				throw new Error(response.message || "Failed to send reset email");
 			}
-		} catch (error: any) {
-			console.error("❌ Forgot password error:", error);
+		} catch (error) {
+			error();
 
 			let errorMessage = "Failed to send reset email. Please try again.";
 
@@ -101,7 +100,8 @@ const ForgotPassword = () => {
 			} else {
 				throw new Error(response.message || "Failed to resend email");
 			}
-		} catch (error: any) {
+		} catch (error) {
+			error();
 			toast({
 				title: "Failed to resend email",
 				description: "Please try again in a few minutes.",
