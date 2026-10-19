@@ -4,12 +4,13 @@
 // wishlist (heart) and add-to-cart (bag). Sizes, quantity and everything else live on the details page.
 import React from "react";
 import { Link } from "react-router-dom";
-import { Heart, ShoppingBag } from "lucide-react";
+import { GitCompare, Heart, ShoppingBag } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { Product } from "@/lib/type";
 import { getProductImages, getProductSizes, handleImageError } from "@/lib/productUtils";
 import { formatPrice } from "@/lib/Audience";
+import { useCompare } from "@/context/Comparecontext";
 
 // ⚠️ Change this if your product details route is different (e.g. `/products/${slug}`).
 export const productPath = (slug: string) => `/product/${slug}`;
@@ -27,6 +28,14 @@ const StoreProductCard = ({ product, index = 0 }: Props) => {
   const images = getProductImages(product);
   const sizes = getProductSizes(product);
   const href = productPath(product.slug);
+  const { toggleCompare, isInCompare } = useCompare();
+const compared = isInCompare(product.id);
+
+const handleCompare = (e: React.MouseEvent) => {
+  e.preventDefault();
+  e.stopPropagation();
+  toggleCompare(product);
+};
 
   const price = Number(product.price);
   const sale = product.discountPrice ? Number(product.discountPrice) : 0;
@@ -139,6 +148,19 @@ const StoreProductCard = ({ product, index = 0 }: Props) => {
         >
           <ShoppingBag className="h-[18px] w-[18px]" />
         </button>
+
+        <button
+  type="button"
+  onClick={handleCompare}
+  aria-label={compared ? "Remove from compare" : "Add to compare"}
+  aria-pressed={compared}
+  title={compared ? "In compare" : "Compare"}
+  className={`absolute right-3 top-14 grid h-9 w-9 place-items-center rounded-full shadow-sm backdrop-blur transition-all duration-200 hover:scale-110 active:scale-90 ${
+    compared ? "bg-primary text-primary-foreground" : "bg-white/90 text-foreground"
+  }`}
+>
+  <GitCompare className="h-[18px] w-[18px]" />
+</button>
       </div>
 
       <Link to={href} className="mt-3 block px-1 text-center">

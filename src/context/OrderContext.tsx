@@ -257,7 +257,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
   const deleteOrder = async (id: string) => {
     try {
       setIsLoading(true);
-      const response = await apiService.deleteOrder(id);
+      const response = await apiService.delete(id);
 
       if (response.success) {
         setOrders(prev => prev.filter(order => order.id !== id));

@@ -1,5 +1,5 @@
 const API_BASE_URL =
-	import.meta.env.VITE_API_URL || "https://georgina-server-code.onrender.com";
+	import.meta.env.VITE_API_URL || "localhost:5000"; // Default to localhost if not set
 
 // Interfaces
 export interface Category {
