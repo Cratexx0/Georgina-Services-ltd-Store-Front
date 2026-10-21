@@ -53,6 +53,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
+	const isTokenExpired = (token: string): boolean => {
+		try {
+			const payload = token.split(".")[1];
+			if (!payload) return false;
+
+			const decodedPayload = JSON.parse(
+				atob(payload.replace(/-/g, "+").replace(/_/g, "/")),
+			);
+
+			return (
+				typeof decodedPayload.exp === "number" &&
+				decodedPayload.exp * 1000 <= Date.now()
+			);
+		} catch {
+			return false;
+		}
+	};
+
 	// Check authentication status on app start and page refresh
 	useEffect(() => {
 		checkAuth();
@@ -68,6 +86,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 				sessionStorage.getItem("user") || localStorage.getItem("user");
 
 			if (!token || token === "null" || token === "undefined") {
+				clearAuthData();
+				return false;
+			}
+
+			if (isTokenExpired(token)) {
 				clearAuthData();
 				return false;
 			}
@@ -432,6 +455,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 	// Remove const from method declaration - Add refreshToken method
 	const refreshToken = async (): Promise<boolean> => {
 		try {
+			const token =
+				sessionStorage.getItem("token") || localStorage.getItem("token");
+
+			if (!token || isTokenExpired(token)) {
+				return false;
+			}
+
 			const response = await apiService.verifyToken();
 			return response.success;
 		} catch (error) {
@@ -456,8 +486,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 			}
 		};
 
-		// Check token every 5 minutes
-		const interval = setInterval(checkTokenExpiry, 5 * 60 * 1000);
+		// Check token frequently enough that expired sessions do not retain account UI.
+		const interval = setInterval(checkTokenExpiry, 60 * 1000);
 
 		return () => clearInterval(interval);
 	}, [user]);

@@ -9,15 +9,24 @@ const stripePromise = loadStripe(config.stripe.publishableKey);
 interface StripeProviderProps {
 	readonly children: React.ReactNode;
 	readonly clientSecret?: string;
+	readonly amount?: number;
+	readonly currency?: string;
 }
 
 export function StripeProvider({
 	children,
 	clientSecret,
+	amount = 1000,
+	currency = "gbp",
 }: StripeProviderProps) {
 	const options = useMemo(
 		() => ({
 			...(clientSecret && { clientSecret }), // Only include clientSecret if it exists
+			...(!clientSecret && {
+				mode: "payment" as const,
+				amount,
+				currency: currency as "gbp" | "usd" | "ghs",
+			}),
 			// Appearance customization
 			appearance: {
 				theme: "stripe" as const,
@@ -46,13 +55,8 @@ export function StripeProvider({
 				},
 			},
 		}),
-		[clientSecret]
+		[amount, clientSecret, currency]
 	);
-
-	// Don't render Elements if clientSecret is invalid
-	if (!clientSecret || clientSecret.trim() === "") {
-		return <>{children}</>;
-	}
 
 	return (
 		<Elements stripe={stripePromise} options={options}>
