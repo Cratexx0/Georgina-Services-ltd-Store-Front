@@ -176,11 +176,11 @@ const CheckoutPage: React.FC = () => {
 		return "Unable to process checkout. Please try again.";
 	};
 
-	// Create order first, then PaymentIntent when component mounts and user/cart is ready
-	// FLOW: Create Order → Get OrderId → Create PaymentIntent with OrderId → Payment Success → Update Order
-	useEffect(() => {
-		const createOrderAndPaymentIntent = async () => {
-			if (!isValidCheckout) return;
+	// Create the order and PaymentIntent only after Pay Now is pressed.
+	const createOrderAndPaymentIntent = async (): Promise<string> => {
+			if (!isValidCheckout) {
+				throw new Error("Checkout information is incomplete");
+			}
 
 			try {
 				setIsLoadingPayment(true);
@@ -201,7 +201,7 @@ const CheckoutPage: React.FC = () => {
 					setClientSecret(pendingOrder.clientSecret);
 					setCartHash(currentCartHash);
 					setIsLoadingPayment(false);
-					return;
+					return pendingOrder.clientSecret;
 				}
 
 				// If cart changed or no pending order, clear old pending order
@@ -321,19 +321,17 @@ const CheckoutPage: React.FC = () => {
 
 				// Save pending order to sessionStorage
 				setPendingOrder(orderId, currentCartHash, secret);
+				return secret;
 			} catch (error) {
 				toast.error("Failed to initialize payment. Please try again.");
 				setClientSecret(""); // Reset on error
 				setCreatedOrderId(null); // Reset orderId on error
 				clearPendingOrder(); // Clear pending order on error
+				throw error;
 			} finally {
 				setIsLoadingPayment(false);
 			}
 		};
-
-		void createOrderAndPaymentIntent();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []); // Empty dependency array - only create PaymentIntent once on mount
 
 	const handlePaymentSuccess = async (paymentIntent: PaymentIntent) => {
 		// Prevent duplicate order processing
@@ -444,35 +442,20 @@ const CheckoutPage: React.FC = () => {
 						<div className="w-full xl:w-[500px]">
 							{isValidCheckout ? (
 								<>
-									{isLoadingPayment && (
-										<Card>
-											<CardContent className="py-12 text-center">
-												<p className="text-muted-foreground">
-													Preparing payment...
-												</p>
-											</CardContent>
-										</Card>
-									)}
-									{!isLoadingPayment && clientSecret && (
-										<StripeProvider clientSecret={clientSecret}>
-											<CheckoutForm
-												clientSecret={clientSecret}
-												amount={Math.round(total * 100)}
-												currency={getCurrency(countryCode)}
-												onSuccess={handlePaymentSuccess}
-												onError={handlePaymentError}
-											/>
-										</StripeProvider>
-									)}
-									{!isLoadingPayment && !clientSecret && (
-										<Card>
-											<CardContent className="py-12 text-center">
-												<p className="text-muted-foreground">
-													Failed to initialize payment
-												</p>
-											</CardContent>
-										</Card>
-									)}
+									<StripeProvider
+										clientSecret={clientSecret}
+										amount={Math.round(total * 100)}
+										currency={getCurrency(countryCode)}
+									>
+										<CheckoutForm
+											clientSecret={clientSecret}
+											amount={Math.round(total * 100)}
+											currency={getCurrency(countryCode)}
+											onInitializePayment={createOrderAndPaymentIntent}
+											onSuccess={handlePaymentSuccess}
+											onError={handlePaymentError}
+										/>
+									</StripeProvider>
 								</>
 							) : (
 								<Card>

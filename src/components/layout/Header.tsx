@@ -213,7 +213,7 @@ const Header = () => {
               </button>
 
               <div className="hidden md:block">
-                {isAuthenticated ? (
+                {isAuthenticated && user ? (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <button
@@ -305,7 +305,7 @@ const Header = () => {
 
           {/* Account area pinned to the bottom */}
           <div className="border-t bg-muted/30 px-5 py-4">
-            {isAuthenticated ? (
+            {isAuthenticated && user ? (
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-10 w-10">

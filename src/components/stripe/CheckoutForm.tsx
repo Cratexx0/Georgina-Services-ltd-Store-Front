@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
 	useStripe,
 	useElements,
@@ -19,6 +19,7 @@ interface CheckoutFormProps {
 	className?: string;
 	amount: number;
 	currency?: string;
+	onInitializePayment?: () => Promise<string>;
 }
 
 export function CheckoutForm({
@@ -28,6 +29,7 @@ export function CheckoutForm({
 	onSuccess,
 	onError,
 	className = "",
+	onInitializePayment,
 }: CheckoutFormProps) {
 	const stripe = useStripe();
 	const elements = useElements();
@@ -37,10 +39,8 @@ export function CheckoutForm({
 	const [paymentCompleted, setPaymentCompleted] = useState(false); // Add flag to prevent duplicate submissions
 	const [billingAddress, setBillingAddress] = useState<any>(null); // Store billing address
 
-	const handleSubmit = async (event: React.FormEvent) => {
-		event.preventDefault();
-
-		if (!stripe || !elements || paymentCompleted) {
+	const confirmPayment = useCallback(async (paymentClientSecret = clientSecret) => {
+		if (!stripe || !elements || paymentCompleted || !paymentClientSecret) {
 			return;
 		}
 
@@ -48,9 +48,9 @@ export function CheckoutForm({
 		setMessage(null);
 
 		try {
-			// Confirm the payment with Elements (clientSecret is provided by Elements)
 			const { error, paymentIntent } = await stripe.confirmPayment({
 				elements,
+				clientSecret: paymentClientSecret,
 				confirmParams: {
 					return_url: `${globalThis.window.location.origin}/payment/success`,
 				},
@@ -58,14 +58,10 @@ export function CheckoutForm({
 			});
 
 			if (error) {
-				if (error.type === "card_error" || error.type === "validation_error") {
-					setMessage(error.message || "Payment failed. Please try again.");
-					onError?.(error.message || "Payment failed");
-				} else {
-					setMessage("An unexpected error occurred. Please try again.");
-					onError?.("An unexpected error occurred");
-				}
-				toast.error(error.message || "Payment failed");
+				const errorMessage = error.message || "Payment failed. Please try again.";
+				setMessage(errorMessage);
+				onError?.(errorMessage);
+				toast.error(errorMessage);
 			} else if (paymentIntent) {
 				if (paymentIntent.status === "succeeded") {
 					setPaymentCompleted(true); // Mark payment as completed to prevent duplicate submissions
@@ -80,8 +76,54 @@ export function CheckoutForm({
 				}
 			}
 		} catch (err) {
-			setMessage("An unexpected error occurred.");
-			toast.error("An unexpected error occurred");
+			const errorMessage =
+				err instanceof Error ? err.message : "Unable to process payment";
+			setMessage(errorMessage);
+			onError?.(errorMessage);
+			toast.error(errorMessage);
+		} finally {
+			setIsProcessing(false);
+		}
+	}, [clientSecret, elements, onError, paymentCompleted, stripe, billingAddress, onSuccess]);
+
+	const handleSubmit = async (event: React.FormEvent) => {
+		event.preventDefault();
+
+		if (!stripe || !elements || paymentCompleted || isProcessing) {
+			return;
+		}
+
+		setIsProcessing(true);
+		setMessage(null);
+
+		try {
+			if (!clientSecret) {
+				const { error } = await elements.submit();
+				if (error) {
+					const errorMessage =
+						error.message || "Please check your payment details.";
+					setMessage(errorMessage);
+					onError?.(errorMessage);
+					toast.error(errorMessage);
+					return;
+				}
+
+				const paymentClientSecret = await onInitializePayment?.();
+				if (!paymentClientSecret) {
+					throw new Error("Unable to initialize payment");
+				}
+
+				await confirmPayment(paymentClientSecret);
+				return;
+			}
+
+			await confirmPayment();
+		} catch (err) {
+			const errorMessage =
+				err instanceof Error ? err.message : "Unable to initialize payment";
+			setMessage(errorMessage);
+			onError?.(errorMessage);
+			toast.error(errorMessage);
 		} finally {
 			setIsProcessing(false);
 		}
